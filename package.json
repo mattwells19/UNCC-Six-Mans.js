@@ -1,0 +1,41 @@
+{
+  "name": "uncc-six-mans",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "lint": "eslint \"src/**/*.ts\"",
+    "build": "tsc",
+    "start": "ts-node-dev -r dotenv/config src/index.ts",
+    "test": "jest --testMatch='**/__tests__/*.unit.spec.ts' --testNamePattern=",
+    "integration": "jest --testMatch='**/__tests__/*.int.spec.ts' --setupFiles='./jest.setup.js' --testNamePattern="
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ClamSageCaleb/UNCC-SIX-MANS.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ClamSageCaleb/UNCC-SIX-MANS/issues"
+  },
+  "homepage": "https://github.com/ClamSageCaleb/UNCC-SIX-MANS#readme",
+  "devDependencies": {
+    "@types/faker": "^5.5.8",
+    "@types/jest": "^27.0.1",
+    "@types/luxon": "^2.0.2",
+    "@types/node": "^16.7.5",
+    "@typescript-eslint/eslint-plugin": "^4.29.3",
+    "dotenv": "^10.0.0",
+    "eslint": "^7.32.0",
+    "faker": "^5.5.3",
+    "jest": "^27.1.0",
+    "ts-jest": "^27.0.5",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.4.2"
+  },
+  "dependencies": {
+    "@notionhq/client": "^0.3.1",
+    "discord.js": "^13.1.0",
+    "luxon": "^2.0.2"
+  }
+}
