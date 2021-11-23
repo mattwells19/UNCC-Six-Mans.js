@@ -49,7 +49,7 @@ describe("Leaderboard Repository integration tests", () => {
     expect(foundPlayer!.mmr).toBe(playerToAdd.mmr);
     expect(foundPlayer!.name).toBe(playerToAdd.name);
     // formulas are fixed to one decimal place in NotionHelper so need to replicate here for equality
-    expect(foundPlayer!.winPerc).toBe(+playerToAdd.winPerc.toFixed(1));
+    expect(foundPlayer!.winPerc).toBe(+playerToAdd.winPerc.toFixed(2));
     expect(foundPlayer!.wins).toBe(playerToAdd.wins);
   });
 
@@ -103,7 +103,7 @@ describe("Leaderboard Repository integration tests", () => {
       expect(actual.mmr).toBe(expected!.mmr);
       expect(actual.name).toBe(expected!.name);
       // formulas are fixed to one decimal place in NotionHelper so need to replicate here for equality
-      expect(actual.winPerc).toBe(+expected!.winPerc.toFixed(1));
+      expect(actual.winPerc).toBe(+expected!.winPerc.toFixed(2));
       expect(actual.wins).toBe(expected!.wins);
     });
   });

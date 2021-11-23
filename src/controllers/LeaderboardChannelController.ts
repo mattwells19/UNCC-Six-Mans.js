@@ -8,12 +8,14 @@ export async function updateLeaderboardChannel(leaderboardChannel: TextChannel):
 
   await deleteAllMessagesInTextChannel(leaderboardChannel);
 
-  const embeds = leaderboardContent.map((content, index) =>
-    new MessageEmbed()
+  const embeds = leaderboardContent.map((content, index) => {
+    const embedCtr = leaderboardContent.length > 1 ? `(${index + 1}/${leaderboardContent.length})` : "";
+
+    return new MessageEmbed()
       .setColor(Colors.Blue)
-      .setTitle(`UNCC 6 Mans | Leaderboard ${index + 1}/${leaderboardContent.length}`)
-      .setDescription("```" + content + "```")
-  );
+      .setTitle(`UNCC 6 Mans | Leaderboard ${embedCtr}`.trim())
+      .setDescription("```" + content + "```");
+  });
 
   await leaderboardChannel.send({ embeds });
 }

@@ -1,4 +1,5 @@
 import { BallChaser, Team } from "../../types/common";
+import getEnvVariable from "../../utils/getEnvVariable";
 import generateRandomId from "../../utils/randomId";
 import NotionClient from "../helpers/NotionClient";
 import NotionElementHelper from "../helpers/NotionElementHelper";
@@ -8,13 +9,8 @@ export class ActiveMatchRepository {
   #Client: NotionClient<ActiveMatchPageProperties>;
 
   constructor() {
-    const databaseId = process.env.notion_active_match_id;
-
-    if (!databaseId) {
-      throw new Error("No environment variable named notion_active_match_id.");
-    } else {
-      this.#Client = new NotionClient(databaseId);
-    }
+    const databaseId = getEnvVariable("notion_active_match_id");
+    this.#Client = new NotionClient(databaseId);
   }
 
   async addActiveMatch(ballChasers: Array<BallChaser>): Promise<void> {

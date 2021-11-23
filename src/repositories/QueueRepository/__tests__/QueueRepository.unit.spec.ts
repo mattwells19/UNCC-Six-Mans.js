@@ -5,11 +5,12 @@ import NotionClient from "../../helpers/NotionClient";
 import { PropertyValueMap } from "@notionhq/client/build/src/api-endpoints";
 import { BallChaser, Team } from "../../../types/common";
 import { Page } from "@notionhq/client/build/src/api-types";
-import { QueueRepository as QueueRepositoryClass } from "../QueueRepository";
+import QueueRepository from "../QueueRepository";
 import NotionElementHelper from "../../helpers/NotionElementHelper";
 import { BallChaserBuilder } from "../../../../.jest/Builder";
 
 jest.mock("../../helpers/NotionClient");
+jest.mock("../../../utils/getEnvVariable");
 
 function makeProps(ballChaser: BallChaser = BallChaserBuilder.single()): BallChaserPageProperties {
   return {
@@ -50,15 +51,8 @@ function verifyBallChasersAreEqual(expectedBallChaser: BallChaser, actualBallCha
   expect(actualBallChaser?.isCap).toBe(expectedBallChaser.isCap);
 }
 
-let QueueRepository: QueueRepositoryClass;
-
 beforeEach(async () => {
   jest.clearAllMocks();
-  process.env.notion_queue_id = faker.datatype.uuid();
-
-  // have to wait to import the repo until after the test environment variable is set
-  const ImportedRepo = await import("../QueueRepository");
-  QueueRepository = ImportedRepo.default; // <- get the default export from the imported file
 });
 
 describe("Queue Repository tests", () => {

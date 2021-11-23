@@ -5,6 +5,10 @@ export async function LeaderboardToString(): Promise<Array<string>> {
 
   const allPlayers = await LeaderboardRepository.getAllPlayersStats();
 
+  if (allPlayers.length === 0) {
+    return ["Nothing to see here yet. Get queueing!"];
+  }
+
   const result: Array<string> = [];
 
   for (let i = 0; i < allPlayers.length; i += playersPerEmbed) {
@@ -17,7 +21,7 @@ export async function LeaderboardToString(): Promise<Array<string>> {
 \tWins: ${player.wins}
 \tLosses: ${player.losses}
 \tMatches Played: ${player.matchesPlayed}
-\tWin Perc: ${player.winPerc}\n\n`;
+\tWin Perc: ${player.winPerc * 100}%\n\n`;
 
       return (prev += playerStats);
     }, "");

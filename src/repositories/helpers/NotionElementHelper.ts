@@ -55,6 +55,6 @@ export default class NotionElementHelper {
 
   static numberFromNotionFormulaElement(formulaElement: NotionFormulaElement): number {
     // round to one decimal place for calculated values
-    return +formulaElement.formula.number.toFixed(1);
+    return +formulaElement.formula.number.toFixed(2);
   }
 }

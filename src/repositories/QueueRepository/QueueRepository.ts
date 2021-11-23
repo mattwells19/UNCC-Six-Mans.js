@@ -2,18 +2,14 @@ import { BallChaser, Team } from "../../types/common";
 import { BallChaserPageProperties, UpdateBallChaserOptions } from "./types";
 import NotionClient from "../helpers/NotionClient";
 import NotionElementHelper from "../helpers/NotionElementHelper";
+import getEnvVariable from "../../utils/getEnvVariable";
 
 export class QueueRepository {
   #Client: NotionClient<BallChaserPageProperties>;
 
   constructor() {
-    const databaseId = process.env.notion_queue_id;
-
-    if (!databaseId) {
-      throw new Error("No environment variable named notion_queue_id.");
-    } else {
-      this.#Client = new NotionClient(databaseId);
-    }
+    const databaseId = getEnvVariable("notion_queue_id");
+    this.#Client = new NotionClient(databaseId);
   }
 
   /**

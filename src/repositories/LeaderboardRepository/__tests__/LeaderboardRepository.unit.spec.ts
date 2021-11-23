@@ -6,20 +6,14 @@ import { BallChaserBuilder } from "../../../../.jest/Builder";
 import { BallChaser } from "../../../types/common";
 import NotionClient from "../../helpers/NotionClient";
 import NotionElementHelper from "../../helpers/NotionElementHelper";
-import { LeaderboardRepository as LeaderboardRepositoryClass } from "../LeaderboardRepository";
+import LeaderboardRepository from "../LeaderboardRepository";
 import { LeaderboardPageResponseProperties, PlayerStats } from "../types";
 
 jest.mock("../../helpers/NotionClient");
-
-let LeaderboardRepository: LeaderboardRepositoryClass;
+jest.mock("../../../utils/getEnvVariable");
 
 beforeEach(async () => {
   jest.clearAllMocks();
-  process.env.notion_leaderboard_id = faker.datatype.uuid();
-
-  // have to wait to import the repo until after the test environment variable is set
-  const ImportedRepo = await import("../LeaderboardRepository");
-  LeaderboardRepository = ImportedRepo.default; // <- get the default export from the imported file
 });
 
 function makePlayerStats(
@@ -79,7 +73,7 @@ const validatePlayerStats = (expected: PlayerStats, actual: PlayerStats | null) 
   expect(actual!.mmr).toBe(expected.mmr);
   expect(actual!.name).toBe(expected.name);
   // formulas are fixed to one decimal place in NotionHelper so need to replicate here for equality
-  expect(actual!.winPerc).toBe(+expected.winPerc.toFixed(1));
+  expect(actual!.winPerc).toBe(+expected.winPerc.toFixed(2));
   expect(actual!.wins).toBe(expected.wins);
 };
 
