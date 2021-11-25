@@ -21,7 +21,7 @@ export async function LeaderboardToString(): Promise<Array<string>> {
 \tWins: ${player.wins}
 \tLosses: ${player.losses}
 \tMatches Played: ${player.matchesPlayed}
-\tWin Perc: ${player.winPerc * 100}%\n\n`;
+\tWin Perc: ${Math.round(player.winPerc * 100)}%\n\n`;
 
       return (prev += playerStats);
     }, "");
