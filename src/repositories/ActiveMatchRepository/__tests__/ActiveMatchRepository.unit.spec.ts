@@ -3,23 +3,17 @@ import { mocked } from "ts-jest/utils";
 import NotionClient from "../../helpers/NotionClient";
 import NotionElementHelper from "../../helpers/NotionElementHelper";
 import { BallChaserBuilder } from "../../../../.jest/Builder";
-import { ActiveMatchRepository as ActiveMatchRepositoryClass } from "../ActiveMatchRepository";
+import ActiveMatchRepository from "../ActiveMatchRepository";
 import { ActiveMatchPageProperties, PlayerInActiveMatch } from "../types";
 import { BallChaser, Team } from "../../../types/common";
 import { Page } from "@notionhq/client/build/src/api-types";
 import { PropertyValueMap } from "@notionhq/client/build/src/api-endpoints";
 
 jest.mock("../../helpers/NotionClient");
-
-let ActiveMatchRepository: ActiveMatchRepositoryClass;
+jest.mock("../../../utils/getEnvVariable");
 
 beforeEach(async () => {
   jest.clearAllMocks();
-  process.env.notion_active_match_id = faker.datatype.uuid();
-
-  // have to wait to import the repo until after the test environment variable is set
-  const ImportedRepo = await import("../ActiveMatchRepository");
-  ActiveMatchRepository = ImportedRepo.default; // <- get the default export from the imported file
 });
 
 function makePlayer(

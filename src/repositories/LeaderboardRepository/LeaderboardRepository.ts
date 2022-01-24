@@ -1,3 +1,4 @@
+import getEnvVariable from "../../utils/getEnvVariable";
 import NotionClient from "../helpers/NotionClient";
 import NotionElementHelper from "../helpers/NotionElementHelper";
 import {
@@ -11,13 +12,8 @@ export class LeaderboardRepository {
   #Client: NotionClient<LeaderboardPageResponseProperties, LeaderboardPageRequestProperties>;
 
   constructor() {
-    const databaseId = process.env.notion_leaderboard_id;
-
-    if (!databaseId) {
-      throw new Error("No environment variable named notion_leaderboard_id.");
-    } else {
-      this.#Client = new NotionClient(databaseId);
-    }
+    const databaseId = getEnvVariable("notion_leaderboard_id");
+    this.#Client = new NotionClient(databaseId);
   }
 
   /**
