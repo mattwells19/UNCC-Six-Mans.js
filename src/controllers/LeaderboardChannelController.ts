@@ -1,6 +1,7 @@
 import { MessageEmbed, TextChannel } from "discord.js";
 import { LeaderboardToString } from "../services/LeaderboardService";
 import deleteAllMessagesInTextChannel from "../utils/deleteAllMessagesInTextChannel";
+import { normIconURL } from "../types/common";
 
 export async function updateLeaderboardChannel(leaderboardChannel: TextChannel): Promise<void> {
   const leaderboardContent = await LeaderboardToString();
@@ -13,7 +14,8 @@ export async function updateLeaderboardChannel(leaderboardChannel: TextChannel):
     return new MessageEmbed()
       .setColor("BLUE")
       .setTitle(`UNCC 6 Mans | Leaderboard ${embedCtr}`.trim())
-      .setDescription("```" + content + "```");
+      .setDescription("```" + content + "```")
+      .setThumbnail(normIconURL);
   });
 
   await leaderboardChannel.send({ embeds });
