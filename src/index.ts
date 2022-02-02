@@ -1,5 +1,6 @@
 import { Client } from "discord.js";
 import { updateLeaderboardChannel } from "./controllers/LeaderboardChannelController";
+import { Interactions } from "./controllers/Interactions";
 import getDiscordChannelById from "./utils/getDiscordChannelById";
 import getEnvVariable from "./utils/getEnvVariable";
 
