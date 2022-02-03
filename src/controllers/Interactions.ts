@@ -6,11 +6,15 @@ import LeaderboardRepository from "../repositories/LeaderboardRepository";
 import { PlayerStats } from "../repositories/LeaderboardRepository/types";
 import QueueRepository from "../repositories/QueueRepository";
 import { BallChaser } from "../types/common";
+import getDiscordChannelById from "../utils/getDiscordChannelById";
+import getEnvVariable from "../utils/getEnvVariable";
 const NormClient = new Client({ intents: "GUILDS" });
+const queueChannelId = getEnvVariable("queue_channel_id");
 
 
 export async function buttonEmbeds(queueChannel: TextChannel): Promise<void> {
 
+    //QueueRepository.removeAllBallChasersFromQueue();
     let ballchasers = await QueueRepository.getAllBallChasersInQueue();
 
     const row1 = new MessageActionRow()
@@ -51,6 +55,7 @@ export async function buttonEmbeds(queueChannel: TextChannel): Promise<void> {
 NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
 
     if (!buttonInteraction.isButton()) return;
+    buttonInteraction.deferReply();
     console.log(buttonInteraction);
 
     switch (buttonInteraction.customId) {
@@ -73,9 +78,8 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
                 };
 
                 await QueueRepository.addBallChaserToQueue(player);
-            }
 
-            if (queueMember == null && leaderboardMember != null) {
+            }else if (queueMember == null && leaderboardMember != null) {
                 const player: BallChaser = {
                     id: buttonInteraction.user.toString(),
                     mmr: leaderboardMember.mmr,
@@ -110,8 +114,14 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
                 .setTitle(buttonInteraction.user.username + " Joined the Queue!")
                 .setDescription("Click the green button to join the queue!\n\n" +
                     "Current Queue: " + ballchasers.length + "/6\n" + ballChaserNames.join("\n"));
+            
 
-            await buttonInteraction.update({ embeds: [embed], components: [row1] });
+            getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
+                if (queueChannel) {
+                    queueChannel.messages.delete(buttonInteraction.message.id);
+                    queueChannel.send({ embeds: [embed], components: [row1] });
+                }
+            });
             break;
         }
 
@@ -144,7 +154,13 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
                     .setDescription("Click the green button to join the queue!\n\n" +
                         "Current Queue: " + ballchasers.length + "/6\n" + ballChaserNames.join("\n"));
 
-                await buttonInteraction.update({ embeds: [embed], components: [row1] });
+
+                getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
+                    if (queueChannel) {
+                        queueChannel.messages.delete(buttonInteraction.message.id);
+                        queueChannel.send({ embeds: [embed], components: [row1] });
+                    }
+                });
             }
             break;
         }
