@@ -60,7 +60,7 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
 
     switch (buttonInteraction.customId) {
         case "joinQueue": {
-            
+
             let queueMember: BallChaser | null;
             queueMember = await QueueRepository.getBallChaserInQueue(buttonInteraction.user.toString());
 
@@ -79,7 +79,7 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
 
                 await QueueRepository.addBallChaserToQueue(player);
 
-            }else if (queueMember == null && leaderboardMember != null) {
+            } else if (queueMember == null && leaderboardMember != null) {
                 const player: BallChaser = {
                     id: buttonInteraction.user.toString(),
                     mmr: leaderboardMember.mmr,
@@ -114,14 +114,13 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
                 .setTitle(buttonInteraction.user.username + " Joined the Queue!")
                 .setDescription("Click the green button to join the queue!\n\n" +
                     "Current Queue: " + ballchasers.length + "/6\n" + ballChaserNames.join("\n"));
-            
 
             getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
                 if (queueChannel) {
                     queueChannel.messages.delete(buttonInteraction.message.id);
-                    queueChannel.send({ embeds: [embed], components: [row1] });
                 }
             });
+            buttonInteraction.editReply({ embeds: [embed], components: [row1] });
             break;
         }
 
@@ -154,13 +153,41 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
                     .setDescription("Click the green button to join the queue!\n\n" +
                         "Current Queue: " + ballchasers.length + "/6\n" + ballChaserNames.join("\n"));
 
+                getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
+                    if (queueChannel) {
+                        queueChannel.messages.delete(buttonInteraction.message.id);
+                    }
+                });
+                buttonInteraction.editReply({ embeds: [embed], components: [row1] });
+
+            } else {
+                let ballchasers = await QueueRepository.getAllBallChasersInQueue();
+                let ballChaserNames = ballchasers.map(function (a) { return a.name; });
+
+                const row1 = new MessageActionRow()
+                    .addComponents(
+                        new MessageButton()
+                            .setCustomId("joinQueue")
+                            .setLabel("Join")
+                            .setStyle("SUCCESS"),
+                        new MessageButton()
+                            .setCustomId("leaveQueue")
+                            .setLabel("Leave")
+                            .setStyle("DANGER"),
+                    );
+
+                const embed = new MessageEmbed()
+                    .setColor("#ed4245") // <- This is red
+                    .setTitle(buttonInteraction.user.username + " Left the Queue!")
+                    .setDescription("Click the green button to join the queue!\n\n" +
+                        "Current Queue: " + ballchasers.length + "/6\n" + ballChaserNames.join("\n"));
 
                 getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
                     if (queueChannel) {
                         queueChannel.messages.delete(buttonInteraction.message.id);
-                        queueChannel.send({ embeds: [embed], components: [row1] });
                     }
                 });
+                buttonInteraction.editReply({ embeds: [embed], components: [row1] });
             }
             break;
         }
