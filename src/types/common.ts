@@ -13,5 +13,3 @@ export interface BallChaser {
   team: Readonly<Team | null>;
   queueTime: Readonly<DateTime | null>;
 }
-
-export const normIconURL = "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";

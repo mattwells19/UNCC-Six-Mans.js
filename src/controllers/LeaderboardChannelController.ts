@@ -1,10 +1,10 @@
 import { MessageEmbed, TextChannel } from "discord.js";
 import { LeaderboardToString } from "../services/LeaderboardService";
 import deleteAllMessagesInTextChannel from "../utils/deleteAllMessagesInTextChannel";
-import { normIconURL } from "../types/common";
 
 export async function updateLeaderboardChannel(leaderboardChannel: TextChannel): Promise<void> {
   const leaderboardContent = await LeaderboardToString();
+  const normIconURL = "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";
 
   await deleteAllMessagesInTextChannel(leaderboardChannel);
 
