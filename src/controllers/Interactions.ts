@@ -55,8 +55,7 @@ export async function buttonEmbeds(queueChannel: TextChannel): Promise<void> {
 NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
 
     if (!buttonInteraction.isButton()) return;
-    buttonInteraction.deferReply();
-    console.log(buttonInteraction);
+    await buttonInteraction.deferReply();
 
     switch (buttonInteraction.customId) {
         case "joinQueue": {
