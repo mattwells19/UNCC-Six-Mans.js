@@ -1,9 +1,9 @@
-/* eslint-disable max-len */
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { BallChaser } from "../../types/common";
 
 export default class MessageBuilder {
   
+  // eslint-disable-next-line max-len
   static readonly normIconURL = "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";
 
   static readonly queueButtons = new MessageActionRow()
@@ -53,12 +53,12 @@ export default class MessageBuilder {
     return embeds;
   }
 
-  static activeQueueMessage( ballchasers : Readonly<BallChaser>[] ) : MessageEmbed {
+  static activeQueueMessage( ballchasers : ReadonlyArray<Readonly<BallChaser>> ) : MessageEmbed {
     
     const ballChaserNames = ballchasers.map(function (a) { return a.name; }).join("\n");
 
     const embed = new MessageEmbed()
-      .setColor("#3ba55c") // <- This is green
+      .setColor("GREEN")
       .setTitle("Current Queue")
       .setThumbnail(this.normIconURL)
       .setDescription("Click the green button to join the queue!\n\n" +
@@ -67,7 +67,7 @@ export default class MessageBuilder {
     return embed;
   }
 
-  static fullQueueMessage( ballchasers : Readonly<BallChaser>[] ) : MessageEmbed {
+  static fullQueueMessage( ballchasers : ReadonlyArray<Readonly<BallChaser>> ) : MessageEmbed {
     const ballChaserNames = ballchasers.map(function (a) { return a.name; }).join("\n");
 
     const embed = new MessageEmbed()
@@ -80,7 +80,7 @@ export default class MessageBuilder {
     return embed;
   }
 
-  static activeMatchMessage( ballchasers : Readonly<BallChaser>[] ) : MessageEmbed {
+  static activeMatchMessage( ballchasers : ReadonlyArray<Readonly<BallChaser>> ) : MessageEmbed {
     const ballChaserNames = ballchasers.map(function (a) { return a.name; }).join("\n");
 
     const embed = new MessageEmbed()
@@ -96,7 +96,7 @@ export default class MessageBuilder {
   static emptyQueueMessage() : MessageEmbed {
 
     const embed = new MessageEmbed()
-      .setColor("#3ba55c") // <- This is green
+      .setColor("GREEN")
       .setTitle("Queue is Empty")
       .setThumbnail(this.normIconURL)
       .setDescription("Click the green button to join the queue!");
