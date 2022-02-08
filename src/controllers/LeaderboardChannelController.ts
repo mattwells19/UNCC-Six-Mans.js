@@ -9,11 +9,13 @@ export async function updateLeaderboardChannel(leaderboardChannel: TextChannel):
 
   const embeds = leaderboardContent.map((content, index) => {
     const embedCtr = leaderboardContent.length > 1 ? `(${index + 1}/${leaderboardContent.length})` : "";
+    const normIconURL = "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";
 
     return new MessageEmbed()
       .setColor("BLUE")
       .setTitle(`UNCC 6 Mans | Leaderboard ${embedCtr}`.trim())
-      .setDescription("```" + content + "```");
+      .setDescription("```" + content + "```")
+      .setThumbnail(normIconURL);
   });
 
   await leaderboardChannel.send({ embeds });
