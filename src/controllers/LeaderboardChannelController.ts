@@ -4,6 +4,7 @@ import deleteAllMessagesInTextChannel from "../utils/deleteAllMessagesInTextChan
 
 export async function updateLeaderboardChannel(leaderboardChannel: TextChannel): Promise<void> {
   const leaderboardContent = await LeaderboardToString();
+  const normIconURL = "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";
 
   await deleteAllMessagesInTextChannel(leaderboardChannel);
 
@@ -13,7 +14,8 @@ export async function updateLeaderboardChannel(leaderboardChannel: TextChannel):
     return new MessageEmbed()
       .setColor("BLUE")
       .setTitle(`UNCC 6 Mans | Leaderboard ${embedCtr}`.trim())
-      .setDescription("```" + content + "```");
+      .setDescription("```" + content + "```")
+      .setThumbnail(normIconURL);
   });
 
   await leaderboardChannel.send({ embeds });
