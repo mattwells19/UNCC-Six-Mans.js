@@ -113,6 +113,39 @@ export class QueueRepository {
   }
 
   /**
+   * Function for updating an existing BallChaser in the queue.
+   * @param options BallChaser fields to update. ID field is required for retrieving the BallChaser object to update.
+   */
+  async updateAllBallChasers(ballChasers: BallChaser[]): Promise<void> {
+    for(const ballChaser of ballChasers) {
+      const ballChaserPage = await this.#Client.getById(ballChaser.id);
+
+      if (!ballChaserPage) {
+        throw new Error(`Cannot update BallChaser. No BallChaser with the ID ${ballChaser.id} was found.`);
+      }
+  
+      const existingBallChaserProps = ballChaserPage.properties;
+      const propertiesUpdate: BallChaserPageProperties = {
+        ID: NotionElementHelper.notionTextElementFromText(ballChaser.id),
+        MMR: options.mmr ? NotionElementHelper.notionNumberElementFromNumber(options.mmr) : existingBallChaserProps.MMR,
+        Name: options.name ? NotionElementHelper.notionTextElementFromText(options.name) : existingBallChaserProps.Name,
+        QueueTime: options.queueTime
+          ? NotionElementHelper.notionDateElementFromDateTime(options.queueTime)
+          : existingBallChaserProps.QueueTime,
+        Team: options.team
+          ? NotionElementHelper.notionSelectElementFromValue<Team>(options.team)
+          : existingBallChaserProps.Team,
+        isCap:
+            options.isCap !== undefined
+              ? NotionElementHelper.notionBooleanElementFromBool(options.isCap)
+              : existingBallChaserProps.isCap,
+      };
+    
+      await this.#Client.update(ballChaserPage.id, propertiesUpdate);
+    }
+  }
+
+  /**
    * Adds a new BallChaser to the queue.
    * @param ballChaserToAdd New BallChaser object to add to the queue.
    */

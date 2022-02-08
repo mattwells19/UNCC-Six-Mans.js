@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable prefer-const */
 /* eslint-disable sort-keys */
 import { Client, Interaction, TextChannel } from "discord.js";
@@ -9,6 +10,7 @@ import { BallChaser } from "../types/common";
 import getDiscordChannelById from "../utils/getDiscordChannelById";
 import getEnvVariable from "../utils/getEnvVariable";
 import MessageBuilder from "../repositories/helpers/MessageBuilder";
+import { createMatch } from "../controllers/CreateMatchController";
 
 const NormClient = new Client({ intents: "GUILDS" });
 const queueChannelId = getEnvVariable("queue_channel_id");
@@ -19,13 +21,13 @@ export async function buttonEmbeds(queueChannel: TextChannel): Promise<void> {
   let ballchasers = await QueueRepository.getAllBallChasersInQueue();
   if (ballchasers == null) {
 
-    await queueChannel.send({ embeds: [MessageBuilder.emptyQueueMessage()], components: [MessageBuilder.buttons] });
+    await queueChannel.send({ embeds: [MessageBuilder.emptyQueueMessage()], components: [MessageBuilder.queueButtons] });
 
   } else {
 
     await queueChannel.send({ 
       embeds: [MessageBuilder.activeQueueMessage(ballchasers)],
-      components: [MessageBuilder.buttons]
+      components: [MessageBuilder.queueButtons]
     });
   }
 }
@@ -76,11 +78,18 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
           queueChannel.messages.delete(buttonInteraction.message.id);
         }
       });
-
-      buttonInteraction.editReply({ 
-        embeds: [MessageBuilder.activeQueueMessage(ballchasers)],
-        components: [MessageBuilder.buttons]
-      });
+      
+      if (ballchasers.length == 6) {
+        buttonInteraction.editReply({ 
+          embeds: [MessageBuilder.fullQueueMessage(ballchasers)],
+          components: [MessageBuilder.queueFullButtons]
+        });
+      } else {
+        buttonInteraction.editReply({ 
+          embeds: [MessageBuilder.activeQueueMessage(ballchasers)],
+          components: [MessageBuilder.queueButtons]
+        });
+      }
       break;
     }
 
@@ -100,7 +109,7 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
 
         buttonInteraction.editReply({ 
           embeds: [MessageBuilder.activeQueueMessage(remainingMembers)],
-          components: [MessageBuilder.buttons]
+          components: [MessageBuilder.queueButtons]
         });
 
       } else {
@@ -114,9 +123,28 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
 
         buttonInteraction.editReply({
           embeds: [MessageBuilder.activeQueueMessage(ballchasers)],
-          components: [MessageBuilder.buttons]
+          components: [MessageBuilder.queueButtons]
         });
       }
+      break;
+    }
+
+    case "randomizeTeams":{
+      let ballchasers = await QueueRepository.getAllBallChasersInQueue();
+
+      createMatch(ballchasers);
+
+      getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
+        if (queueChannel) {
+          queueChannel.messages.delete(buttonInteraction.message.id);
+        }
+      });
+
+      buttonInteraction.editReply({
+        embeds: [MessageBuilder.activeMatchMessage(ballchasers)],
+        components: [MessageBuilder.activeMatchButtons]
+      });
+
       break;
     }
   }
