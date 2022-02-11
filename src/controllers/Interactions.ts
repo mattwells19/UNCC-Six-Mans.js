@@ -6,7 +6,9 @@ import { BallChaser } from "../types/common";
 import getDiscordChannelById from "../utils/getDiscordChannelById";
 import getEnvVariable from "../utils/getEnvVariable";
 import MessageBuilder from "../repositories/helpers/MessageBuilder";
-import { createMatch } from "../controllers/CreateMatchController";
+import { createMatch } from "./MatchController";
+import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
+import { Guid } from "guid-typescript";
 
 const NormClient = new Client({ intents: "GUILDS" });
 const queueChannelId = getEnvVariable("queue_channel_id");
@@ -15,16 +17,18 @@ const queueChannelId = getEnvVariable("queue_channel_id");
 export async function buttonEmbeds(queueChannel: TextChannel): Promise<void> {
   
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
+  await ActiveMatchRepository.removeAllPlayersInActiveMatch("<@929967919763439656>");
+
   if (ballchasers == null) {
 
     await queueChannel.send({ 
-      components: [MessageBuilder.queueButtons],
+      components: [MessageBuilder.queueButtons()],
       embeds: [MessageBuilder.emptyQueueMessage()] });
 
-  } else {
+  }else {
 
     await queueChannel.send({ 
-      components: [MessageBuilder.queueButtons],
+      components: [MessageBuilder.queueButtons()],
       embeds: [MessageBuilder.activeQueueMessage(ballchasers)] });
   }
 }
@@ -62,12 +66,12 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
       
       if (ballchasers.length == 6) {
         await buttonInteraction.editReply({ 
-          components: [MessageBuilder.queueFullButtons],
+          components: [MessageBuilder.queueFullButtons()],
           embeds: [MessageBuilder.fullQueueMessage(ballchasers)]
         });
       } else {
         await buttonInteraction.editReply({ 
-          components: [MessageBuilder.queueButtons],
+          components: [MessageBuilder.queueButtons()],
           embeds: [MessageBuilder.activeQueueMessage(ballchasers)]
         });
       }
@@ -88,7 +92,7 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
         });
 
         await buttonInteraction.editReply({ 
-          components: [MessageBuilder.queueButtons],
+          components: [MessageBuilder.queueButtons()],
           embeds: [MessageBuilder.activeQueueMessage(remainingMembers)] });
 
       } else {
@@ -101,7 +105,7 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
         });
 
         await buttonInteraction.editReply({
-          components: [MessageBuilder.queueButtons],
+          components: [MessageBuilder.queueButtons()],
           embeds: [MessageBuilder.activeQueueMessage(ballchasers)] });
       }
       break;
@@ -110,7 +114,7 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
     case "randomizeTeams":{
       const ballchasers = await QueueRepository.getAllBallChasersInQueue();
 
-      createMatch(ballchasers);
+      await createMatch(ballchasers as BallChaser[]);
 
       getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
         if (queueChannel) {
@@ -118,12 +122,82 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
         }
       });
 
+      await QueueRepository.removeAllBallChasersFromQueue();
+
+      //Edit the reply to start a match.
       await buttonInteraction.editReply({
-        components: [MessageBuilder.activeMatchButtons],
+        components: [MessageBuilder.activeMatchButtons()],
         embeds: [MessageBuilder.activeMatchMessage(ballchasers)]
       });
 
+      //Create a new message to restart a new availability of queue
+      /*       await getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
+        if (queueChannel) {
+          queueChannel.send({ 
+            components: [MessageBuilder.queueButtons()],
+            embeds: [MessageBuilder.activeQueueMessage(ballchasers)] });
+        }
+      }); */
+
       break;
+    }
+
+    case "createFullTeam":{
+
+      const randName = [
+        "Gamer 1",
+        "Gamer 2",
+        "Gamer 3",
+        "Gamer 4",
+        "Gamer 5",
+        "Gamer 6"
+      ];
+
+      const ballchasers = await QueueRepository.getAllBallChasersInQueue();
+      const numPlayersToFill = 6-ballchasers.length;
+
+      for (let i = 0; i < numPlayersToFill; i++) {
+        const player: BallChaser = {
+          id: Guid.create().toString(),
+          isCap: false,
+          mmr: Math.floor(Math.random() * (300 - 0 + 1)) + 0,
+          name: randName[i],
+          queueTime: DateTime.now(),
+          team: null
+        };
+        await QueueRepository.addBallChaserToQueue(player);
+      }
+
+      const updatedBallchasers = await QueueRepository.getAllBallChasersInQueue();
+
+      await buttonInteraction.editReply({ 
+        components: [MessageBuilder.queueFullButtons()],
+        embeds: [MessageBuilder.fullQueueMessage(updatedBallchasers)]
+      });
+
+      break;
+    }
+
+    case "removeAll":{
+      await QueueRepository.removeAllBallChasersFromQueue();
+
+      await buttonInteraction.editReply({ 
+        components: [MessageBuilder.queueButtons()],
+        embeds: [MessageBuilder.emptyQueueMessage()]
+      });
+
+      break;
+    }
+
+    case "breakMatch":{
+      await ActiveMatchRepository.removeAllPlayersInActiveMatch("<@929967919763439656>");
+
+      await buttonInteraction.editReply({ 
+        components: [MessageBuilder.queueButtons()],
+        embeds: [MessageBuilder.emptyQueueMessage()]
+      });
+      
+      break; 
     }
   }
 });

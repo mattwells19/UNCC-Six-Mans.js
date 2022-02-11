@@ -127,18 +127,20 @@ export class QueueRepository {
       const existingBallChaserProps = ballChaserPage.properties;
       const propertiesUpdate: BallChaserPageProperties = {
         ID: NotionElementHelper.notionTextElementFromText(ballChaser.id),
-        MMR: options.mmr ? NotionElementHelper.notionNumberElementFromNumber(options.mmr) : existingBallChaserProps.MMR,
-        Name: options.name ? NotionElementHelper.notionTextElementFromText(options.name) : existingBallChaserProps.Name,
-        QueueTime: options.queueTime
-          ? NotionElementHelper.notionDateElementFromDateTime(options.queueTime)
+        MMR: ballChaser.mmr ? NotionElementHelper.notionNumberElementFromNumber(ballChaser.mmr) :
+          existingBallChaserProps.MMR,
+        Name: ballChaser.name ? NotionElementHelper.notionTextElementFromText(ballChaser.name) : 
+          existingBallChaserProps.Name,
+        QueueTime: ballChaser.queueTime
+          ? NotionElementHelper.notionDateElementFromDateTime(ballChaser.queueTime)
           : existingBallChaserProps.QueueTime,
-        Team: options.team
-          ? NotionElementHelper.notionSelectElementFromValue<Team>(options.team)
+        Team: ballChaser.team
+          ? NotionElementHelper.notionSelectElementFromValue<Team>(ballChaser.team)
           : existingBallChaserProps.Team,
         isCap:
-            options.isCap !== undefined
-              ? NotionElementHelper.notionBooleanElementFromBool(options.isCap)
-              : existingBallChaserProps.isCap,
+        ballChaser.isCap !== undefined
+          ? NotionElementHelper.notionBooleanElementFromBool(ballChaser.isCap)
+          : existingBallChaserProps.isCap,
       };
     
       await this.#Client.update(ballChaserPage.id, propertiesUpdate);
