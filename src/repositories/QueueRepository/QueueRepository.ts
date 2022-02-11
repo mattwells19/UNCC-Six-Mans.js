@@ -155,9 +155,7 @@ export class QueueRepository {
     const ballChaserAlreadyInQueue = await this.getBallChaserInQueue(ballChaserToAdd.id);
 
     if (ballChaserAlreadyInQueue) {
-      return;
-      //throw new Error(`BallChaser with the ID ${ballChaserToAdd.id} is already in the queue.`);
-      //commented out because Norm stops completely once this error is thrown.
+      throw new Error(`BallChaser with the ID ${ballChaserToAdd.id} is already in the queue.`);
     }
 
     const newBallChaserProperties: BallChaserPageProperties = {

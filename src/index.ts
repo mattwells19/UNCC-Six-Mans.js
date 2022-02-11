@@ -1,4 +1,4 @@
-import { Client, Collection } from "discord.js";
+import { Client } from "discord.js";
 import { updateLeaderboardChannel } from "./controllers/LeaderboardChannelController";
 import { buttonEmbeds } from "./controllers/Interactions";
 import getDiscordChannelById from "./utils/getDiscordChannelById";
