@@ -17,15 +17,13 @@ const queueChannelId = getEnvVariable("queue_channel_id");
 export async function buttonEmbeds(queueChannel: TextChannel): Promise<void> {
   
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
-  await ActiveMatchRepository.removeAllPlayersInActiveMatch("<@929967919763439656>");
-
   if (ballchasers == null) {
 
     await queueChannel.send({ 
       components: [MessageBuilder.queueButtons()],
       embeds: [MessageBuilder.emptyQueueMessage()] });
 
-  }else {
+  } else {
 
     await queueChannel.send({ 
       components: [MessageBuilder.queueButtons()],
