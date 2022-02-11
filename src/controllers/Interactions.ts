@@ -6,7 +6,7 @@ import { BallChaser } from "../types/common";
 import getDiscordChannelById from "../utils/getDiscordChannelById";
 import getEnvVariable from "../utils/getEnvVariable";
 import MessageBuilder from "../repositories/helpers/MessageBuilder";
-import { createMatch } from "./MatchController";
+import { createRandomMatch } from "./MatchController";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import { Guid } from "guid-typescript";
 
@@ -114,7 +114,7 @@ NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
     case "randomizeTeams":{
       const ballchasers = await QueueRepository.getAllBallChasersInQueue();
 
-      await createMatch(ballchasers as BallChaser[]);
+      await createRandomMatch(ballchasers as BallChaser[]);
 
       getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
         if (queueChannel) {
