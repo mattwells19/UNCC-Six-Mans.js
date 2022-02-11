@@ -1,5 +1,5 @@
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
-import { BallChaser } from "../../types/common";
+import { BallChaser } from "../types/common";
 
 export default class MessageBuilder {
   
@@ -33,28 +33,27 @@ export default class MessageBuilder {
     return embeds;
   }
 
-  static activeQueueMessage( ballchasers : ReadonlyArray<Readonly<BallChaser>> ) : MessageEmbed {
+  static queueMessage( ballchasers : ReadonlyArray<Readonly<BallChaser>> ) : MessageEmbed {
     
-    const ballChaserNames = ballchasers.map(function (a) { return a.name; }).join("\n");
+    let embed : MessageEmbed;
 
-    const embed = new MessageEmbed()
-      .setColor("GREEN")
-      .setTitle("Current Queue")
-      .setThumbnail(this.normIconURL)
-      .setDescription("Click the green button to join the queue!\n\n" +
-                "Current Queue: " + ballchasers.length + "/6\n" + ballChaserNames);
+    if(ballchasers == null){
+      embed = new MessageEmbed()
+        .setColor("GREEN")
+        .setTitle("Queue is Empty")
+        .setThumbnail(this.normIconURL)
+        .setDescription("Click the green button to join the queue!");
+    } else{
+      const ballChaserNames = ballchasers.map((ballChaser) => ballChaser.name).join("\n");
 
-    return embed;
-  }
+      embed = new MessageEmbed()
+        .setColor("GREEN")
+        .setTitle("Current Queue")
+        .setThumbnail(this.normIconURL)
+        .setDescription("Click the green button to join the queue!\n\n" +
+                  "Current Queue: " + ballchasers.length + "/6\n" + ballChaserNames);
+    }
 
-  static emptyQueueMessage() : MessageEmbed {
-
-    const embed = new MessageEmbed()
-      .setColor("GREEN")
-      .setTitle("Queue is Empty")
-      .setThumbnail(this.normIconURL)
-      .setDescription("Click the green button to join the queue!");
-    
     return embed;
   }
 }

@@ -59,7 +59,7 @@ export class QueueRepository {
    * Removes the BallChaser from the queue with the specified ID
    * @param id Discord ID of the BallChaser to remove from the queue
    */
-  async removeBallChaserFromQueue(id: string): Promise<ReadonlyArray<Readonly<BallChaser>>> {
+  async removeBallChaserFromQueue(id: string): Promise<void> {
     const ballChaserPage = await this.#Client.getById(id);
 
     if (!ballChaserPage) {
@@ -67,8 +67,6 @@ export class QueueRepository {
     }
 
     await this.#Client.remove(ballChaserPage.id);
-
-    return this.getAllBallChasersInQueue();
   }
 
   /**
