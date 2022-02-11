@@ -1,6 +1,6 @@
-import { Client } from "discord.js";
+import { Client, Interaction } from "discord.js";
 import { updateLeaderboardChannel } from "./controllers/LeaderboardChannelController";
-import { buttonEmbeds } from "./controllers/Interactions";
+import { getCurrentQueue, onInteraction } from "./controllers/Interactions";
 import getDiscordChannelById from "./utils/getDiscordChannelById";
 import getEnvVariable from "./utils/getEnvVariable";
 
@@ -22,8 +22,17 @@ NormClient.on("ready", () => {
 
   getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
     if (queueChannel) {
-      buttonEmbeds(queueChannel);
+      getCurrentQueue(queueChannel);
     }
+  });
+
+  NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
+
+    getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
+      if (queueChannel) {
+        onInteraction(buttonInteraction, queueChannel);
+      }
+    });
   });
 });
 
