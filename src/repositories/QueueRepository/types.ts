@@ -1,6 +1,7 @@
+import { BallChaser, Queue } from "@prisma/client";
 import { DateTime } from "luxon";
 import { Team } from "../../types/common";
-import { BallChaser } from "../../types/common";
+
 export interface UpdateBallChaserOptions {
   id: number;
   isCap?: boolean;
@@ -8,9 +9,11 @@ export interface UpdateBallChaserOptions {
   queueTime?: DateTime;
 }
 
-export type PlayerInQueueResponse = Omit<BallChaser, "mmr"> & {
-  mmr: number | null;
-};
+export type PlayerInQueueResponse = BallChaser &
+  Omit<Queue, "playerId" | "queueTime"> & {
+    mmr: number | null;
+    queueTime: DateTime;
+  };
 
 export interface AddBallChaserToQueueInput {
   id: number;

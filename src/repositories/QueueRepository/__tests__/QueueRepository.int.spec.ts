@@ -1,13 +1,15 @@
 import * as faker from "faker";
 import { PlayerInQueueResponse } from "../types";
-import { BallChaser } from "../../../types/common";
 import QueueRepository from "../QueueRepository";
-import { BallChaserBuilder } from "../../../../.jest/Builder";
+import { BallChaserQueueBuilder } from "../../../../.jest/Builder";
 import { PrismaClient } from "@prisma/client";
 import { DateTime } from "luxon";
 import getEnvVariable from "../../../utils/getEnvVariable";
 
-function verifyBallChasersAreEqual(expectedBallChaser: BallChaser, actualBallChaser: PlayerInQueueResponse): void {
+function verifyBallChasersAreEqual(
+  expectedBallChaser: PlayerInQueueResponse,
+  actualBallChaser: PlayerInQueueResponse
+): void {
   expect(actualBallChaser).not.toBeNull();
   expect(actualBallChaser?.id).toBe(expectedBallChaser.id);
   expect(actualBallChaser?.mmr).toBe(expectedBallChaser.mmr);
@@ -32,12 +34,14 @@ beforeAll(async () => {
   prisma = new PrismaClient();
   await prisma.$connect();
   await prisma.leaderboard.deleteMany();
+  await prisma.activeMatch.deleteMany();
   await prisma.queue.deleteMany();
   await prisma.ballChaser.deleteMany();
 });
 
 afterEach(async () => {
   await prisma.leaderboard.deleteMany();
+  await prisma.activeMatch.deleteMany();
   await prisma.queue.deleteMany();
   await prisma.ballChaser.deleteMany();
 });
@@ -46,7 +50,7 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
-async function manuallyAddBallChaserToQueue(ballChaser: BallChaser) {
+async function manuallyAddBallChaserToQueue(ballChaser: PlayerInQueueResponse) {
   await prisma.ballChaser.create({
     data: {
       id: ballChaser.id,
@@ -60,7 +64,7 @@ async function manuallyAddBallChaserToQueue(ballChaser: BallChaser) {
       },
       rank: {
         create: {
-          mmr: ballChaser.mmr,
+          mmr: ballChaser.mmr ?? 100,
           seasonSemester,
           seasonYear,
         },
@@ -71,7 +75,7 @@ async function manuallyAddBallChaserToQueue(ballChaser: BallChaser) {
 
 describe("Queue Repository tests", () => {
   it("gets BallChaser using ID when BallChaser exists", async () => {
-    const expectedBallChaser = BallChaserBuilder.single();
+    const expectedBallChaser = BallChaserQueueBuilder.single();
     await manuallyAddBallChaserToQueue(expectedBallChaser);
 
     const actualBallChaser = await QueueRepository.getBallChaserInQueue(expectedBallChaser.id);
@@ -81,7 +85,7 @@ describe("Queue Repository tests", () => {
   });
 
   it("gets BallChaser from queue when they exist and is not on the Leaderboard", async () => {
-    const expectedBallChaser = BallChaserBuilder.single();
+    const expectedBallChaser = BallChaserQueueBuilder.single();
 
     await prisma.ballChaser.create({
       data: {
@@ -110,7 +114,7 @@ describe("Queue Repository tests", () => {
   });
 
   it("retrieves all BallChasers in queue", async () => {
-    const expectedBallChasers = BallChaserBuilder.many(2).sort(
+    const expectedBallChasers = BallChaserQueueBuilder.many(2).sort(
       (a, b) => a.queueTime.toMillis() - b.queueTime.toMillis()
     );
 
@@ -125,7 +129,7 @@ describe("Queue Repository tests", () => {
   });
 
   it("removes BallChaser when found in queue", async () => {
-    const mockBallChaser = BallChaserBuilder.single();
+    const mockBallChaser = BallChaserQueueBuilder.single();
     await manuallyAddBallChaserToQueue(mockBallChaser);
 
     await expect(QueueRepository.removeBallChaserFromQueue(mockBallChaser.id)).resolves.not.toThrowError();
@@ -138,9 +142,9 @@ describe("Queue Repository tests", () => {
   });
 
   it("removes all BallChasers in queue", async () => {
-    const expectedBallChaser1 = BallChaserBuilder.single();
+    const expectedBallChaser1 = BallChaserQueueBuilder.single();
     await manuallyAddBallChaserToQueue(expectedBallChaser1);
-    const expectedBallChaser2 = BallChaserBuilder.single();
+    const expectedBallChaser2 = BallChaserQueueBuilder.single();
     await manuallyAddBallChaserToQueue(expectedBallChaser2);
 
     await expect(QueueRepository.removeAllBallChasersFromQueue()).resolves.not.toThrowError();
@@ -149,9 +153,9 @@ describe("Queue Repository tests", () => {
   });
 
   it("updates BallChaser when BallChaser is found", async () => {
-    const mockBallChaser = BallChaserBuilder.single();
+    const mockBallChaser = BallChaserQueueBuilder.single();
     await manuallyAddBallChaserToQueue(mockBallChaser);
-    const updatedBallChaser = BallChaserBuilder.single({ id: mockBallChaser.id });
+    const updatedBallChaser = BallChaserQueueBuilder.single({ id: mockBallChaser.id });
 
     await QueueRepository.updateBallChaserInQueue({
       id: mockBallChaser.id,
@@ -185,7 +189,7 @@ describe("Queue Repository tests", () => {
   });
 
   it("adds BallChaser to queue", async () => {
-    const mockBallChaser = BallChaserBuilder.single();
+    const mockBallChaser = BallChaserQueueBuilder.single();
 
     await QueueRepository.addBallChaserToQueue({
       id: mockBallChaser.id,

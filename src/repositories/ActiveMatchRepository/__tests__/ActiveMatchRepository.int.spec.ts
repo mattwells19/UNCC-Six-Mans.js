@@ -1,9 +1,9 @@
 import * as faker from "faker";
-import { ActiveMatchBuilder, BallChaserBuilder } from "../../../../.jest/Builder";
+import { ActiveMatchBuilder, BallChaserQueueBuilder } from "../../../../.jest/Builder";
 import ActiveMatchRepository from "../ActiveMatchRepository";
 import { PlayerInActiveMatch } from "../types";
-import { BallChaser, Team } from "../../../types/common";
-import { PrismaClient } from "@prisma/client";
+import { Team } from "../../../types/common";
+import { BallChaser, PrismaClient } from "@prisma/client";
 
 let prisma: PrismaClient;
 
@@ -14,12 +14,16 @@ beforeEach(async () => {
 beforeAll(async () => {
   prisma = new PrismaClient();
   await prisma.$connect();
+  await prisma.leaderboard.deleteMany();
   await prisma.activeMatch.deleteMany();
+  await prisma.queue.deleteMany();
   await prisma.ballChaser.deleteMany();
 });
 
 afterEach(async () => {
+  await prisma.leaderboard.deleteMany();
   await prisma.activeMatch.deleteMany();
+  await prisma.queue.deleteMany();
   await prisma.ballChaser.deleteMany();
 });
 
@@ -52,9 +56,7 @@ async function manuallyAddActiveMatch(activeMatch: PlayerInActiveMatch | Array<P
   await Promise.all(promises);
 }
 
-async function manuallyAddBallChaser(
-  ballChaser: Pick<BallChaser, "id" | "name"> | Array<Pick<BallChaser, "id" | "name">>
-) {
+async function manuallyAddBallChaser(ballChaser: BallChaser | Array<BallChaser>) {
   if (Array.isArray(ballChaser)) {
     await prisma.ballChaser.createMany({
       data: ballChaser.map((p) => ({
@@ -75,7 +77,7 @@ async function manuallyAddBallChaser(
 describe("ActiveMatchRepository Tests", () => {
   describe("Happy path tests", () => {
     it("can add an active match", async () => {
-      const mockBallChasers = BallChaserBuilder.many(6);
+      const mockBallChasers = BallChaserQueueBuilder.many(6);
       await manuallyAddBallChaser(mockBallChasers);
 
       await ActiveMatchRepository.addActiveMatch(mockBallChasers.map((p) => ({ id: p.id, team: p.team! })));
@@ -110,7 +112,7 @@ describe("ActiveMatchRepository Tests", () => {
 
     it("throws when trying to remove a player not in an active match", async () => {
       await expect(
-        ActiveMatchRepository.removeAllPlayersInActiveMatch(BallChaserBuilder.single().id)
+        ActiveMatchRepository.removeAllPlayersInActiveMatch(BallChaserQueueBuilder.single().id)
       ).rejects.toThrowError();
     });
 
@@ -132,7 +134,7 @@ describe("ActiveMatchRepository Tests", () => {
     });
 
     it("returns an empty array when trying to retreive a player not in an active match", async () => {
-      const allPlayers = await ActiveMatchRepository.getAllPlayersInActiveMatch(BallChaserBuilder.single().id);
+      const allPlayers = await ActiveMatchRepository.getAllPlayersInActiveMatch(BallChaserQueueBuilder.single().id);
       expect(allPlayers).toHaveLength(0);
     });
 
@@ -176,13 +178,13 @@ describe("ActiveMatchRepository Tests", () => {
   describe("Exception handling tests", () => {
     it("throws if trying to add a ballchaser to an active match with no team", async () => {
       await expect(
-        ActiveMatchRepository.addActiveMatch([BallChaserBuilder.single({ team: null }) as any])
+        ActiveMatchRepository.addActiveMatch([BallChaserQueueBuilder.single({ team: null }) as any])
       ).rejects.toThrowError();
     });
 
     it("throws when trying to update a player not in an active match", async () => {
       await expect(
-        ActiveMatchRepository.updatePlayerInActiveMatch(BallChaserBuilder.single().id, {})
+        ActiveMatchRepository.updatePlayerInActiveMatch(BallChaserQueueBuilder.single().id, {})
       ).rejects.toThrowError();
     });
   });

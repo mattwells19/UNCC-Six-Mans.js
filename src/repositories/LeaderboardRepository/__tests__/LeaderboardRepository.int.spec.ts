@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { BallChaser, PrismaClient } from "@prisma/client";
 import * as faker from "faker";
 import { LeaderboardBuilder } from "../../../../.jest/Builder";
-import { BallChaser } from "../../../types/common";
 import getEnvVariable from "../../../utils/getEnvVariable";
 import LeaderboardRepository from "../LeaderboardRepository";
 import { PlayerStats } from "../types";
@@ -21,11 +20,15 @@ beforeAll(async () => {
   prisma = new PrismaClient();
   await prisma.$connect();
   await prisma.leaderboard.deleteMany();
+  await prisma.activeMatch.deleteMany();
+  await prisma.queue.deleteMany();
   await prisma.ballChaser.deleteMany();
 });
 
 afterEach(async () => {
   await prisma.leaderboard.deleteMany();
+  await prisma.activeMatch.deleteMany();
+  await prisma.queue.deleteMany();
   await prisma.ballChaser.deleteMany();
 });
 
@@ -71,7 +74,7 @@ async function manuallyAddPlayerStatsToLeaderboard(ballChaser: PlayerStats | Arr
   await Promise.all(promises);
 }
 
-async function manuallyAddBallChaser(ballChaser: Pick<BallChaser, "id" | "name">) {
+async function manuallyAddBallChaser(ballChaser: BallChaser) {
   await prisma.ballChaser.create({
     data: {
       id: ballChaser.id,

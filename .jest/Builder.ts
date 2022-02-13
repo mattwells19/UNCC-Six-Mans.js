@@ -1,8 +1,10 @@
-import { BallChaser, Team } from "../src/types/common";
+import { Team } from "../src/types/common";
 import * as faker from "faker";
 import { DateTime } from "luxon";
 import { PlayerInActiveMatch } from "../src/repositories/ActiveMatchRepository/types";
 import { PlayerStats } from "../src/repositories/LeaderboardRepository/types";
+import { BallChaser, Queue } from "@prisma/client";
+import { PlayerInQueueResponse } from "../src/repositories/QueueRepository/types";
 
 abstract class Builder<T> {
   abstract isEqual(a: T, b: T): boolean;
@@ -36,24 +38,24 @@ abstract class Builder<T> {
   }
 }
 
-class BallChaserBuilderClass extends Builder<BallChaser> {
-  isEqual(a: BallChaser, b: BallChaser) {
+class BallChaserQueueBuilderClass extends Builder<PlayerInQueueResponse> {
+  isEqual(a: PlayerInQueueResponse, b: PlayerInQueueResponse) {
     return a.id === b.id;
   }
 
-  single(overrides?: Partial<BallChaser>) {
+  single(overrides?: Partial<PlayerInQueueResponse>) {
     return {
       id: faker.datatype.number(),
       isCap: faker.datatype.boolean(),
-      mmr: faker.datatype.number(),
       name: faker.random.word(),
+      mmr: 100,
       queueTime: DateTime.fromJSDate(faker.date.future()).set({ millisecond: 0, second: 0 }),
       team: faker.random.arrayElement([Team.Blue, Team.Orange]),
       ...overrides,
     };
   }
 }
-export const BallChaserBuilder = new BallChaserBuilderClass();
+export const BallChaserQueueBuilder = new BallChaserQueueBuilderClass();
 
 class ActiveMatchBuilderClass extends Builder<PlayerInActiveMatch> {
   isEqual(a: PlayerInActiveMatch, b: PlayerInActiveMatch): boolean {
@@ -61,7 +63,7 @@ class ActiveMatchBuilderClass extends Builder<PlayerInActiveMatch> {
   }
 
   single(overrides?: Partial<PlayerInActiveMatch>): PlayerInActiveMatch {
-    const mockBallChaser = BallChaserBuilder.single();
+    const mockBallChaser = BallChaserQueueBuilder.single();
     return {
       id: mockBallChaser.id,
       matchId: faker.datatype.uuid(),
@@ -79,7 +81,7 @@ class LeaderboardBuilderClass extends Builder<PlayerStats> {
   }
 
   single(overrides?: Partial<PlayerStats>): PlayerStats {
-    const mockBallChaser = BallChaserBuilder.single();
+    const mockBallChaser = BallChaserQueueBuilder.single();
 
     const wins = faker.datatype.number({ min: 0 });
     const losses = faker.datatype.number({ min: 0 });
