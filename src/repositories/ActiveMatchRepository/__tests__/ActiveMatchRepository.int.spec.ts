@@ -45,7 +45,7 @@ async function manuallyAddActiveMatch(activeMatch: PlayerInActiveMatch | Array<P
             create: {
               id: activeMatch.matchId,
               team: activeMatch.team,
-              reportedTeam: activeMatch.reported,
+              reportedTeam: activeMatch.reportedTeam,
             },
           },
         },
@@ -128,7 +128,7 @@ describe("ActiveMatchRepository Tests", () => {
         const expectedPlayer = mockPlayers.find((p) => p.id === player.id);
         expect(expectedPlayer).not.toBeNull();
         expect(player.matchId).toBe(mockMatchId);
-        expect(player.reported).toBe(expectedPlayer?.reported);
+        expect(player.reportedTeam).toBe(expectedPlayer?.reportedTeam);
         expect(player.team).toBe(expectedPlayer?.team);
       });
     });
@@ -149,7 +149,7 @@ describe("ActiveMatchRepository Tests", () => {
       const oneOfThePlayersIndex = mockPlayers.findIndex((mockPlayer) => mockPlayer.id === oneOfThePlayers.id);
 
       await ActiveMatchRepository.updatePlayerInActiveMatch(mockPlayers[oneOfThePlayersIndex].id, {
-        reported: reportedTeam,
+        reportedTeam: reportedTeam,
       });
 
       const actual = await prisma.activeMatch.findMany({
@@ -169,7 +169,7 @@ describe("ActiveMatchRepository Tests", () => {
         if (match.playerId === oneOfThePlayers.id) {
           expect(match.reportedTeam).toBe(reportedTeam);
         } else {
-          expect(match.reportedTeam).toBe(mockPlayerForEntry?.reported);
+          expect(match.reportedTeam).toBe(mockPlayerForEntry?.reportedTeam);
         }
       });
     });
@@ -184,7 +184,7 @@ describe("ActiveMatchRepository Tests", () => {
 
     it("throws when trying to update a player not in an active match", async () => {
       await expect(
-        ActiveMatchRepository.updatePlayerInActiveMatch(BallChaserQueueBuilder.single().id, {})
+        ActiveMatchRepository.updatePlayerInActiveMatch(BallChaserQueueBuilder.single().id, { reportedTeam: Team.Blue })
       ).rejects.toThrowError();
     });
   });

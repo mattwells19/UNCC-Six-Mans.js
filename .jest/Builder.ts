@@ -3,8 +3,7 @@ import * as faker from "faker";
 import { DateTime } from "luxon";
 import { PlayerInActiveMatch } from "../src/repositories/ActiveMatchRepository/types";
 import { PlayerStats } from "../src/repositories/LeaderboardRepository/types";
-import { BallChaser, Queue } from "@prisma/client";
-import { PlayerInQueueResponse } from "../src/repositories/QueueRepository/types";
+import { PlayerInQueue } from "../src/repositories/QueueRepository/types";
 
 abstract class Builder<T> {
   abstract isEqual(a: T, b: T): boolean;
@@ -38,12 +37,12 @@ abstract class Builder<T> {
   }
 }
 
-class BallChaserQueueBuilderClass extends Builder<PlayerInQueueResponse> {
-  isEqual(a: PlayerInQueueResponse, b: PlayerInQueueResponse) {
+class BallChaserQueueBuilderClass extends Builder<PlayerInQueue> {
+  isEqual(a: PlayerInQueue, b: PlayerInQueue) {
     return a.id === b.id;
   }
 
-  single(overrides?: Partial<PlayerInQueueResponse>) {
+  single(overrides?: Partial<PlayerInQueue>) {
     return {
       id: faker.datatype.number(),
       isCap: faker.datatype.boolean(),

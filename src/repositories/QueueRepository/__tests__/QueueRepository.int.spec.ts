@@ -1,15 +1,12 @@
 import * as faker from "faker";
-import { PlayerInQueueResponse } from "../types";
+import { PlayerInQueue } from "../types";
 import QueueRepository from "../QueueRepository";
 import { BallChaserQueueBuilder } from "../../../../.jest/Builder";
 import { PrismaClient } from "@prisma/client";
 import { DateTime } from "luxon";
 import getEnvVariable from "../../../utils/getEnvVariable";
 
-function verifyBallChasersAreEqual(
-  expectedBallChaser: PlayerInQueueResponse,
-  actualBallChaser: PlayerInQueueResponse
-): void {
+function verifyBallChasersAreEqual(expectedBallChaser: PlayerInQueue, actualBallChaser: PlayerInQueue): void {
   expect(actualBallChaser).not.toBeNull();
   expect(actualBallChaser?.id).toBe(expectedBallChaser.id);
   expect(actualBallChaser?.mmr).toBe(expectedBallChaser.mmr);
@@ -50,7 +47,7 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
-async function manuallyAddBallChaserToQueue(ballChaser: PlayerInQueueResponse) {
+async function manuallyAddBallChaserToQueue(ballChaser: PlayerInQueue) {
   await prisma.ballChaser.create({
     data: {
       id: ballChaser.id,

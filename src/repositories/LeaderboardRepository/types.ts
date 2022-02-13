@@ -1,3 +1,4 @@
+import { BallChaser, Leaderboard } from "@prisma/client";
 export interface PlayerStats {
   id: number;
   mmr: number;
@@ -8,10 +9,11 @@ export interface PlayerStats {
   winPerc: number;
 }
 
-export interface PlayerStatsUpdates {
+export interface UpdatePlayerStatsInput {
   id: number;
   mmr: number;
-  name: string;
-  wins: number;
-  losses: number;
+  wins?: number;
+  losses?: number;
 }
+
+export type LeaderboardWithBallChaser = Leaderboard & { player: BallChaser };

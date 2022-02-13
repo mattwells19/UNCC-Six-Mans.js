@@ -1,7 +1,7 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import generateRandomId from "../../utils/randomId";
-import { PlayerInActiveMatch } from "./types";
+import { NewActiveMatchInput, PlayerInActiveMatch, UpdatePlayerInActiveMatchInput } from "./types";
 
 export class ActiveMatchRepository {
   #ActiveMatch: Prisma.ActiveMatchDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
@@ -10,7 +10,7 @@ export class ActiveMatchRepository {
     this.#ActiveMatch = new PrismaClient().activeMatch;
   }
 
-  async addActiveMatch(newActiveMatchPlayers: Array<Pick<PlayerInActiveMatch, "id" | "team">>): Promise<void> {
+  async addActiveMatch(newActiveMatchPlayers: Array<NewActiveMatchInput>): Promise<void> {
     const notEveryoneHasATeam = newActiveMatchPlayers.some((player) => !Number.isInteger(player.team));
     if (notEveryoneHasATeam) {
       throw new Error("Not all players are assigned a team.");
@@ -27,14 +27,11 @@ export class ActiveMatchRepository {
     });
   }
 
-  async updatePlayerInActiveMatch(playerInMatchId: number, updates: Partial<PlayerInActiveMatch>): Promise<void> {
+  async updatePlayerInActiveMatch(playerInMatchId: number, updates: UpdatePlayerInActiveMatchInput): Promise<void> {
     await this.#ActiveMatch
       .update({
         data: {
-          id: updates.matchId,
-          playerId: updates.id,
-          reportedTeam: updates.reported,
-          team: updates.team,
+          reportedTeam: updates.reportedTeam,
         },
         where: {
           playerId: playerInMatchId,
@@ -96,7 +93,7 @@ export class ActiveMatchRepository {
     return allPlayersInMatch.map((playerInMatch) => ({
       id: playerInMatch.playerId,
       matchId: playerInMatch.id,
-      reported: playerInMatch.reportedTeam,
+      reportedTeam: playerInMatch.reportedTeam,
       team: playerInMatch.team,
     }));
   }

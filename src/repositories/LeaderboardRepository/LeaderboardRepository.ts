@@ -1,6 +1,6 @@
-import { BallChaser, Leaderboard, Prisma, PrismaClient } from "@prisma/client";
+import { Leaderboard, Prisma, PrismaClient } from "@prisma/client";
 import getEnvVariable from "../../utils/getEnvVariable";
-import { PlayerStats, PlayerStatsUpdates } from "./types";
+import { LeaderboardWithBallChaser, PlayerStats, UpdatePlayerStatsInput } from "./types";
 
 export class LeaderboardRepository {
   #Leaderboard: Prisma.LeaderboardDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
@@ -13,7 +13,7 @@ export class LeaderboardRepository {
     this.#seasonYear = getEnvVariable("season_year");
   }
 
-  #calculatePlayerStats(playerStats: Leaderboard & { player: BallChaser }): PlayerStats {
+  #calculatePlayerStats(playerStats: LeaderboardWithBallChaser): PlayerStats {
     return {
       id: playerStats.player.id,
       losses: playerStats.losses,
@@ -77,7 +77,7 @@ export class LeaderboardRepository {
    * otherwise it will add them.
    * @param playersUpdates An array of player stats to update the leaderboard with.
    */
-  async updatePlayersStats(playersUpdates: Array<PlayerStatsUpdates>): Promise<void> {
+  async updatePlayersStats(playersUpdates: Array<UpdatePlayerStatsInput>): Promise<void> {
     const promises: Array<Promise<Leaderboard>> = [];
     for (const playerUpdates of playersUpdates) {
       const leaderboardUpdate = this.#Leaderboard.upsert({

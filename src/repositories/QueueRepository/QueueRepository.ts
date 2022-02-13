@@ -1,5 +1,5 @@
-import { AddBallChaserToQueueInput, PlayerInQueueResponse, UpdateBallChaserOptions } from "./types";
-import { PrismaClient, Prisma, BallChaser, Queue } from "@prisma/client";
+import { AddBallChaserToQueueInput, PlayerInQueue, QueueWithBallChaser, UpdateBallChaserInQueueInput } from "./types";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { DateTime } from "luxon";
 import LeaderboardRepository from "../LeaderboardRepository";
 
@@ -12,7 +12,7 @@ export class QueueRepository {
     this.#BallChasers = new PrismaClient().ballChaser;
   }
 
-  async #getPlayerMmr(playerInQueue: Queue & { player: BallChaser }): Promise<PlayerInQueueResponse> {
+  async #getPlayerMmr(playerInQueue: QueueWithBallChaser): Promise<PlayerInQueue> {
     const lb = await LeaderboardRepository.getPlayerStats(playerInQueue.player.id);
     return {
       id: playerInQueue.player.id,
@@ -29,7 +29,7 @@ export class QueueRepository {
    * @param id Discord ID of the BallChaser to retrieve
    * @returns A BallChaser object if the player is found, otherwise null
    */
-  async getBallChaserInQueue(id: number): Promise<Readonly<PlayerInQueueResponse> | null> {
+  async getBallChaserInQueue(id: number): Promise<Readonly<PlayerInQueue> | null> {
     const playerInQueue = await this.#Queue.findUnique({
       include: {
         player: true,
@@ -49,17 +49,17 @@ export class QueueRepository {
    * Retrieves all BallChasers in the queue
    * @returns A list of all BallChasers currently in the queue
    */
-  async getAllBallChasersInQueue(): Promise<ReadonlyArray<Readonly<PlayerInQueueResponse>>> {
+  async getAllBallChasersInQueue(): Promise<ReadonlyArray<Readonly<PlayerInQueue>>> {
     const allPlayersInQueue = await this.#Queue.findMany({
       include: {
         player: true,
       },
     });
 
-    const allPlayersPromises: Array<Promise<PlayerInQueueResponse>> = [];
+    const allPlayersPromises: Array<Promise<PlayerInQueue>> = [];
 
     for (const playerInQueue of allPlayersInQueue) {
-      const queuePlayerPromise: Promise<PlayerInQueueResponse> = this.#getPlayerMmr(playerInQueue);
+      const queuePlayerPromise: Promise<PlayerInQueue> = this.#getPlayerMmr(playerInQueue);
       allPlayersPromises.push(queuePlayerPromise);
     }
 
@@ -88,7 +88,7 @@ export class QueueRepository {
    * Function for updating an existing BallChaser in the queue.
    * @param options BallChaser fields to update. ID field is required for retrieving the BallChaser object to update.
    */
-  async updateBallChaserInQueue({ id, ...options }: UpdateBallChaserOptions): Promise<void> {
+  async updateBallChaserInQueue({ id, ...options }: UpdateBallChaserInQueueInput): Promise<void> {
     await this.#Queue.update({
       data: {
         ...options,

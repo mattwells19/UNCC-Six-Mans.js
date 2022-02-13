@@ -4,13 +4,13 @@ import { PlayerStats } from "../../repositories/LeaderboardRepository/types";
 import LeaderboardRepository from "../../repositories/LeaderboardRepository";
 import faker from "faker";
 import { BallChaserQueueBuilder } from "../../../.jest/Builder";
-import { PlayerInQueueResponse } from "../../repositories/QueueRepository/types";
+import { PlayerInQueue } from "../../repositories/QueueRepository/types";
 
 jest.mock("../../utils/getEnvVariable");
 jest.mock("../../repositories/LeaderboardRepository");
 
 function makePlayerStats(
-  ballChaser: PlayerInQueueResponse = BallChaserQueueBuilder.single(),
+  ballChaser: PlayerInQueue = BallChaserQueueBuilder.single(),
   overrides?: Partial<PlayerStats>
 ): PlayerStats {
   const wins = faker.datatype.number({ min: 0 });
