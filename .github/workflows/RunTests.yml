@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    name: Test NormJS
+  unit:
+    name: Run unit tests
     runs-on: ubuntu-latest
 
     steps:
@@ -25,3 +25,29 @@ jobs:
 
       - name: Run Tests
         run: npm run test
+
+  integration:
+    name: Run integration tests
+    runs-on: ubuntu-latest
+    container:
+      image: postgres:latest
+      options: --name uncc_six_mans
+      ports:
+        - 5432: 5432
+      env:
+        POSTGRES_USER: Norm
+        POSTGRES_PASSWORD: NormTheNiner
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.6.0
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm run integration
