@@ -88,11 +88,12 @@ export class QueueRepository {
    * Function for updating an existing BallChaser in the queue.
    * @param options BallChaser fields to update. ID field is required for retrieving the BallChaser object to update.
    */
-  async updateBallChaserInQueue({ id, ...options }: UpdateBallChaserInQueueInput): Promise<void> {
+  async updateBallChaserInQueue({ id, ...updates }: UpdateBallChaserInQueueInput): Promise<void> {
     await this.#Queue.update({
       data: {
-        ...options,
-        queueTime: options.queueTime?.toISO(),
+        isCap: updates.isCap,
+        queueTime: updates.queueTime?.toISO(),
+        team: updates.team,
       },
       where: { playerId: id },
     });
