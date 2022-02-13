@@ -4,11 +4,13 @@ import { PlayerStats, PlayerStatsUpdates } from "./types";
 
 export class LeaderboardRepository {
   #Leaderboard: Prisma.LeaderboardDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
-  #seasonKey: string;
+  #seasonSemester: string;
+  #seasonYear: string;
 
   constructor() {
     this.#Leaderboard = new PrismaClient().leaderboard;
-    this.#seasonKey = getEnvVariable("season_key");
+    this.#seasonSemester = getEnvVariable("season_semester");
+    this.#seasonYear = getEnvVariable("season_year");
   }
 
   #calculatePlayerStats(playerStats: Leaderboard & { player: BallChaser }): PlayerStats {
@@ -34,7 +36,11 @@ export class LeaderboardRepository {
         player: true,
       },
       where: {
-        playerId: id,
+        seasonSemester_seasonYear_playerId: {
+          playerId: id,
+          seasonSemester: this.#seasonSemester,
+          seasonYear: this.#seasonYear,
+        },
       },
     });
 
@@ -58,7 +64,8 @@ export class LeaderboardRepository {
       orderBy: [{ mmr: "desc" }, { wins: "desc" }],
       take: n,
       where: {
-        seasonKey: this.#seasonKey,
+        seasonSemester: this.#seasonSemester,
+        seasonYear: this.#seasonYear,
       },
     });
 
@@ -78,7 +85,8 @@ export class LeaderboardRepository {
           losses: playerUpdates.losses,
           mmr: playerUpdates.mmr,
           playerId: playerUpdates.id,
-          seasonKey: this.#seasonKey,
+          seasonSemester: this.#seasonSemester,
+          seasonYear: this.#seasonYear,
           wins: playerUpdates.wins,
         },
         update: {
@@ -87,9 +95,10 @@ export class LeaderboardRepository {
           wins: playerUpdates.wins,
         },
         where: {
-          seasonKey_playerId: {
+          seasonSemester_seasonYear_playerId: {
             playerId: playerUpdates.id,
-            seasonKey: this.#seasonKey,
+            seasonSemester: this.#seasonSemester,
+            seasonYear: this.#seasonYear,
           },
         },
       });

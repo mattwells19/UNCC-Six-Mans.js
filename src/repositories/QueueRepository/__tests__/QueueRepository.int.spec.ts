@@ -5,6 +5,7 @@ import QueueRepository from "../QueueRepository";
 import { BallChaserBuilder } from "../../../../.jest/Builder";
 import { PrismaClient } from "@prisma/client";
 import { DateTime } from "luxon";
+import getEnvVariable from "../../../utils/getEnvVariable";
 
 function verifyBallChasersAreEqual(expectedBallChaser: BallChaser, actualBallChaser: PlayerInQueueResponse): void {
   expect(actualBallChaser).not.toBeNull();
@@ -17,12 +18,17 @@ function verifyBallChasersAreEqual(expectedBallChaser: BallChaser, actualBallCha
 }
 
 let prisma: PrismaClient;
+let seasonSemester: string;
+let seasonYear: string;
 
 beforeEach(async () => {
   jest.clearAllMocks();
 });
 
 beforeAll(async () => {
+  seasonSemester = getEnvVariable("season_semester");
+  seasonYear = getEnvVariable("season_year");
+
   prisma = new PrismaClient();
   await prisma.$connect();
   await prisma.leaderboard.deleteMany();
@@ -55,7 +61,8 @@ async function manuallyAddBallChaserToQueue(ballChaser: BallChaser) {
       rank: {
         create: {
           mmr: ballChaser.mmr,
-          seasonKey: "test_key",
+          seasonSemester,
+          seasonYear,
         },
       },
     },

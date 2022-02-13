@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
+import generateRandomId from "../../utils/randomId";
 import { PlayerInActiveMatch } from "./types";
 
 export class ActiveMatchRepository {
@@ -15,8 +16,11 @@ export class ActiveMatchRepository {
       throw new Error("Not all players are assigned a team.");
     }
 
+    const matchId = generateRandomId();
+
     this.#ActiveMatch.createMany({
       data: newActiveMatchPlayers.map((newActiveMatchPlayer) => ({
+        id: matchId,
         playerId: newActiveMatchPlayer.id,
         team: newActiveMatchPlayer.team,
       })),

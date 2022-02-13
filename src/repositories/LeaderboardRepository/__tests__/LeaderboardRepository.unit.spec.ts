@@ -9,61 +9,9 @@ import NotionElementHelper from "../../helpers/NotionElementHelper";
 import LeaderboardRepository from "../LeaderboardRepository";
 import { LeaderboardPageResponseProperties, PlayerStats } from "../types";
 
-jest.mock("../../helpers/NotionClient");
-jest.mock("../../../utils/getEnvVariable");
-
 beforeEach(async () => {
   jest.clearAllMocks();
 });
-
-function makePlayerStats(
-  ballChaser: BallChaser = BallChaserBuilder.single(),
-  overrides?: Partial<PlayerStats>
-): PlayerStats {
-  const wins = faker.datatype.number({ min: 0 });
-  const losses = faker.datatype.number({ min: 0 });
-
-  return {
-    id: ballChaser.id,
-    losses,
-    matchesPlayed: wins + losses,
-    mmr: faker.datatype.number({ min: 0 }),
-    name: ballChaser.name,
-    winPerc: wins / (wins + losses),
-    wins,
-    ...overrides,
-  };
-}
-
-function makeProps(playerStats: PlayerStats = makePlayerStats()): LeaderboardPageResponseProperties {
-  return {
-    ID: NotionElementHelper.notionTextElementFromText(playerStats.id),
-    Losses: NotionElementHelper.notionNumberElementFromNumber(playerStats.losses),
-    MMR: NotionElementHelper.notionNumberElementFromNumber(playerStats.mmr),
-    Name: NotionElementHelper.notionTextElementFromText(playerStats.name),
-    Wins: NotionElementHelper.notionNumberElementFromNumber(playerStats.wins),
-    MatchesPlayed: NotionElementHelper.notionFormulaElementFromNumber(playerStats.matchesPlayed),
-    WinPerc: NotionElementHelper.notionFormulaElementFromNumber(playerStats.winPerc),
-  };
-}
-
-function makePage(leaderboardProps: LeaderboardPageResponseProperties = makeProps()): Page {
-  return {
-    archived: false,
-    cover: null,
-    created_time: "",
-    icon: null,
-    id: faker.datatype.uuid(),
-    last_edited_time: "",
-    object: "page",
-    parent: {
-      database_id: process.env.notion_leaderboard_id ?? "",
-      type: "database_id",
-    },
-    properties: leaderboardProps as unknown as PropertyValueMap,
-    url: "",
-  };
-}
 
 const validatePlayerStats = (expected: PlayerStats, actual: PlayerStats | null) => {
   expect(actual).not.toBeNull();

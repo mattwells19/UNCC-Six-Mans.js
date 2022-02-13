@@ -1,4 +1,4 @@
-import { PlayerInQueueResponse, UpdateBallChaserOptions } from "./types";
+import { AddBallChaserToQueueInput, PlayerInQueueResponse, UpdateBallChaserOptions } from "./types";
 import { PrismaClient, Prisma, BallChaser, Queue } from "@prisma/client";
 import { DateTime } from "luxon";
 import LeaderboardRepository from "../LeaderboardRepository";
@@ -102,7 +102,7 @@ export class QueueRepository {
    * Adds a new BallChaser to the queue.
    * @param ballChaserToAdd New BallChaser object to add to the queue.
    */
-  async addBallChaserToQueue(ballChaserToAdd: { id: number; name: string; queueTime: DateTime }): Promise<void> {
+  async addBallChaserToQueue(ballChaserToAdd: AddBallChaserToQueueInput): Promise<void> {
     await this.#BallChasers.upsert({
       create: {
         id: ballChaserToAdd.id,

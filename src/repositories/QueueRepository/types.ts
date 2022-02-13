@@ -11,3 +11,9 @@ export interface UpdateBallChaserOptions {
 export type PlayerInQueueResponse = Omit<BallChaser, "mmr"> & {
   mmr: number | null;
 };
+
+export interface AddBallChaserToQueueInput {
+  id: number;
+  name: string;
+  queueTime: DateTime;
+}
