@@ -1,5 +1,5 @@
 import * as faker from "faker";
-import { BallChaserBuilder } from "../../../../.jest/Builder";
+import { ActiveMatchBuilder, BallChaserBuilder } from "../../../../.jest/Builder";
 import ActiveMatchRepository from "../ActiveMatchRepository";
 import { PlayerInActiveMatch } from "../types";
 import { BallChaser, Team } from "../../../types/common";
@@ -26,19 +26,6 @@ afterEach(async () => {
 afterAll(async () => {
   await prisma.$disconnect();
 });
-
-function makePlayer(
-  ballChaser: BallChaser = BallChaserBuilder.single(),
-  overrides?: Partial<PlayerInActiveMatch>
-): PlayerInActiveMatch {
-  return {
-    id: ballChaser.id,
-    matchId: faker.datatype.uuid(),
-    reported: null,
-    team: ballChaser.team ?? Team.Blue,
-    ...overrides,
-  };
-}
 
 async function manuallyAddActiveMatch(activeMatch: PlayerInActiveMatch | Array<PlayerInActiveMatch>) {
   const playersToAdd = Array.isArray(activeMatch) ? activeMatch : [activeMatch];
@@ -112,7 +99,7 @@ describe("ActiveMatchRepository Tests", () => {
 
     it("can remove all players in a match", async () => {
       const mockMatchId = faker.datatype.uuid();
-      const mockPlayers = Array.from({ length: 6 }, () => makePlayer(undefined, { matchId: mockMatchId }));
+      const mockPlayers = ActiveMatchBuilder.many(6, { matchId: mockMatchId });
       await manuallyAddActiveMatch(mockPlayers);
 
       await ActiveMatchRepository.removeAllPlayersInActiveMatch(mockPlayers[0].id);
@@ -128,9 +115,8 @@ describe("ActiveMatchRepository Tests", () => {
     });
 
     it("retreives all players part of an active match", async () => {
-      const mockBallChasers = BallChaserBuilder.many(6);
       const mockMatchId = faker.datatype.uuid();
-      const mockPlayers = mockBallChasers.map((mockBallChaser) => makePlayer(mockBallChaser, { matchId: mockMatchId }));
+      const mockPlayers = ActiveMatchBuilder.many(6, { matchId: mockMatchId });
       await manuallyAddActiveMatch(mockPlayers);
 
       const oneOfThePlayers = faker.random.arrayElement(mockPlayers);
@@ -151,10 +137,9 @@ describe("ActiveMatchRepository Tests", () => {
     });
 
     it("updates player in active match correctly", async () => {
-      const mockBallChasers = BallChaserBuilder.many(6);
       const mockMatchId = faker.datatype.uuid();
+      const mockPlayers = ActiveMatchBuilder.many(6, { matchId: mockMatchId });
 
-      const mockPlayers = mockBallChasers.map((mockBallChaser) => makePlayer(mockBallChaser, { matchId: mockMatchId }));
       await manuallyAddActiveMatch(mockPlayers);
       const oneOfThePlayers = faker.random.arrayElement(mockPlayers);
 

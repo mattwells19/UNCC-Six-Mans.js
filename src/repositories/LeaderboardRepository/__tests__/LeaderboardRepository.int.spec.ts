@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import * as faker from "faker";
-import { BallChaserBuilder } from "../../../../.jest/Builder";
+import { LeaderboardBuilder } from "../../../../.jest/Builder";
 import { BallChaser } from "../../../types/common";
 import getEnvVariable from "../../../utils/getEnvVariable";
 import LeaderboardRepository from "../LeaderboardRepository";
@@ -32,25 +32,6 @@ afterEach(async () => {
 afterAll(async () => {
   await prisma.$disconnect();
 });
-
-function makePlayerStats(
-  ballChaser: BallChaser = BallChaserBuilder.single(),
-  overrides?: Partial<PlayerStats>
-): PlayerStats {
-  const wins = faker.datatype.number({ min: 0 });
-  const losses = faker.datatype.number({ min: 0 });
-
-  return {
-    id: ballChaser.id,
-    losses,
-    matchesPlayed: wins + losses,
-    mmr: faker.datatype.number({ min: 0 }),
-    name: ballChaser.name,
-    winPerc: wins / (wins + losses),
-    wins,
-    ...overrides,
-  };
-}
 
 const validatePlayerStats = (expected: PlayerStats, actual: PlayerStats | null) => {
   expect(actual).not.toBeNull();
@@ -101,7 +82,7 @@ async function manuallyAddBallChaser(ballChaser: Pick<BallChaser, "id" | "name">
 
 describe("LeaderboardRepository tests", () => {
   it("gets player's stats", async () => {
-    const mockPlayerStats = makePlayerStats();
+    const mockPlayerStats = LeaderboardBuilder.single();
     await manuallyAddPlayerStatsToLeaderboard(mockPlayerStats);
 
     const result = await LeaderboardRepository.getPlayerStats(mockPlayerStats.id);
@@ -115,10 +96,10 @@ describe("LeaderboardRepository tests", () => {
   });
 
   it("updates player stats when the player exists", async () => {
-    const mockPlayerStats = makePlayerStats();
+    const mockPlayerStats = LeaderboardBuilder.single();
     await manuallyAddPlayerStatsToLeaderboard(mockPlayerStats);
 
-    const mockPlayerUpdates = makePlayerStats(undefined, { id: mockPlayerStats.id, name: mockPlayerStats.name });
+    const mockPlayerUpdates = LeaderboardBuilder.single({ id: mockPlayerStats.id, name: mockPlayerStats.name });
 
     await LeaderboardRepository.updatePlayersStats([mockPlayerUpdates]);
 
@@ -148,7 +129,7 @@ describe("LeaderboardRepository tests", () => {
   });
 
   it("adds a player's stats when the player does not already exist", async () => {
-    const mockPlayerStats = makePlayerStats();
+    const mockPlayerStats = LeaderboardBuilder.single();
     await manuallyAddBallChaser(mockPlayerStats);
 
     await LeaderboardRepository.updatePlayersStats([mockPlayerStats]);
@@ -176,7 +157,7 @@ describe("LeaderboardRepository tests", () => {
   });
 
   it("gets top n player stats", async () => {
-    const playersToAdd = Array.from({ length: 10 }, () => makePlayerStats());
+    const playersToAdd = LeaderboardBuilder.many(10);
     await manuallyAddPlayerStatsToLeaderboard(playersToAdd);
 
     const allPlayers = await LeaderboardRepository.getPlayersStats(5);
@@ -189,7 +170,7 @@ describe("LeaderboardRepository tests", () => {
   });
 
   it("gets all player stats sorted correctly based on MMR", async () => {
-    const playersToAdd = Array.from({ length: 10 }, () => makePlayerStats());
+    const playersToAdd = LeaderboardBuilder.many(10);
     await manuallyAddPlayerStatsToLeaderboard(playersToAdd);
 
     const allPlayers = await LeaderboardRepository.getPlayersStats();
@@ -202,7 +183,7 @@ describe("LeaderboardRepository tests", () => {
   });
 
   it("gets all player stats sorted correctly by wins when MMR is equal", async () => {
-    const playersToAdd = Array.from({ length: 5 }, () => makePlayerStats(undefined, { mmr: 100 }));
+    const playersToAdd = LeaderboardBuilder.many(5, { mmr: 100 });
     await manuallyAddPlayerStatsToLeaderboard(playersToAdd);
 
     const allPlayers = await LeaderboardRepository.getPlayersStats();

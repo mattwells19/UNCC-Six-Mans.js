@@ -1,6 +1,8 @@
 import { BallChaser, Team } from "../src/types/common";
 import * as faker from "faker";
 import { DateTime } from "luxon";
+import { PlayerInActiveMatch } from "../src/repositories/ActiveMatchRepository/types";
+import { PlayerStats } from "../src/repositories/LeaderboardRepository/types";
 
 abstract class Builder<T> {
   abstract isEqual(a: T, b: T): boolean;
@@ -52,3 +54,46 @@ class BallChaserBuilderClass extends Builder<BallChaser> {
   }
 }
 export const BallChaserBuilder = new BallChaserBuilderClass();
+
+class ActiveMatchBuilderClass extends Builder<PlayerInActiveMatch> {
+  isEqual(a: PlayerInActiveMatch, b: PlayerInActiveMatch): boolean {
+    return a.id === b.id;
+  }
+
+  single(overrides?: Partial<PlayerInActiveMatch>): PlayerInActiveMatch {
+    const mockBallChaser = BallChaserBuilder.single();
+    return {
+      id: mockBallChaser.id,
+      matchId: faker.datatype.uuid(),
+      reported: null,
+      team: mockBallChaser.team!,
+      ...overrides,
+    };
+  }
+}
+export const ActiveMatchBuilder = new ActiveMatchBuilderClass();
+
+class LeaderboardBuilderClass extends Builder<PlayerStats> {
+  isEqual(a: PlayerStats, b: PlayerStats): boolean {
+    return a.id === b.id;
+  }
+
+  single(overrides?: Partial<PlayerStats>): PlayerStats {
+    const mockBallChaser = BallChaserBuilder.single();
+
+    const wins = faker.datatype.number({ min: 0 });
+    const losses = faker.datatype.number({ min: 0 });
+
+    return {
+      id: mockBallChaser.id,
+      losses,
+      matchesPlayed: wins + losses,
+      mmr: faker.datatype.number({ min: 0 }),
+      name: mockBallChaser.name,
+      winPerc: wins / (wins + losses),
+      wins,
+      ...overrides,
+    };
+  }
+}
+export const LeaderboardBuilder = new LeaderboardBuilderClass();
