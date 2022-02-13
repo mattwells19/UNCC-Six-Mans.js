@@ -181,7 +181,6 @@ describe("Queue Repository tests", () => {
   });
 
   it("throws when player to update is not found", async () => {
-    // const mockBallChaser = BallChaserBuilder.single();
     await expect(QueueRepository.updateBallChaserInQueue({ id: faker.datatype.uuid() })).rejects.toThrowError();
   });
 
