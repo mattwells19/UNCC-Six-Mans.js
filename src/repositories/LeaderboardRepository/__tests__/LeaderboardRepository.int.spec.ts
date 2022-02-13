@@ -94,7 +94,7 @@ describe("LeaderboardRepository tests", () => {
   });
 
   it("returns null when looking for player that does not exist", async () => {
-    const result = await LeaderboardRepository.getPlayerStats(faker.datatype.number());
+    const result = await LeaderboardRepository.getPlayerStats(faker.datatype.uuid());
     expect(result).toBeNull();
   });
 

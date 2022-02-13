@@ -3,7 +3,7 @@ import { ActiveMatchBuilder, BallChaserQueueBuilder } from "../../../../.jest/Bu
 import ActiveMatchRepository from "../ActiveMatchRepository";
 import { PlayerInActiveMatch } from "../types";
 import { Team } from "../../../types/common";
-import { BallChaser, PrismaClient } from "@prisma/client";
+import { ActiveMatch, BallChaser, PrismaClient } from "@prisma/client";
 
 let prisma: PrismaClient;
 
@@ -89,12 +89,15 @@ describe("ActiveMatchRepository Tests", () => {
 
       expect(actual).toEqual(
         expect.arrayContaining(
-          mockBallChasers.map((p) => ({
-            id: matchId,
-            playerId: p.id,
-            team: p.team,
-            reportedTeam: null,
-          }))
+          mockBallChasers.map(
+            (p): ActiveMatch => ({
+              id: matchId,
+              playerId: p.id,
+              team: p.team!,
+              reportedTeam: null,
+              brokenQueue: false,
+            })
+          )
         )
       );
     });

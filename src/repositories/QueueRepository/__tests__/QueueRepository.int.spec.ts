@@ -106,7 +106,7 @@ describe("Queue Repository tests", () => {
   });
 
   it("returns null when BallChaser does not exist with ID", async () => {
-    const actualBallChaser = await QueueRepository.getBallChaserInQueue(faker.datatype.number());
+    const actualBallChaser = await QueueRepository.getBallChaserInQueue(faker.datatype.uuid());
     expect(actualBallChaser).toBeNull();
   });
 
@@ -135,7 +135,7 @@ describe("Queue Repository tests", () => {
   });
 
   it("throws error when trying to remove BallChaser when not found in queue", async () => {
-    await expect(QueueRepository.removeBallChaserFromQueue(faker.datatype.number())).rejects.toThrowError();
+    await expect(QueueRepository.removeBallChaserFromQueue(faker.datatype.uuid())).rejects.toThrowError();
   });
 
   it("removes all BallChasers in queue", async () => {
@@ -182,7 +182,7 @@ describe("Queue Repository tests", () => {
 
   it("throws when player to update is not found", async () => {
     // const mockBallChaser = BallChaserBuilder.single();
-    await expect(QueueRepository.updateBallChaserInQueue({ id: faker.datatype.number() })).rejects.toThrowError();
+    await expect(QueueRepository.updateBallChaserInQueue({ id: faker.datatype.uuid() })).rejects.toThrowError();
   });
 
   it("adds BallChaser to queue", async () => {

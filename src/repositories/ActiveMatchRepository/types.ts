@@ -1,17 +1,18 @@
 import { Team } from "../../types/common";
 
 export interface PlayerInActiveMatch {
-  id: number;
+  id: string;
   team: Team;
   reportedTeam: Team | null;
   matchId: string;
 }
 
 export interface UpdatePlayerInActiveMatchInput {
-  reportedTeam: Team;
+  reportedTeam?: Team;
+  brokenQueue?: boolean;
 }
 
 export type NewActiveMatchInput = {
-  id: number;
+  id: string;
   team: Team;
 };

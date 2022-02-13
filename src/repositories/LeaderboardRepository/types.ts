@@ -1,6 +1,6 @@
 import { BallChaser, Leaderboard } from "@prisma/client";
 export interface PlayerStats {
-  id: number;
+  id: string;
   mmr: number;
   name: string;
   wins: number;
@@ -10,7 +10,7 @@ export interface PlayerStats {
 }
 
 export interface UpdatePlayerStatsInput {
-  id: number;
+  id: string;
   mmr: number;
   wins?: number;
   losses?: number;

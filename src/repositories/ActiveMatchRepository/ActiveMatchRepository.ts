@@ -27,10 +27,11 @@ export class ActiveMatchRepository {
     });
   }
 
-  async updatePlayerInActiveMatch(playerInMatchId: number, updates: UpdatePlayerInActiveMatchInput): Promise<void> {
+  async updatePlayerInActiveMatch(playerInMatchId: string, updates: UpdatePlayerInActiveMatchInput): Promise<void> {
     await this.#ActiveMatch
       .update({
         data: {
+          brokenQueue: updates.brokenQueue,
           reportedTeam: updates.reportedTeam,
         },
         where: {
@@ -44,7 +45,7 @@ export class ActiveMatchRepository {
       });
   }
 
-  async removeAllPlayersInActiveMatch(playerInMatchId: number): Promise<void> {
+  async removeAllPlayersInActiveMatch(playerInMatchId: string): Promise<void> {
     await this.#ActiveMatch
       .findUnique({
         select: {
@@ -67,7 +68,7 @@ export class ActiveMatchRepository {
       });
   }
 
-  async getAllPlayersInActiveMatch(playerInMatchId: number): Promise<ReadonlyArray<Readonly<PlayerInActiveMatch>>> {
+  async getAllPlayersInActiveMatch(playerInMatchId: string): Promise<ReadonlyArray<Readonly<PlayerInActiveMatch>>> {
     const allPlayersInMatch = await this.#ActiveMatch
       .findUnique({
         select: {

@@ -54,7 +54,7 @@ describe("Leaderboard Service tests", () => {
 
   it("formats player stats correctly", async () => {
     const mockPlayer1: PlayerStats = {
-      id: 12345,
+      id: "player_id_1",
       losses: 22,
       matchesPlayed: 65,
       mmr: 123,
@@ -64,7 +64,7 @@ describe("Leaderboard Service tests", () => {
     };
 
     const mockPlayer2: PlayerStats = {
-      id: 67890,
+      id: "player_id_2",
       losses: 6,
       matchesPlayed: 16,
       mmr: 119,

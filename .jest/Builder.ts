@@ -44,7 +44,7 @@ class BallChaserQueueBuilderClass extends Builder<PlayerInQueue> {
 
   single(overrides?: Partial<PlayerInQueue>) {
     return {
-      id: faker.datatype.number(),
+      id: faker.datatype.uuid(),
       isCap: faker.datatype.boolean(),
       name: faker.random.word(),
       mmr: 100,
@@ -66,7 +66,7 @@ class ActiveMatchBuilderClass extends Builder<PlayerInActiveMatch> {
     return {
       id: mockBallChaser.id,
       matchId: faker.datatype.uuid(),
-      reported: null,
+      reportedTeam: null,
       team: mockBallChaser.team!,
       ...overrides,
     };

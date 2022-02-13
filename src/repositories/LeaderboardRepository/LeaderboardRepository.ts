@@ -30,7 +30,7 @@ export class LeaderboardRepository {
    * @param id ID of the player to get stats for
    * @returns returns the player's stats if they exist, otherwise null
    */
-  async getPlayerStats(id: number): Promise<Readonly<PlayerStats> | null> {
+  async getPlayerStats(id: string): Promise<Readonly<PlayerStats> | null> {
     const playerStats = await this.#Leaderboard.findUnique({
       include: {
         player: true,

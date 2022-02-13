@@ -29,7 +29,7 @@ export class QueueRepository {
    * @param id Discord ID of the BallChaser to retrieve
    * @returns A BallChaser object if the player is found, otherwise null
    */
-  async getBallChaserInQueue(id: number): Promise<Readonly<PlayerInQueue> | null> {
+  async getBallChaserInQueue(id: string): Promise<Readonly<PlayerInQueue> | null> {
     const playerInQueue = await this.#Queue.findUnique({
       include: {
         player: true,
@@ -73,7 +73,7 @@ export class QueueRepository {
    * Removes the BallChaser from the queue with the specified ID
    * @param id Discord ID of the BallChaser to remove from the queue
    */
-  async removeBallChaserFromQueue(id: number): Promise<void> {
+  async removeBallChaserFromQueue(id: string): Promise<void> {
     await this.#Queue.delete({ where: { playerId: id } });
   }
 

@@ -3,14 +3,14 @@ import { DateTime } from "luxon";
 import { Team } from "../../types/common";
 
 export interface UpdateBallChaserInQueueInput {
-  id: number;
+  id: string;
   isCap?: boolean;
   team?: Team | null;
   queueTime?: DateTime;
 }
 
 export type PlayerInQueue = {
-  id: number;
+  id: string;
   isCap: boolean;
   mmr: number | null;
   name: string;
@@ -19,7 +19,7 @@ export type PlayerInQueue = {
 };
 
 export interface AddBallChaserToQueueInput {
-  id: number;
+  id: string;
   name: string;
   queueTime: DateTime;
 }
