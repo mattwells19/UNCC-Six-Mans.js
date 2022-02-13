@@ -1,25 +1,5 @@
-import { NotionFormulaElement, NotionNumberElement, NotionTextElement } from "../helpers/NotionTypes";
-
-export interface LeaderboardPageResponseProperties {
-  ID: NotionTextElement;
-  MMR: NotionNumberElement;
-  Name: NotionTextElement;
-  Wins: NotionNumberElement;
-  Losses: NotionNumberElement;
-  MatchesPlayed: NotionFormulaElement;
-  WinPerc: NotionFormulaElement;
-}
-
-export interface LeaderboardPageRequestProperties {
-  ID: NotionTextElement;
-  MMR: NotionNumberElement;
-  Name: NotionTextElement;
-  Wins: NotionNumberElement;
-  Losses: NotionNumberElement;
-}
-
 export interface PlayerStats {
-  id: string;
+  id: number;
   mmr: number;
   name: string;
   wins: number;
@@ -29,7 +9,7 @@ export interface PlayerStats {
 }
 
 export interface PlayerStatsUpdates {
-  id: string;
+  id: number;
   mmr: number;
   name: string;
   wins: number;
