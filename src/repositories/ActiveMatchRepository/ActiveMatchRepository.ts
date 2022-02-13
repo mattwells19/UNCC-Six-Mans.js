@@ -11,14 +11,14 @@ export class ActiveMatchRepository {
   }
 
   async addActiveMatch(newActiveMatchPlayers: Array<Pick<PlayerInActiveMatch, "id" | "team">>): Promise<void> {
-    const notEveryoneHasATeam = newActiveMatchPlayers.some((player) => !player.team);
+    const notEveryoneHasATeam = newActiveMatchPlayers.some((player) => !Number.isInteger(player.team));
     if (notEveryoneHasATeam) {
       throw new Error("Not all players are assigned a team.");
     }
 
     const matchId = generateRandomId();
 
-    this.#ActiveMatch.createMany({
+    await this.#ActiveMatch.createMany({
       data: newActiveMatchPlayers.map((newActiveMatchPlayer) => ({
         id: matchId,
         playerId: newActiveMatchPlayer.id,
@@ -41,7 +41,7 @@ export class ActiveMatchRepository {
         },
       })
       .catch((err) => {
-        if (err instanceof PrismaClientKnownRequestError && err.code === "P5003") {
+        if (err instanceof PrismaClientKnownRequestError && err.code === "P2025") {
           throw new Error(`Player with ID: ${playerInMatchId} is not in an active match.`);
         }
       });
@@ -82,7 +82,8 @@ export class ActiveMatchRepository {
       })
       .then((match) => {
         if (!match) {
-          throw new Error(`Player with ID: ${playerInMatchId} is not in an active match.`);
+          console.warn(`Player with ID: ${playerInMatchId} is not in an active match.`);
+          return [];
         }
 
         return this.#ActiveMatch.findMany({

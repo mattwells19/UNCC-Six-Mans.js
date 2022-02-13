@@ -63,22 +63,31 @@ const validatePlayerStats = (expected: PlayerStats, actual: PlayerStats | null) 
   expect(actual!.wins).toBe(expected.wins);
 };
 
-async function manuallyAddPlayerStatsToLeaderboard(ballChaser: PlayerStats) {
-  await prisma.ballChaser.create({
-    data: {
-      id: ballChaser.id,
-      name: ballChaser.name,
-      rank: {
-        create: {
-          mmr: ballChaser.mmr,
-          losses: ballChaser.losses,
-          wins: ballChaser.wins,
-          seasonSemester,
-          seasonYear,
+async function manuallyAddPlayerStatsToLeaderboard(ballChaser: PlayerStats | Array<PlayerStats>) {
+  const playersToAdd = Array.isArray(ballChaser) ? ballChaser : [ballChaser];
+
+  const promises = [];
+  for (const player of playersToAdd) {
+    promises.push(
+      await prisma.ballChaser.create({
+        data: {
+          id: player.id,
+          name: player.name,
+          rank: {
+            create: {
+              mmr: player.mmr,
+              losses: player.losses,
+              wins: player.wins,
+              seasonSemester,
+              seasonYear,
+            },
+          },
         },
-      },
-    },
-  });
+      })
+    );
+  }
+
+  await Promise.all(promises);
 }
 
 async function manuallyAddBallChaser(ballChaser: Pick<BallChaser, "id" | "name">) {
@@ -168,11 +177,7 @@ describe("LeaderboardRepository tests", () => {
 
   it("gets top n player stats", async () => {
     const playersToAdd = Array.from({ length: 10 }, () => makePlayerStats());
-    const promises = [];
-    for (const mockPlayerStats of playersToAdd) {
-      promises.push(manuallyAddPlayerStatsToLeaderboard(mockPlayerStats));
-    }
-    await Promise.all(promises);
+    await manuallyAddPlayerStatsToLeaderboard(playersToAdd);
 
     const allPlayers = await LeaderboardRepository.getPlayersStats(5);
 
@@ -185,11 +190,7 @@ describe("LeaderboardRepository tests", () => {
 
   it("gets all player stats sorted correctly based on MMR", async () => {
     const playersToAdd = Array.from({ length: 10 }, () => makePlayerStats());
-    const promises = [];
-    for (const mockPlayerStats of playersToAdd) {
-      promises.push(manuallyAddPlayerStatsToLeaderboard(mockPlayerStats));
-    }
-    await Promise.all(promises);
+    await manuallyAddPlayerStatsToLeaderboard(playersToAdd);
 
     const allPlayers = await LeaderboardRepository.getPlayersStats();
 
@@ -202,11 +203,7 @@ describe("LeaderboardRepository tests", () => {
 
   it("gets all player stats sorted correctly by wins when MMR is equal", async () => {
     const playersToAdd = Array.from({ length: 5 }, () => makePlayerStats(undefined, { mmr: 100 }));
-    const promises = [];
-    for (const mockPlayerStats of playersToAdd) {
-      promises.push(manuallyAddPlayerStatsToLeaderboard(mockPlayerStats));
-    }
-    await Promise.all(promises);
+    await manuallyAddPlayerStatsToLeaderboard(playersToAdd);
 
     const allPlayers = await LeaderboardRepository.getPlayersStats();
 
