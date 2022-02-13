@@ -49,5 +49,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Push Prisma schema
+        run: npx prisma db push
+
       - name: Run Tests
         run: npm run integration
