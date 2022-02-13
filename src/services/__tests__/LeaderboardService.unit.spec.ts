@@ -3,14 +3,14 @@ import { LeaderboardToString } from "../LeaderboardService";
 import { PlayerStats } from "../../repositories/LeaderboardRepository/types";
 import LeaderboardRepository from "../../repositories/LeaderboardRepository";
 import faker from "faker";
-import { BallChaserBuilder } from "../../../.jest/Builder";
-import { BallChaser } from "../../types/common";
+import { BallChaserQueueBuilder } from "../../../.jest/Builder";
+import { PlayerInQueueResponse } from "../../repositories/QueueRepository/types";
 
 jest.mock("../../utils/getEnvVariable");
 jest.mock("../../repositories/LeaderboardRepository");
 
 function makePlayerStats(
-  ballChaser: BallChaser = BallChaserBuilder.single(),
+  ballChaser: PlayerInQueueResponse = BallChaserQueueBuilder.single(),
   overrides?: Partial<PlayerStats>
 ): PlayerStats {
   const wins = faker.datatype.number({ min: 0 });
@@ -30,7 +30,7 @@ function makePlayerStats(
 
 describe("Leaderboard Service tests", () => {
   it("sends empty message when there are no player stats", async () => {
-    mocked(LeaderboardRepository.getAllPlayersStats).mockResolvedValue([]);
+    mocked(LeaderboardRepository.getPlayersStats).mockResolvedValue([]);
     const result = await LeaderboardToString();
 
     expect(result).toHaveLength(1);
@@ -39,7 +39,7 @@ describe("Leaderboard Service tests", () => {
 
   it("separates player stats in groups of 10", async () => {
     const mockPlayers = Array.from({ length: 12 }, () => makePlayerStats());
-    mocked(LeaderboardRepository.getAllPlayersStats).mockResolvedValue(mockPlayers);
+    mocked(LeaderboardRepository.getPlayersStats).mockResolvedValue(mockPlayers);
     const result = await LeaderboardToString();
 
     expect(result).toHaveLength(2);
@@ -54,7 +54,7 @@ describe("Leaderboard Service tests", () => {
 
   it("formats player stats correctly", async () => {
     const mockPlayer1: PlayerStats = {
-      id: "player_id_1",
+      id: 12345,
       losses: 22,
       matchesPlayed: 65,
       mmr: 123,
@@ -64,7 +64,7 @@ describe("Leaderboard Service tests", () => {
     };
 
     const mockPlayer2: PlayerStats = {
-      id: "player_id_2",
+      id: 67890,
       losses: 6,
       matchesPlayed: 16,
       mmr: 119,
@@ -73,7 +73,7 @@ describe("Leaderboard Service tests", () => {
       wins: 10,
     };
 
-    mocked(LeaderboardRepository.getAllPlayersStats).mockResolvedValue([mockPlayer1, mockPlayer2]);
+    mocked(LeaderboardRepository.getPlayersStats).mockResolvedValue([mockPlayer1, mockPlayer2]);
     const result = await LeaderboardToString();
 
     expect(result).toMatchInlineSnapshot(`

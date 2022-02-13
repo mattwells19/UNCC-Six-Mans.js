@@ -3,7 +3,7 @@ import LeaderboardRepository from "../repositories/LeaderboardRepository";
 export async function LeaderboardToString(): Promise<Array<string>> {
   const playersPerEmbed = 10;
 
-  const allPlayers = await LeaderboardRepository.getAllPlayersStats();
+  const allPlayers = await LeaderboardRepository.getPlayersStats();
 
   if (allPlayers.length === 0) {
     return ["Nothing to see here yet. Get queueing!"];
