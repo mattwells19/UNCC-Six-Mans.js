@@ -198,3 +198,37 @@ describe("LeaderboardRepository tests", () => {
     }
   });
 });
+
+describe("Leaderboard schema tests", () => {
+  it("can have the same player with different seasons", async () => {
+    await expect(
+      prisma.ballChaser.create({
+        data: {
+          id: "fake_id",
+          name: "player_name",
+          rank: {
+            createMany: {
+              data: [
+                {
+                  seasonSemester: "SPRING",
+                  seasonYear: "2022",
+                  mmr: faker.datatype.number(),
+                },
+                {
+                  seasonSemester: "SUMMER",
+                  seasonYear: "2022",
+                  mmr: faker.datatype.number(),
+                },
+                {
+                  seasonSemester: "SPRING",
+                  seasonYear: "2023",
+                  mmr: faker.datatype.number(),
+                },
+              ],
+            },
+          },
+        },
+      })
+    ).resolves.not.toThrowError();
+  });
+});
