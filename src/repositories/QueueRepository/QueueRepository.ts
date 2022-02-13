@@ -1,13 +1,7 @@
-import { BallChaser } from "../../types/common";
-import { UpdateBallChaserOptions } from "./types";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PlayerInQueueResponse, UpdateBallChaserOptions } from "./types";
+import { PrismaClient, Prisma, BallChaser, Queue } from "@prisma/client";
 import { DateTime } from "luxon";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import LeaderboardRepository from "../LeaderboardRepository";
-
-type PlayerInQueueResponse = Omit<BallChaser, "mmr"> & {
-  mmr: number | null;
-};
 
 export class QueueRepository {
   #Queue: Prisma.QueueDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
@@ -16,6 +10,18 @@ export class QueueRepository {
   constructor() {
     this.#Queue = new PrismaClient().queue;
     this.#BallChasers = new PrismaClient().ballChaser;
+  }
+
+  async #getPlayerMmr(playerInQueue: Queue & { player: BallChaser }): Promise<PlayerInQueueResponse> {
+    const lb = await LeaderboardRepository.getPlayerStats(playerInQueue.player.id);
+    return {
+      id: playerInQueue.player.id,
+      isCap: playerInQueue.isCap,
+      mmr: lb?.mmr ?? null,
+      name: playerInQueue.player.name,
+      queueTime: DateTime.fromJSDate(playerInQueue.queueTime),
+      team: playerInQueue.team,
+    };
   }
 
   /**
@@ -33,15 +39,7 @@ export class QueueRepository {
       },
     });
     if (playerInQueue) {
-      const lb = await LeaderboardRepository.getPlayerStats(id);
-      return {
-        id: playerInQueue.player.id,
-        isCap: playerInQueue.isCap,
-        mmr: lb?.mmr ?? null,
-        name: playerInQueue.player.name,
-        queueTime: DateTime.fromJSDate(playerInQueue.queueTime),
-        team: playerInQueue.team,
-      };
+      return this.#getPlayerMmr(playerInQueue);
     } else {
       return null;
     }
@@ -61,18 +59,7 @@ export class QueueRepository {
     const allPlayersPromises: Array<Promise<PlayerInQueueResponse>> = [];
 
     for (const playerInQueue of allPlayersInQueue) {
-      const queuePlayerPromise: Promise<PlayerInQueueResponse> = (async () => {
-        const lb = await LeaderboardRepository.getPlayerStats(playerInQueue.player.id);
-        return {
-          id: playerInQueue.player.id,
-          isCap: playerInQueue.isCap,
-          mmr: lb?.mmr ?? null,
-          name: playerInQueue.player.name,
-          queueTime: DateTime.fromJSDate(playerInQueue.queueTime),
-          team: playerInQueue.team,
-        };
-      })();
-
+      const queuePlayerPromise: Promise<PlayerInQueueResponse> = this.#getPlayerMmr(playerInQueue);
       allPlayersPromises.push(queuePlayerPromise);
     }
 
@@ -116,32 +103,28 @@ export class QueueRepository {
    * @param ballChaserToAdd New BallChaser object to add to the queue.
    */
   async addBallChaserToQueue(ballChaserToAdd: { id: number; name: string; queueTime: DateTime }): Promise<void> {
-    await this.#BallChasers
-      .upsert({
-        create: {
-          id: ballChaserToAdd.id,
-          name: ballChaserToAdd.name,
-        },
-        update: {
-          name: ballChaserToAdd.name,
-        },
-        where: {
-          id: ballChaserToAdd.id,
-        },
-      })
-      .then(() => {
-        return this.#Queue.create({
-          data: {
-            playerId: ballChaserToAdd.id,
+    await this.#BallChasers.upsert({
+      create: {
+        id: ballChaserToAdd.id,
+        name: ballChaserToAdd.name,
+        queue: {
+          create: {
             queueTime: ballChaserToAdd.queueTime.toISO(),
           },
-        });
-      })
-      .catch((err) => {
-        if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
-          console.error("Player is already in the queue.");
-        }
-      });
+        },
+      },
+      update: {
+        name: ballChaserToAdd.name,
+        queue: {
+          create: {
+            queueTime: ballChaserToAdd.queueTime.toISO(),
+          },
+        },
+      },
+      where: {
+        id: ballChaserToAdd.id,
+      },
+    });
   }
 }
 

@@ -41,7 +41,7 @@ class BallChaserBuilderClass extends Builder<BallChaser> {
 
   single(overrides?: Partial<BallChaser>) {
     return {
-      id: faker.datatype.uuid(),
+      id: faker.datatype.number(),
       isCap: faker.datatype.boolean(),
       mmr: faker.datatype.number(),
       name: faker.random.word(),

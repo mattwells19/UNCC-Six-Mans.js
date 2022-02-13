@@ -1,4 +1,4 @@
-import { Leaderboard, Prisma, PrismaClient } from "@prisma/client";
+import { BallChaser, Leaderboard, Prisma, PrismaClient } from "@prisma/client";
 import getEnvVariable from "../../utils/getEnvVariable";
 import { PlayerStats, PlayerStatsUpdates } from "./types";
 
@@ -9,6 +9,18 @@ export class LeaderboardRepository {
   constructor() {
     this.#Leaderboard = new PrismaClient().leaderboard;
     this.#seasonKey = getEnvVariable("season_key");
+  }
+
+  #calculatePlayerStats(playerStats: Leaderboard & { player: BallChaser }): PlayerStats {
+    return {
+      id: playerStats.player.id,
+      losses: playerStats.losses,
+      matchesPlayed: playerStats.wins + playerStats.losses,
+      mmr: playerStats.mmr,
+      name: playerStats.player.name,
+      winPerc: playerStats.wins / (playerStats.wins + playerStats.losses),
+      wins: playerStats.wins,
+    };
   }
 
   /**
@@ -30,63 +42,27 @@ export class LeaderboardRepository {
       return null;
     }
 
-    return {
-      id: playerStats.player.id,
-      losses: playerStats.losses,
-      matchesPlayed: playerStats.wins + playerStats.losses,
-      mmr: playerStats.mmr,
-      name: playerStats.player.name,
-      winPerc: playerStats.wins / (playerStats.wins + playerStats.losses),
-      wins: playerStats.wins,
-    };
+    return this.#calculatePlayerStats(playerStats);
   }
 
   /**
    * Retreives the top (n) number of players in the leaderboard
-   * @param n Number of players to retrieve from the top of the leaderboard table
+   * @param n Number of players to retrieve from the top of the leaderboard. Returns all entries if left undefined.
    * @returns An array of the top 'n' players in the leaderboard
    */
-  async getTopNPlayersStats(n: number): Promise<ReadonlyArray<Readonly<PlayerStats>>> {
+  async getPlayersStats(n?: number): Promise<ReadonlyArray<Readonly<PlayerStats>>> {
     const playersStats = await this.#Leaderboard.findMany({
       include: {
         player: true,
       },
       orderBy: [{ mmr: "desc" }, { wins: "desc" }],
       take: n,
-    });
-
-    return playersStats.map((playerStats) => ({
-      id: playerStats.player.id,
-      losses: playerStats.losses,
-      matchesPlayed: playerStats.wins + playerStats.losses,
-      mmr: playerStats.mmr,
-      name: playerStats.player.name,
-      winPerc: playerStats.wins / (playerStats.wins + playerStats.losses),
-      wins: playerStats.wins,
-    }));
-  }
-
-  /**
-   * Retreives all entries in the leaderboard
-   * @returns An array of stats for every player in the leaderboard
-   */
-  async getAllPlayersStats(): Promise<ReadonlyArray<Readonly<PlayerStats>>> {
-    const playersStats = await this.#Leaderboard.findMany({
-      include: {
-        player: true,
+      where: {
+        seasonKey: this.#seasonKey,
       },
-      orderBy: [{ mmr: "desc" }, { wins: "desc" }],
     });
 
-    return playersStats.map((playerStats) => ({
-      id: playerStats.player.id,
-      losses: playerStats.losses,
-      matchesPlayed: playerStats.wins + playerStats.losses,
-      mmr: playerStats.mmr,
-      name: playerStats.player.name,
-      winPerc: playerStats.wins / (playerStats.wins + playerStats.losses),
-      wins: playerStats.wins,
-    }));
+    return playersStats.map((playerStats) => this.#calculatePlayerStats(playerStats));
   }
 
   /**

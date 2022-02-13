@@ -1,7 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
-import { Team } from "../../types/common";
-import generateRandomId from "../../utils/randomId";
 import { PlayerInActiveMatch } from "./types";
 
 export class ActiveMatchRepository {
@@ -11,19 +9,16 @@ export class ActiveMatchRepository {
     this.#ActiveMatch = new PrismaClient().activeMatch;
   }
 
-  async addActiveMatch(ballChasers: Array<{ id: number; team: Team }>): Promise<void> {
-    const notEveryoneHasATeam = ballChasers.some((ballChaser) => !ballChaser.team);
+  async addActiveMatch(newActiveMatchPlayers: Array<Pick<PlayerInActiveMatch, "id" | "team">>): Promise<void> {
+    const notEveryoneHasATeam = newActiveMatchPlayers.some((player) => !player.team);
     if (notEveryoneHasATeam) {
       throw new Error("Not all players are assigned a team.");
     }
 
-    const matchId = generateRandomId();
-
     this.#ActiveMatch.createMany({
-      data: ballChasers.map((ballChaser) => ({
-        id: matchId,
-        playerId: ballChaser.id,
-        team: ballChaser.team,
+      data: newActiveMatchPlayers.map((newActiveMatchPlayer) => ({
+        playerId: newActiveMatchPlayer.id,
+        team: newActiveMatchPlayer.team,
       })),
     });
   }
