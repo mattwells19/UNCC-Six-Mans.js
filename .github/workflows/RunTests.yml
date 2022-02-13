@@ -33,7 +33,7 @@ jobs:
       image: postgres:latest
       options: --name uncc_six_mans
       ports:
-        - 5432: 5432
+        - 5432:5432
       env:
         POSTGRES_USER: Norm
         POSTGRES_PASSWORD: NormTheNiner
