@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres_integration_test_db
   season_semester: SPRING
   season_year: 2022
 
@@ -34,14 +34,16 @@ jobs:
   integration:
     name: Run integration tests
     runs-on: ubuntu-latest
-    container:
-      image: postgres:latest
-      options: --name uncc_six_mans
-      ports:
-        - 5432:5432
-      env:
-        POSTGRES_USER: Norm
-        POSTGRES_PASSWORD: NormTheNiner
+    
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: postgres_integration_test_db
 
     steps:
       - uses: actions/checkout@v2
