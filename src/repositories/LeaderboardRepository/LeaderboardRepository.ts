@@ -1,11 +1,14 @@
 import { Leaderboard, Prisma, PrismaClient } from "@prisma/client";
+import getEnvVariable from "../../utils/getEnvVariable";
 import { PlayerStats, PlayerStatsUpdates } from "./types";
 
 export class LeaderboardRepository {
   #Leaderboard: Prisma.LeaderboardDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
+  #seasonKey: string;
 
   constructor() {
     this.#Leaderboard = new PrismaClient().leaderboard;
+    this.#seasonKey = getEnvVariable("season_key");
   }
 
   /**
@@ -99,8 +102,7 @@ export class LeaderboardRepository {
           losses: playerUpdates.losses,
           mmr: playerUpdates.mmr,
           playerId: playerUpdates.id,
-          // TODO: fix me
-          seasonKey: "",
+          seasonKey: this.#seasonKey,
           wins: playerUpdates.wins,
         },
         update: {
@@ -110,9 +112,8 @@ export class LeaderboardRepository {
         },
         where: {
           seasonKey_playerId: {
-            // TODO: fix me
             playerId: playerUpdates.id,
-            seasonKey: "",
+            seasonKey: this.#seasonKey,
           },
         },
       });
