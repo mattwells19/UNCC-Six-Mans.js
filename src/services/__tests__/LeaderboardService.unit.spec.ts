@@ -1,4 +1,3 @@
-import { mocked } from "ts-jest/utils";
 import { LeaderboardToString } from "../LeaderboardService";
 import { PlayerStats } from "../../repositories/LeaderboardRepository/types";
 import LeaderboardRepository from "../../repositories/LeaderboardRepository";
@@ -30,7 +29,7 @@ function makePlayerStats(
 
 describe("Leaderboard Service tests", () => {
   it("sends empty message when there are no player stats", async () => {
-    mocked(LeaderboardRepository.getPlayersStats).mockResolvedValue([]);
+    jest.mocked(LeaderboardRepository.getPlayersStats).mockResolvedValue([]);
     const result = await LeaderboardToString();
 
     expect(result).toHaveLength(1);
@@ -39,7 +38,7 @@ describe("Leaderboard Service tests", () => {
 
   it("separates player stats in groups of 10", async () => {
     const mockPlayers = Array.from({ length: 12 }, () => makePlayerStats());
-    mocked(LeaderboardRepository.getPlayersStats).mockResolvedValue(mockPlayers);
+    jest.mocked(LeaderboardRepository.getPlayersStats).mockResolvedValue(mockPlayers);
     const result = await LeaderboardToString();
 
     expect(result).toHaveLength(2);
@@ -73,7 +72,7 @@ describe("Leaderboard Service tests", () => {
       wins: 10,
     };
 
-    mocked(LeaderboardRepository.getPlayersStats).mockResolvedValue([mockPlayer1, mockPlayer2]);
+    jest.mocked(LeaderboardRepository.getPlayersStats).mockResolvedValue([mockPlayer1, mockPlayer2]);
     const result = await LeaderboardToString();
 
     expect(result).toMatchInlineSnapshot(`
