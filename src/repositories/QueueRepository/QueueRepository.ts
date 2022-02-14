@@ -115,20 +115,22 @@ export class QueueRepository {
    * @param options BallChaser fields to update. ID field is required for retrieving the BallChaser object to update.
    */
   async updateAllBallChasers(ballChasers: BallChaser[]): Promise<void> {
-    for(const ballChaser of ballChasers) {
+    for (const ballChaser of ballChasers) {
       const ballChaserPage = await this.#Client.getById(ballChaser.id);
 
       if (!ballChaserPage) {
         throw new Error(`Cannot update BallChaser. No BallChaser with the ID ${ballChaser.id} was found.`);
       }
-  
+
       const existingBallChaserProps = ballChaserPage.properties;
       const propertiesUpdate: BallChaserPageProperties = {
         ID: NotionElementHelper.notionTextElementFromText(ballChaser.id),
-        MMR: ballChaser.mmr ? NotionElementHelper.notionNumberElementFromNumber(ballChaser.mmr) :
-          existingBallChaserProps.MMR,
-        Name: ballChaser.name ? NotionElementHelper.notionTextElementFromText(ballChaser.name) : 
-          existingBallChaserProps.Name,
+        MMR: ballChaser.mmr
+          ? NotionElementHelper.notionNumberElementFromNumber(ballChaser.mmr)
+          : existingBallChaserProps.MMR,
+        Name: ballChaser.name
+          ? NotionElementHelper.notionTextElementFromText(ballChaser.name)
+          : existingBallChaserProps.Name,
         QueueTime: ballChaser.queueTime
           ? NotionElementHelper.notionDateElementFromDateTime(ballChaser.queueTime)
           : existingBallChaserProps.QueueTime,
@@ -136,11 +138,11 @@ export class QueueRepository {
           ? NotionElementHelper.notionSelectElementFromValue<Team>(ballChaser.team)
           : existingBallChaserProps.Team,
         isCap:
-        ballChaser.isCap !== undefined
-          ? NotionElementHelper.notionBooleanElementFromBool(ballChaser.isCap)
-          : existingBallChaserProps.isCap,
+          ballChaser.isCap !== undefined
+            ? NotionElementHelper.notionBooleanElementFromBool(ballChaser.isCap)
+            : existingBallChaserProps.isCap,
       };
-    
+
       await this.#Client.update(ballChaserPage.id, propertiesUpdate);
     }
   }

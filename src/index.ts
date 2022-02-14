@@ -27,7 +27,6 @@ NormClient.on("ready", () => {
   });
 
   NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
-
     getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
       if (queueChannel) {
         onInteraction(buttonInteraction, queueChannel);
