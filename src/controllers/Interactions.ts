@@ -23,17 +23,18 @@ export async function onInteraction(buttonInteraction: Interaction, queueChannel
 
   switch (buttonInteraction.customId) {
     case "joinQueue": {
-      const queueMember = await QueueRepository.getBallChaserInQueue(buttonInteraction.user.toString());
-      const leaderboardMember = await LeaderboardRepository.getPlayerStats(buttonInteraction.user.toString());
+
+      const queueMember = await QueueRepository.getBallChaserInQueue(buttonInteraction.user.id);
+      const leaderboardMember = await LeaderboardRepository.getPlayerStats(buttonInteraction.user.id);
 
       if (!queueMember) {
         const player: BallChaser = {
-          id: buttonInteraction.user.toString(),
+          id: buttonInteraction.user.id,
           isCap: false,
           mmr: leaderboardMember ? leaderboardMember.mmr : 100,
           name: buttonInteraction.user.username,
-          queueTime: DateTime.now(),
-          team: null,
+          queueTime: DateTime.now().plus({hours: 1}),
+          team: null
         };
         await QueueRepository.addBallChaserToQueue(player);
       }
@@ -51,10 +52,11 @@ export async function onInteraction(buttonInteraction: Interaction, queueChannel
     }
 
     case "leaveQueue": {
-      const member = await QueueRepository.getBallChaserInQueue(buttonInteraction.user.toString());
+
+      const member = await QueueRepository.getBallChaserInQueue(buttonInteraction.user.id);
 
       if (member != null) {
-        await QueueRepository.removeBallChaserFromQueue(buttonInteraction.user.toString());
+        await QueueRepository.removeBallChaserFromQueue(buttonInteraction.user.id);
 
         const remainingMembers = await QueueRepository.getAllBallChasersInQueue();
 
