@@ -1,4 +1,4 @@
-import { Interaction, TextChannel } from "discord.js";
+import { Interaction, MessagePayload, TextChannel } from "discord.js";
 import { DateTime } from "luxon";
 import LeaderboardRepository from "../repositories/LeaderboardRepository";
 import QueueRepository from "../repositories/QueueRepository";
@@ -18,7 +18,6 @@ export async function getCurrentQueue(queueChannel: TextChannel): Promise<void> 
 export async function onInteraction(buttonInteraction: Interaction, queueChannel: TextChannel): Promise<void> {
 
   if (!buttonInteraction.isButton()) return;
-  await buttonInteraction.deferReply();
 
   switch (buttonInteraction.customId) {
     case "joinQueue": {
@@ -42,6 +41,7 @@ export async function onInteraction(buttonInteraction: Interaction, queueChannel
 
       queueChannel.messages.delete(buttonInteraction.message.id);
 
+      await buttonInteraction.deferReply();
       await buttonInteraction.editReply({ 
         components: [MessageBuilder.queueButtons],
         embeds: [MessageBuilder.queueMessage(ballchasers)]
@@ -60,19 +60,20 @@ export async function onInteraction(buttonInteraction: Interaction, queueChannel
 
         queueChannel.messages.delete(buttonInteraction.message.id);
 
+        await buttonInteraction.deferReply();
         await buttonInteraction.editReply({ 
           components: [MessageBuilder.queueButtons],
           embeds: [MessageBuilder.queueMessage(remainingMembers)]
         });
 
       } else {
-        const ballchasers = await QueueRepository.getAllBallChasersInQueue();
+        // const ballchasers = await QueueRepository.getAllBallChasersInQueue();
 
-        queueChannel.messages.delete(buttonInteraction.message.id);
+        // queueChannel.messages.delete(buttonInteraction.message.id);
 
+        await buttonInteraction.deferReply({ ephemeral: true });
         await buttonInteraction.editReply({
-          components: [MessageBuilder.queueButtons],
-          embeds: [MessageBuilder.queueMessage(ballchasers)]
+            content: "You are not in the queue!"
         });
       }
       break;
