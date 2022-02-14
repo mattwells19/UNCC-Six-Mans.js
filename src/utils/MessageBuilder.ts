@@ -18,6 +18,20 @@ export default class MessageBuilder {
         .setStyle("DANGER"),
     );
 
+    static readonly disabledQueueButtons = new MessageActionRow()
+    .addComponents(
+      new MessageButton()
+        .setCustomId("joinQueue")
+        .setLabel("Join")
+        .setStyle("SUCCESS")
+        .setDisabled(true),
+      new MessageButton()
+        .setCustomId("leaveQueue")
+        .setLabel("Leave")
+        .setStyle("DANGER")
+        .setDisabled(true),
+    );
+
   static leaderboardMessage(leaderboardInfo : string[]) : MessageEmbed[] {
 
     const embeds = leaderboardInfo.map((content, index) => {
@@ -44,7 +58,8 @@ export default class MessageBuilder {
         .setThumbnail(this.normIconURL)
         .setDescription("Click the green button to join the queue!");
     } else{
-      const ballChaserNames = ballchasers.map((ballChaser) => ballChaser.name).join("\n");
+      const ballChaserNames = ballchasers.map((ballChaser) => 
+      `${ballChaser.name} (${(ballChaser.queueTime!.diffNow().as("minutes") + 1).toFixed()} mins)`).join("\n");
 
       embed = new MessageEmbed()
         .setColor("GREEN")
