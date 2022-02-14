@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "ts-node-dev -r dotenv/config src/index.ts",
     "test": "jest --testMatch='**/__tests__/*.unit.spec.ts' --testNamePattern=",
-    "integration": "jest --testMatch='**/__tests__/*.int.spec.ts' --setupFiles='./jest.setup.js' --testNamePattern="
+    "integration": "jest --testMatch='**/__tests__/*.int.spec.ts' --setupFiles='./jest.setup.js' --testNamePattern=",
+    "prod": "node index.js"
   },
   "repository": {
     "type": "git",

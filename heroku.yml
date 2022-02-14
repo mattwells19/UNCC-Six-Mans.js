@@ -1,0 +1,7 @@
+build:
+  docker:
+    worker: Dockerfile
+release:
+  image: worker
+  command:
+    - npx prisma migrate deploy
