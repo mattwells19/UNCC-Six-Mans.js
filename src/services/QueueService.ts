@@ -20,7 +20,7 @@ export async function joinQueue(userId: string, userName: string): Promise<Reado
   } else {
     await QueueRepository.updateBallChaserInQueue({
       id: userId,
-      queueTime: DateTime.now().plus({ minutes: 60}),
+      queueTime: DateTime.now().plus({ minutes: 60 }),
     });
   }
 

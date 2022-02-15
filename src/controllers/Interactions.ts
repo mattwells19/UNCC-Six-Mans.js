@@ -18,11 +18,13 @@ export async function handleInteraction(buttonInteraction: Interaction): Promise
 
   switch (buttonInteraction.customId) {
     case ButtonCustomID.JoinQueue: {
+      await message.edit(MessageBuilder.disabledButtonsJoining());
       const ballchasers = await joinQueue(buttonInteraction.user.id, buttonInteraction.user.username);
       await message.edit(MessageBuilder.queueMessage(ballchasers));
       break;
     }
     case ButtonCustomID.LeaveQueue: {
+      await message.edit(MessageBuilder.disabledButtonsLeaving());
       const remainingMembers = await leaveQueue(buttonInteraction.user.id);
 
       if (remainingMembers) {
