@@ -4,10 +4,7 @@ import deleteAllMessagesInTextChannel from "../utils/deleteAllMessagesInTextChan
 import MessageBuilder from "../utils/MessageBuilder";
 
 export async function updateLeaderboardChannel(leaderboardChannel: TextChannel): Promise<void> {
-
   const leaderboardContent = await LeaderboardToString();
-
   await deleteAllMessagesInTextChannel(leaderboardChannel);
-
-  await leaderboardChannel.send({ embeds: MessageBuilder.leaderboardMessage(leaderboardContent) });
+  await leaderboardChannel.send(MessageBuilder.leaderboardMessage(leaderboardContent));
 }

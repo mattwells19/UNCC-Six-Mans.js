@@ -1,75 +1,34 @@
-import { Interaction, Message, MessagePayload, TextChannel } from "discord.js";
-import { DateTime } from "luxon";
-import LeaderboardRepository from "../repositories/LeaderboardRepository";
+import { Interaction, Message, TextChannel } from "discord.js";
 import QueueRepository from "../repositories/QueueRepository";
-import { BallChaser } from "../types/common";
-import MessageBuilder from "../utils/MessageBuilder";
+import { joinQueue, leaveQueue } from "../services/QueueService";
+import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
 
-export async function getCurrentQueue(queueChannel: TextChannel): Promise<void> {
-
-    const ballchasers = await QueueRepository.getAllBallChasersInQueue();
-
-    await queueChannel.send({
-        components: [MessageBuilder.queueButtons],
-        embeds: [MessageBuilder.queueMessage(ballchasers)]
-    });
+export async function postCurrentQueue(queueChannel: TextChannel): Promise<void> {
+  const ballchasers = await QueueRepository.getAllBallChasersInQueue();
+  await queueChannel.send(MessageBuilder.queueMessage(ballchasers));
 }
 
-export async function onInteraction(buttonInteraction: Interaction, queueChannel: TextChannel): Promise<void> {
+export async function handleInteraction(buttonInteraction: Interaction): Promise<void> {
+  if (!buttonInteraction.isButton()) return;
 
-    if (!buttonInteraction.isButton()) return;
-    await buttonInteraction.deferUpdate();
+  const message = buttonInteraction.message;
+  if (!(message instanceof Message)) return;
 
-    switch (buttonInteraction.customId) {
-        case "joinQueue": {
+  await buttonInteraction.deferUpdate();
 
-            const queueMember = await QueueRepository.getBallChaserInQueue(buttonInteraction.user.id);
-
-            if (!queueMember) {
-                const leaderboardMember = await LeaderboardRepository.getPlayerStats(buttonInteraction.user.id);
-                const player: BallChaser = {
-                    id: buttonInteraction.user.id,
-                    isCap: false,
-                    mmr: leaderboardMember ? leaderboardMember.mmr : 100,
-                    name: buttonInteraction.user.username,
-                    queueTime: DateTime.now().plus({ hours: 1 }),
-                    team: null
-                };
-                await QueueRepository.addBallChaserToQueue(player);
-            } else {
-                await QueueRepository.updateBallChaserInQueue({
-                    id: buttonInteraction.user.id,
-                    queueTime: DateTime.now().plus({hours: 1})
-                })
-            }
-
-            const ballchasers = await QueueRepository.getAllBallChasersInQueue();
-
-            await (buttonInteraction.message as Message).edit({
-                components: [MessageBuilder.queueButtons],
-                embeds: [MessageBuilder.queueMessage(ballchasers)]
-            });
-            break;
-        }
-
-        case "leaveQueue": {
-
-            const member = await QueueRepository.getBallChaserInQueue(buttonInteraction.user.id);
-
-            if (member != null) {
-
-                await QueueRepository.removeBallChaserFromQueue(buttonInteraction.user.id);
-
-                const remainingMembers = await QueueRepository.getAllBallChasersInQueue();
-
-
-                await (buttonInteraction.message as Message).edit({
-                    components: [MessageBuilder.queueButtons],
-                    embeds: [MessageBuilder.queueMessage(remainingMembers)]
-                });
-
-            }
-            break;
-        }
+  switch (buttonInteraction.customId) {
+    case ButtonCustomID.JoinQueue: {
+      const ballchasers = await joinQueue(buttonInteraction.user.id, buttonInteraction.user.username);
+      await message.edit(MessageBuilder.queueMessage(ballchasers));
+      break;
     }
+    case ButtonCustomID.LeaveQueue: {
+      const remainingMembers = await leaveQueue(buttonInteraction.user.id);
+
+      if (remainingMembers) {
+        await message.edit(MessageBuilder.queueMessage(remainingMembers));
+      }
+      break;
+    }
+  }
 }
