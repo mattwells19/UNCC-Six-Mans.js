@@ -6,7 +6,6 @@ import { BallChaser } from "../types/common";
 import MessageBuilder from "../utils/MessageBuilder";
 import { createRandomMatch } from "./MatchController";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
-import { Guid } from "guid-typescript";
 
 export async function getCurrentQueue(queueChannel: TextChannel): Promise<void> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
