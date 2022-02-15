@@ -1,8 +1,9 @@
-import { Client, Interaction } from "discord.js";
+import { Client } from "discord.js";
 import { updateLeaderboardChannel } from "./controllers/LeaderboardChannelController";
-import { getCurrentQueue, onInteraction } from "./controllers/Interactions";
+import { handleInteraction, postCurrentQueue } from "./controllers/Interactions";
 import getDiscordChannelById from "./utils/getDiscordChannelById";
 import getEnvVariable from "./utils/getEnvVariable";
+import { handleDevInteraction } from "./controllers/DevInteractions";
 
 const NormClient = new Client({ intents: "GUILDS" });
 
@@ -22,17 +23,14 @@ NormClient.on("ready", () => {
 
   getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
     if (queueChannel) {
-      getCurrentQueue(queueChannel);
+      postCurrentQueue(queueChannel);
     }
   });
+});
 
-  NormClient.on("interactionCreate", async (buttonInteraction: Interaction) => {
-    getDiscordChannelById(NormClient, queueChannelId).then((queueChannel) => {
-      if (queueChannel) {
-        onInteraction(buttonInteraction, queueChannel);
-      }
-    });
-  });
+NormClient.on("interactionCreate", async (interaction) => {
+  handleInteraction(interaction);
+  handleDevInteraction(interaction);
 });
 
 NormClient.login(discordToken);

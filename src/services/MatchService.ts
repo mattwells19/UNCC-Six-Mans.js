@@ -1,11 +1,11 @@
 import { BallChaser } from "../types/common";
-import TeamPicker from "../repositories/helpers/TeamPicker";
+import { createRandomTeams } from "../services/TeamAssignmentService";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import QueueRepository from "../repositories/QueueRepository";
 
 export async function createRandomMatch(ballChasers: BallChaser[]): Promise<void> {
   //Assign teams based on MMR
-  const createdTeams = TeamPicker.createRandomTeams(ballChasers);
+  const createdTeams = await createRandomTeams(ballChasers);
 
   await createMatch(createdTeams);
 }

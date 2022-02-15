@@ -1,135 +1,107 @@
-import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { Message, MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
+import { report } from "process";
 import { BallChaser } from "../types/common";
 import getEnvVariable from "./getEnvVariable";
 
+export const enum ButtonCustomID {
+  JoinQueue = "joinQueue",
+  LeaveQueue = "leaveQueue",
+  CreateRandomTeam = "randomizeTeams",
+  FillTeam = "fillTeam",
+  ReportMatch = "reportMatch",
+  RemoveAll = "removeAll",
+  BreakMatch = "breakMatch",
+}
+
 export default class MessageBuilder {
-  // eslint-disable-next-line max-len
-  static readonly normIconURL =
+  private static readonly normIconURL =
     "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";
 
-  static queueButtons(): MessageActionRow {
-    const buttons = new MessageActionRow().addComponents(
-      new MessageButton().setCustomId("joinQueue").setLabel("Join").setStyle("SUCCESS"),
-      new MessageButton().setCustomId("leaveQueue").setLabel("Leave").setStyle("DANGER")
-    );
-
-    if (getEnvVariable("ENVIRONMENT") == "dev") {
-      buttons.addComponents(
-        new MessageButton().setCustomId("createFullTeam").setLabel("DEV: Create Full Team").setStyle("DANGER"),
-        new MessageButton().setCustomId("removeAll").setLabel("DEV: Remove All").setStyle("DANGER")
-      );
-    }
-
-    return buttons;
-  }
-
-  static queueFullButtons(): MessageActionRow {
-    const buttons = new MessageActionRow().addComponents(
-      new MessageButton().setCustomId("randomizeTeams").setLabel("Random Teams").setStyle("SUCCESS"),
-      new MessageButton().setCustomId("leaveQueue").setLabel("Leave").setStyle("DANGER")
-    );
-
-    if (getEnvVariable("ENVIRONMENT") == "dev") {
-      buttons.addComponents(
-        new MessageButton().setCustomId("removeAll").setLabel("DEV: Remove All").setStyle("DANGER")
-      );
-    }
-
-    return buttons;
-  }
-
-  static activeMatchButtons(): MessageActionRow {
-    const buttons = new MessageActionRow().addComponents(
-      new MessageButton().setCustomId("reportMatch").setLabel("Report").setStyle("SUCCESS")
-    );
-
-    if (getEnvVariable("ENVIRONMENT") == "dev") {
-      buttons.addComponents(
-        new MessageButton().setCustomId("breakMatch").setLabel("DEV: Break Match").setStyle("DANGER")
-      );
-    }
-
-    return buttons;
-  }
-
-  static leaderboardMessage(leaderboardInfo: string[]): MessageEmbed[] {
+  static leaderboardMessage(leaderboardInfo: string[]): MessageOptions {
     const embeds = leaderboardInfo.map((content, index) => {
       const embedCtr = leaderboardInfo.length > 1 ? `(${index + 1}/${leaderboardInfo.length})` : "";
 
-      return new MessageEmbed()
-        .setColor("BLUE")
-        .setTitle(`UNCC 6 Mans | Leaderboard ${embedCtr}`.trim())
-        .setThumbnail(this.normIconURL)
-        .setDescription("```" + content + "```");
+      return new MessageEmbed({
+        color: "BLUE",
+        description: "```" + content + "```",
+        thumbnail: { url: this.normIconURL },
+        title: `UNCC 6 Mans | Leaderboard ${embedCtr}`.trim(),
+      });
     });
 
-    return embeds;
+    return {
+      embeds,
+    };
   }
 
-  static queueMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>): MessageEmbed {
-    let embed: MessageEmbed;
+  static queueMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>): MessageOptions {
+    const embed = new MessageEmbed({
+      color: "GREEN",
+      thumbnail: { url: this.normIconURL },
+    });
+    const joinButton = new MessageButton({
+      customId: ButtonCustomID.JoinQueue,
+      label: "Join",
+      style: "SUCCESS",
+    });
+    const leaveButton = new MessageButton({
+      customId: ButtonCustomID.LeaveQueue,
+      label: "Leave",
+      style: "DANGER",
+    });
 
-    if (ballchasers == null) {
-      embed = new MessageEmbed()
-        .setColor("GREEN")
-        .setTitle("Queue is Empty")
-        .setThumbnail(this.normIconURL)
-        .setDescription("Click the green button to join the queue!");
+    if (ballchasers.length == 0) {
+      embed.setTitle("Queue is Empty").setDescription("Click the green button to join the queue!");
     } else {
-      const ballChaserNames = ballchasers.map((ballChaser) => ballChaser.name).join("\n");
-      embed = new MessageEmbed()
-        .setColor("GREEN")
-        .setTitle("Current Queue")
-        .setThumbnail(this.normIconURL)
-        .setDescription(
-          "Click the green button to join the queue!\n\n" +
-            "Current Queue: " +
-            ballchasers.length +
-            "/6\n" +
-            ballChaserNames
-        );
+      const ballChaserList = ballchasers
+        .map((ballChaser) => {
+          // + 1 since it seems that joining the queue calculates to 59 instead of 60
+          const queueTime = ballChaser.queueTime?.diffNow().as("minutes") ?? 0;
+          return `${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
+        })
+        .join("\n");
+
+      embed
+        .setTitle(`Current Queue: ${ballchasers.length}/6`)
+        .setDescription("Click the green button to join the queue!\n\n" + ballChaserList);
     }
 
-    return embed;
+    return {
+      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
+      embeds: [embed],
+    };
   }
 
-  static fullQueueMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>): MessageEmbed {
-    const ballChaserNames = ballchasers
-      .map(function (a) {
-        return a.name;
+  static activeMatchMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>) : MessageOptions {
+    const embed = new MessageEmbed({
+      color: "GREEN",
+      thumbnail: { url: this.normIconURL },
+    });
+    const reportMatch = new MessageButton({
+      customId: ButtonCustomID.ReportMatch,
+      label: "Report Match",
+      style: "SUCCESS",
+    });
+    const breakMatch = new MessageButton({
+      customId: ButtonCustomID.BreakMatch,
+      label: "Break Match",
+      style: "DANGER",
+    });
+
+    const ballChaserList = ballchasers
+      .map((ballChaser) => {
+        return ballChaser.name;
       })
       .join("\n");
+    
+    embed
+      .setTitle("Active Match")
+      .setDescription("Make sure to report your match after the games.\n\n" + ballChaserList);
 
-    const embed = new MessageEmbed()
-      .setColor("#3ba55c") // <- This is green
-      .setTitle("Queue is Full")
-      .setThumbnail(this.normIconURL)
-      .setDescription(
-        "Click the Random Button to assign teams.\n\n" +
-          "Current Queue: " +
-          ballchasers.length +
-          "/6\n" +
-          ballChaserNames
-      );
-
-    return embed;
-  }
-
-  static activeMatchMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>): MessageEmbed {
-    const ballChaserNames = ballchasers
-      .map(function (a) {
-        return a.name;
-      })
-      .join("\n");
-
-    const embed = new MessageEmbed()
-      .setColor("#3ba55c") // <- This is green
-      .setTitle("Active Match -Good Luck!")
-      .setThumbnail(this.normIconURL)
-      .setDescription(
-        "Report match once complete.\n\n" + "Current Queue: " + ballchasers.length + "/6\n" + ballChaserNames
-      );
-
-    return embed;
+    return {
+      components: [new MessageActionRow(
+        {components: [getEnvVariable("ENVIRONMENT") == "dev" ? breakMatch : reportMatch]})],
+      embeds: [embed],
+    };
   }
 }
