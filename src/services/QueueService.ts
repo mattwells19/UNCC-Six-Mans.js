@@ -13,14 +13,14 @@ export async function joinQueue(userId: string, userName: string): Promise<Reado
       isCap: false,
       mmr: leaderboardMember ? leaderboardMember.mmr : 100,
       name: userName,
-      queueTime: DateTime.now().plus({ hours: 1 }),
+      queueTime: DateTime.now().plus({ minutes: 60}),
       team: null,
     };
     await QueueRepository.addBallChaserToQueue(player);
   } else {
     await QueueRepository.updateBallChaserInQueue({
       id: userId,
-      queueTime: DateTime.now().plus({ hours: 1 }),
+      queueTime: DateTime.now().plus({ minutes: 60}),
     });
   }
 
