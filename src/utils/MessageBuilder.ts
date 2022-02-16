@@ -41,19 +41,19 @@ export default class MessageBuilder {
       style: "SUCCESS",
     });
     const leaveButton = new MessageButton({
-      customId: ButtonCustomID.LeaveQueue,   
+      customId: ButtonCustomID.LeaveQueue,
       disabled: true,
       label: "Leave",
       style: "DANGER",
     });
-    return{
+    return {
       components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
     };
   }
 
   static disabledButtonsLeaving(): MessageOptions {
     const joinButton = new MessageButton({
-      customId: ButtonCustomID.JoinQueue,   
+      customId: ButtonCustomID.JoinQueue,
       disabled: true,
       label: "Join",
       style: "SUCCESS",
@@ -64,7 +64,7 @@ export default class MessageBuilder {
       label: "Please wait...",
       style: "DANGER",
     });
-    return{
+    return {
       components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
     };
   }
