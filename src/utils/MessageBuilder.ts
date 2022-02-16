@@ -30,14 +30,14 @@ export default class MessageBuilder {
   static disabledButtonsJoining(): MessageOptions {
     const joinButton = new MessageButton({
       customId: ButtonCustomID.JoinQueue,
-      label: "Please wait...",
       disabled: true,
+      label: "Please wait...",
       style: "SUCCESS",
     });
     const leaveButton = new MessageButton({
       customId: ButtonCustomID.LeaveQueue,
-      label: "Leave",
       disabled: true,
+      label: "Leave",
       style: "DANGER",
     });
     return {
@@ -48,14 +48,14 @@ export default class MessageBuilder {
   static disabledButtonsLeaving(): MessageOptions {
     const joinButton = new MessageButton({
       customId: ButtonCustomID.JoinQueue,
-      label: "Join",
       disabled: true,
+      label: "Join",
       style: "SUCCESS",
     });
     const leaveButton = new MessageButton({
       customId: ButtonCustomID.LeaveQueue,
-      label: "Please wait...",
       disabled: true,
+      label: "Please wait...",
       style: "DANGER",
     });
     return {
