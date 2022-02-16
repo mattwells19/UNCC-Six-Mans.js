@@ -34,6 +34,42 @@ export default class MessageBuilder {
     };
   }
 
+  static disabledButtonsJoining(): MessageOptions {
+    const joinButton = new MessageButton({
+      customId: ButtonCustomID.JoinQueue,
+      label: "Please wait...",
+      style: "SUCCESS",
+      disabled: true,
+    });
+    const leaveButton = new MessageButton({
+      customId: ButtonCustomID.LeaveQueue,
+      label: "Leave",
+      style: "DANGER",
+      disabled: true,
+    });
+    return{
+      components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
+    }
+  }
+
+  static disabledButtonsLeaving(): MessageOptions {
+    const joinButton = new MessageButton({
+      customId: ButtonCustomID.JoinQueue,
+      label: "Join",
+      style: "SUCCESS",
+      disabled: true,
+    });
+    const leaveButton = new MessageButton({
+      customId: ButtonCustomID.LeaveQueue,
+      label: "Please wait...",
+      style: "DANGER",
+      disabled: true,
+    });
+    return{
+      components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
+    }
+  }
+
   static queueMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>): MessageOptions {
     const embed = new MessageEmbed({
       color: "GREEN",
