@@ -29,6 +29,10 @@ NormClient.on("ready", () => {
 });
 
 NormClient.on("interactionCreate", async (interaction) => {
+  
+  if (!interaction.isButton()) return;
+  await interaction.deferUpdate();
+
   handleInteraction(interaction);
   handleDevInteraction(interaction);
 });

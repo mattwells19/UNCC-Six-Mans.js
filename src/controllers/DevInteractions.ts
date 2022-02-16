@@ -2,6 +2,7 @@ import { Interaction, Message } from "discord.js";
 import QueueRepository from "../repositories/QueueRepository";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
+import { fillTeams } from "../utils/devFillTeams";
 
 export async function handleDevInteraction(buttonInteraction: Interaction): Promise<void> {
   if (!buttonInteraction.isButton()) return;
@@ -9,10 +10,12 @@ export async function handleDevInteraction(buttonInteraction: Interaction): Prom
   const message = buttonInteraction.message;
   if (!(message instanceof Message)) return;
 
-  await buttonInteraction.deferUpdate();
-
   switch (buttonInteraction.customId) {
     case ButtonCustomID.FillTeam: {
+      await fillTeams();
+
+      const ballChasers = await QueueRepository.getAllBallChasersInQueue();
+      await message.edit(MessageBuilder.activeMatchMessage(ballChasers));
 
       break;
     }
@@ -24,7 +27,7 @@ export async function handleDevInteraction(buttonInteraction: Interaction): Prom
       break;
     }
     case ButtonCustomID.BreakMatch: {
-      await ActiveMatchRepository.removeAllPlayersInActiveMatch("<@929967919763439656>");
+      await ActiveMatchRepository.removeAllPlayersInActiveMatch("346838372649795595");
 
       const ballChasers = await QueueRepository.getAllBallChasersInQueue();
       await message.edit(MessageBuilder.queueMessage(ballChasers));

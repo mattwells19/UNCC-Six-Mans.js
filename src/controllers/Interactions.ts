@@ -16,8 +16,6 @@ export async function handleInteraction(buttonInteraction: Interaction): Promise
   const message = buttonInteraction.message;
   if (!(message instanceof Message)) return;
 
-  await buttonInteraction.deferUpdate();
-
   switch (buttonInteraction.customId) {
     case ButtonCustomID.JoinQueue: {
       const ballchasers = await joinQueue(buttonInteraction.user.id, buttonInteraction.user.username);
