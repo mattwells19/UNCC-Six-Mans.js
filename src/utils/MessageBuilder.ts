@@ -31,36 +31,36 @@ export default class MessageBuilder {
     const joinButton = new MessageButton({
       customId: ButtonCustomID.JoinQueue,
       label: "Please wait...",
-      style: "SUCCESS",
       disabled: true,
+      style: "SUCCESS",
     });
     const leaveButton = new MessageButton({
       customId: ButtonCustomID.LeaveQueue,
       label: "Leave",
-      style: "DANGER",
       disabled: true,
+      style: "DANGER",
     });
-    return{
+    return {
       components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
-    }
+    };
   }
 
   static disabledButtonsLeaving(): MessageOptions {
     const joinButton = new MessageButton({
       customId: ButtonCustomID.JoinQueue,
       label: "Join",
-      style: "SUCCESS",
       disabled: true,
+      style: "SUCCESS",
     });
     const leaveButton = new MessageButton({
       customId: ButtonCustomID.LeaveQueue,
       label: "Please wait...",
-      style: "DANGER",
       disabled: true,
+      style: "DANGER",
     });
-    return{
+    return {
       components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
-    }
+    };
   }
 
   static queueMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>): MessageOptions {
