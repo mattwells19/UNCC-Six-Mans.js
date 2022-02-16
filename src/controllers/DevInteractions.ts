@@ -12,11 +12,9 @@ export async function handleDevInteraction(buttonInteraction: Interaction): Prom
 
   switch (buttonInteraction.customId) {
     case ButtonCustomID.FillTeam: {
-      await fillTeams();
+      const fullTeam = await fillTeams();
 
-      const ballChasers = await QueueRepository.getAllBallChasersInQueue();
-      await message.edit(MessageBuilder.activeMatchMessage(ballChasers));
-
+      await message.edit(MessageBuilder.fullQueueMessage(fullTeam));
       break;
     }
     case ButtonCustomID.RemoveAll: {

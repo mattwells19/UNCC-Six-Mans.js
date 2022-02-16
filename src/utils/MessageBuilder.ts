@@ -1,6 +1,5 @@
-import { Message, MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
-import { report } from "process";
-import { BallChaser } from "../types/common";
+import { MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
+import { BallChaser, Team } from "../types/common";
 import getEnvVariable from "./getEnvVariable";
 
 export const enum ButtonCustomID {
@@ -37,37 +36,37 @@ export default class MessageBuilder {
   static disabledButtonsJoining(): MessageOptions {
     const joinButton = new MessageButton({
       customId: ButtonCustomID.JoinQueue,
+      disabled: true,
       label: "Please wait...",
       style: "SUCCESS",
-      disabled: true,
     });
     const leaveButton = new MessageButton({
-      customId: ButtonCustomID.LeaveQueue,
+      customId: ButtonCustomID.LeaveQueue,   
+      disabled: true,
       label: "Leave",
       style: "DANGER",
-      disabled: true,
     });
     return{
       components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
-    }
+    };
   }
 
   static disabledButtonsLeaving(): MessageOptions {
     const joinButton = new MessageButton({
-      customId: ButtonCustomID.JoinQueue,
+      customId: ButtonCustomID.JoinQueue,   
+      disabled: true,
       label: "Join",
       style: "SUCCESS",
-      disabled: true,
     });
     const leaveButton = new MessageButton({
       customId: ButtonCustomID.LeaveQueue,
+      disabled: true,
       label: "Please wait...",
       style: "DANGER",
-      disabled: true,
     });
     return{
       components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
-    }
+    };
   }
 
   static queueMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>): MessageOptions {
@@ -83,6 +82,16 @@ export default class MessageBuilder {
     const leaveButton = new MessageButton({
       customId: ButtonCustomID.LeaveQueue,
       label: "Leave",
+      style: "DANGER",
+    });
+    const fillTeamButton = new MessageButton({
+      customId: ButtonCustomID.FillTeam,
+      label: "DEV: Fill Queue",
+      style: "DANGER",
+    });
+    const removeAllButton = new MessageButton({
+      customId: ButtonCustomID.RemoveAll,
+      label: "DEV: Remove All",
       style: "DANGER",
     });
 
@@ -103,14 +112,57 @@ export default class MessageBuilder {
     }
 
     return {
-      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
+      components: getEnvVariable("ENVIRONMENT") == "dev" ?
+        [new MessageActionRow({ components: [joinButton, leaveButton, fillTeamButton, removeAllButton] })] :
+        [new MessageActionRow({ components: [joinButton, leaveButton]})],
+      embeds: [embed],
+    };
+  }
+
+  static fullQueueMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>) : MessageOptions {
+    const embed = new MessageEmbed({
+      color: "GREEN",
+      thumbnail: { url: this.normIconURL },
+    });
+    const pickTeamsButton = new MessageButton({
+      customId: ButtonCustomID.CreateRandomTeam,
+      label: "Create Teams",
+      style: "SUCCESS",
+    });
+    const leaveButton = new MessageButton({
+      customId: ButtonCustomID.LeaveQueue,
+      label: "Leave",
+      style: "DANGER",
+    });
+    const removeAllButton = new MessageButton({
+      customId: ButtonCustomID.BreakMatch,
+      label: "DEV: Remove All",
+      style: "DANGER",
+    });
+
+    const ballChaserList = ballchasers
+      .map((ballChaser) => {
+        // + 1 since it seems that joining the queue calculates to 59 instead of 60
+        const queueTime = ballChaser.queueTime?.diffNow().as("minutes") ?? 0;
+        return `${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
+      })
+      .join("\n");
+
+    embed
+      .setTitle("Queue is Full")
+      .setDescription("Click the Create Teams button to get started!\n\n" + ballChaserList);
+
+    return {
+      components: getEnvVariable("ENVIRONMENT") == "dev" ?
+        [new MessageActionRow({ components: [pickTeamsButton, leaveButton, removeAllButton] })] :
+        [new MessageActionRow({ components: [pickTeamsButton, leaveButton]})],
       embeds: [embed],
     };
   }
 
   static activeMatchMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>) : MessageOptions {
     const embed = new MessageEmbed({
-      color: "GREEN",
+      color: "#F1C40F",
       thumbnail: { url: this.normIconURL },
     });
     const reportMatch = new MessageButton({
@@ -120,23 +172,31 @@ export default class MessageBuilder {
     });
     const breakMatch = new MessageButton({
       customId: ButtonCustomID.BreakMatch,
-      label: "Break Match",
+      label: "DEV: Break Match",
       style: "DANGER",
     });
 
-    const ballChaserList = ballchasers
-      .map((ballChaser) => {
-        return ballChaser.name;
-      })
-      .join("\n");
+    const orangeTeam: Array<string> = [];
+    const blueTeam: Array<string> = [];
+
+    ballchasers.forEach((ballChaser) => {
+      if (ballChaser.team === Team.Blue) {
+        blueTeam.push("<@"+ballChaser.id+">");
+      } else {
+        orangeTeam.push("<@"+ballChaser.id+">");
+      }
+    });
     
     embed
-      .setTitle("Active Match")
-      .setDescription("Make sure to report your match after the games.\n\n" + ballChaserList);
+      .setTitle("Teams are set!")
+      .setDescription( 
+        "🔶 Orange Team 🔶\n" + orangeTeam.join("\n") +
+        "\n\n🔷 Blue Team 🔷\n" + blueTeam.join("\n"));
 
     return {
-      components: [new MessageActionRow(
-        {components: [getEnvVariable("ENVIRONMENT") == "dev" ? breakMatch : reportMatch]})],
+      components: getEnvVariable("ENVIRONMENT") == "dev" ? 
+        [new MessageActionRow( {components: [ reportMatch, breakMatch ]} )]:
+        [new MessageActionRow( {components: [ reportMatch ]} )],
       embeds: [embed],
     };
   }

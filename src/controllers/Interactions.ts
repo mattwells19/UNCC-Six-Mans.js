@@ -20,7 +20,13 @@ export async function handleInteraction(buttonInteraction: Interaction): Promise
     case ButtonCustomID.JoinQueue: {
       await message.edit(MessageBuilder.disabledButtonsJoining());
       const ballchasers = await joinQueue(buttonInteraction.user.id, buttonInteraction.user.username);
-      await message.edit(MessageBuilder.queueMessage(ballchasers));
+
+      if (ballchasers.length == 6) {
+        await message.edit(MessageBuilder.fullQueueMessage(ballchasers));
+      } else {
+        await message.edit(MessageBuilder.queueMessage(ballchasers));
+      }
+
       break;
     }
     case ButtonCustomID.LeaveQueue: {
