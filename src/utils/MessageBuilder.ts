@@ -41,7 +41,7 @@ export default class MessageBuilder {
       style: "DANGER",
     });
     return {
-      components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
+      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
     };
   }
 
@@ -59,7 +59,7 @@ export default class MessageBuilder {
       style: "DANGER",
     });
     return {
-      components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
+      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
     };
   }
 
@@ -75,7 +75,7 @@ export default class MessageBuilder {
       style: "DANGER",
     });
     return {
-      components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
+      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
     };
   }
 
