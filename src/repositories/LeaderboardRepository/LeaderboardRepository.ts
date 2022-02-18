@@ -1,19 +1,28 @@
+import { Leaderboard, Prisma, PrismaClient } from "@prisma/client";
 import getEnvVariable from "../../utils/getEnvVariable";
-import NotionClient from "../helpers/NotionClient";
-import NotionElementHelper from "../helpers/NotionElementHelper";
-import {
-  LeaderboardPageResponseProperties,
-  LeaderboardPageRequestProperties,
-  PlayerStats,
-  PlayerStatsUpdates,
-} from "./types";
+import { LeaderboardWithBallChaser, PlayerStats, UpdatePlayerStatsInput } from "./types";
 
 export class LeaderboardRepository {
-  #Client: NotionClient<LeaderboardPageResponseProperties, LeaderboardPageRequestProperties>;
+  #Leaderboard: Prisma.LeaderboardDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
+  #seasonSemester: string;
+  #seasonYear: string;
 
   constructor() {
-    const databaseId = getEnvVariable("notion_leaderboard_id");
-    this.#Client = new NotionClient(databaseId);
+    this.#Leaderboard = new PrismaClient().leaderboard;
+    this.#seasonSemester = getEnvVariable("season_semester");
+    this.#seasonYear = getEnvVariable("season_year");
+  }
+
+  #calculatePlayerStats(playerStats: LeaderboardWithBallChaser): PlayerStats {
+    return {
+      id: playerStats.player.id,
+      losses: playerStats.losses,
+      matchesPlayed: playerStats.wins + playerStats.losses,
+      mmr: playerStats.mmr,
+      name: playerStats.player.name,
+      winPerc: playerStats.wins / (playerStats.wins + playerStats.losses),
+      wins: playerStats.wins,
+    };
   }
 
   /**
@@ -22,70 +31,45 @@ export class LeaderboardRepository {
    * @returns returns the player's stats if they exist, otherwise null
    */
   async getPlayerStats(id: string): Promise<Readonly<PlayerStats> | null> {
-    const page = await this.#Client.getById(id);
+    const playerStats = await this.#Leaderboard.findUnique({
+      include: {
+        player: true,
+      },
+      where: {
+        seasonSemester_seasonYear_playerId: {
+          playerId: id,
+          seasonSemester: this.#seasonSemester,
+          seasonYear: this.#seasonYear,
+        },
+      },
+    });
 
-    if (!page) {
+    if (!playerStats) {
       return null;
     }
 
-    const pageProps = page.properties;
-    return {
-      id: NotionElementHelper.textFromNotionTextElement(pageProps.ID),
-      losses: NotionElementHelper.numberFromNotionNumberElement(pageProps.Losses),
-      matchesPlayed: NotionElementHelper.numberFromNotionFormulaElement(pageProps.MatchesPlayed),
-      mmr: NotionElementHelper.numberFromNotionNumberElement(pageProps.MMR),
-      name: NotionElementHelper.textFromNotionTextElement(pageProps.Name),
-      winPerc: NotionElementHelper.numberFromNotionFormulaElement(pageProps.WinPerc),
-      wins: NotionElementHelper.numberFromNotionNumberElement(pageProps.Wins),
-    };
+    return this.#calculatePlayerStats(playerStats);
   }
 
   /**
    * Retreives the top (n) number of players in the leaderboard
-   * @param n Number of players to retrieve from the top of the leaderboard table
+   * @param n Number of players to retrieve from the top of the leaderboard. Returns all entries if left undefined.
    * @returns An array of the top 'n' players in the leaderboard
    */
-  async getTopNPlayersStats(n: number): Promise<ReadonlyArray<Readonly<PlayerStats>>> {
-    const pages = await this.#Client.getAll({
-      page_size: n,
-      sorts: [
-        { direction: "descending", property: "MMR" },
-        { direction: "descending", property: "Wins" },
-      ],
+  async getPlayersStats(n?: number): Promise<ReadonlyArray<Readonly<PlayerStats>>> {
+    const playersStats = await this.#Leaderboard.findMany({
+      include: {
+        player: true,
+      },
+      orderBy: [{ mmr: "desc" }, { wins: "desc" }],
+      take: n,
+      where: {
+        seasonSemester: this.#seasonSemester,
+        seasonYear: this.#seasonYear,
+      },
     });
 
-    return pages.map(({ properties: pageProps }) => ({
-      id: NotionElementHelper.textFromNotionTextElement(pageProps.ID),
-      losses: NotionElementHelper.numberFromNotionNumberElement(pageProps.Losses),
-      matchesPlayed: NotionElementHelper.numberFromNotionFormulaElement(pageProps.MatchesPlayed),
-      mmr: NotionElementHelper.numberFromNotionNumberElement(pageProps.MMR),
-      name: NotionElementHelper.textFromNotionTextElement(pageProps.Name),
-      winPerc: NotionElementHelper.numberFromNotionFormulaElement(pageProps.WinPerc),
-      wins: NotionElementHelper.numberFromNotionNumberElement(pageProps.Wins),
-    }));
-  }
-
-  /**
-   * Retreives all entries in the leaderboard
-   * @returns An array of stats for every player in the leaderboard
-   */
-  async getAllPlayersStats(): Promise<ReadonlyArray<Readonly<PlayerStats>>> {
-    const pages = await this.#Client.getAll({
-      sorts: [
-        { direction: "descending", property: "MMR" },
-        { direction: "descending", property: "Wins" },
-      ],
-    });
-
-    return pages.map(({ properties: pageProps }) => ({
-      id: NotionElementHelper.textFromNotionTextElement(pageProps.ID),
-      losses: NotionElementHelper.numberFromNotionNumberElement(pageProps.Losses),
-      matchesPlayed: NotionElementHelper.numberFromNotionFormulaElement(pageProps.MatchesPlayed),
-      mmr: NotionElementHelper.numberFromNotionNumberElement(pageProps.MMR),
-      name: NotionElementHelper.textFromNotionTextElement(pageProps.Name),
-      winPerc: NotionElementHelper.numberFromNotionFormulaElement(pageProps.WinPerc),
-      wins: NotionElementHelper.numberFromNotionNumberElement(pageProps.Wins),
-    }));
+    return playersStats.map((playerStats) => this.#calculatePlayerStats(playerStats));
   }
 
   /**
@@ -93,21 +77,33 @@ export class LeaderboardRepository {
    * otherwise it will add them.
    * @param playersUpdates An array of player stats to update the leaderboard with.
    */
-  async updatePlayersStats(playersUpdates: Array<PlayerStatsUpdates>): Promise<void> {
-    const promises: Array<Promise<void>> = [];
+  async updatePlayersStats(playersUpdates: Array<UpdatePlayerStatsInput>): Promise<void> {
+    const promises: Array<Promise<Leaderboard>> = [];
     for (const playerUpdates of playersUpdates) {
-      const page = await this.#Client.getById(playerUpdates.id);
+      const leaderboardUpdate = this.#Leaderboard.upsert({
+        create: {
+          losses: playerUpdates.losses,
+          mmr: playerUpdates.mmr,
+          playerId: playerUpdates.id,
+          seasonSemester: this.#seasonSemester,
+          seasonYear: this.#seasonYear,
+          wins: playerUpdates.wins,
+        },
+        update: {
+          losses: playerUpdates.losses,
+          mmr: playerUpdates.mmr,
+          wins: playerUpdates.wins,
+        },
+        where: {
+          seasonSemester_seasonYear_playerId: {
+            playerId: playerUpdates.id,
+            seasonSemester: this.#seasonSemester,
+            seasonYear: this.#seasonYear,
+          },
+        },
+      });
 
-      const propertiesUpdate: LeaderboardPageRequestProperties = {
-        ID: NotionElementHelper.notionTextElementFromText(playerUpdates.id),
-        Losses: NotionElementHelper.notionNumberElementFromNumber(playerUpdates.losses),
-        MMR: NotionElementHelper.notionNumberElementFromNumber(playerUpdates.mmr),
-        Name: NotionElementHelper.notionTextElementFromText(playerUpdates.name),
-        Wins: NotionElementHelper.notionNumberElementFromNumber(playerUpdates.wins),
-      };
-
-      // if the page already exists, update it; otherwise insert as a new page
-      promises.push(page ? this.#Client.update(page.id, propertiesUpdate) : this.#Client.insert(propertiesUpdate));
+      promises.push(leaderboardUpdate);
     }
 
     await Promise.all(promises);

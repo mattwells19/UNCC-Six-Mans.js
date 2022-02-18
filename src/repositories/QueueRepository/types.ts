@@ -1,27 +1,27 @@
+import { BallChaser, Queue } from "@prisma/client";
 import { DateTime } from "luxon";
 import { Team } from "../../types/common";
-import {
-  NotionBooleanElement,
-  NotionNumberElement,
-  NotionSelectElement,
-  NotionTextElement,
-  NotionDateElement,
-} from "../helpers/NotionTypes";
 
-export interface BallChaserPageProperties {
-  ID: NotionTextElement;
-  MMR: NotionNumberElement;
-  Name: NotionTextElement;
-  isCap: NotionBooleanElement;
-  Team: NotionSelectElement<Team>;
-  QueueTime: NotionDateElement;
-}
-
-export interface UpdateBallChaserOptions {
+export interface UpdateBallChaserInQueueInput {
   id: string;
-  mmr?: number;
-  name?: string;
   isCap?: boolean;
   team?: Team | null;
-  queueTime?: DateTime | null;
+  queueTime?: DateTime;
 }
+
+export type PlayerInQueue = {
+  id: string;
+  isCap: boolean;
+  mmr: number | null;
+  name: string;
+  queueTime: DateTime;
+  team: Team | null;
+};
+
+export interface AddBallChaserToQueueInput {
+  id: string;
+  name: string;
+  queueTime: DateTime;
+}
+
+export type QueueWithBallChaser = Queue & { player: BallChaser; team: Team | null };

@@ -30,6 +30,9 @@ jobs:
         uses: wearerequired/lint-action@v1
         with:
           eslint: true
+          eslint_args: "--max-warnings 0"
           eslint_extensions: ts
+          prettier: true
+          prettier_extensions: ts
           continue_on_error: false
           check_name: "${linter} ${dir}"
