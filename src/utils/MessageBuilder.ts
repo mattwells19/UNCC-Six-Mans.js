@@ -1,5 +1,5 @@
 import { MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
-import { BallChaser } from "../types/common";
+import { PlayerInQueue } from "../repositories/QueueRepository/types";
 
 export const enum ButtonCustomID {
   JoinQueue = "joinQueue",
@@ -79,7 +79,7 @@ export default class MessageBuilder {
     };
   }
 
-  static queueMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>): MessageOptions {
+  static queueMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>): MessageOptions {
     const embed = new MessageEmbed({
       color: "GREEN",
       thumbnail: { url: this.normIconURL },

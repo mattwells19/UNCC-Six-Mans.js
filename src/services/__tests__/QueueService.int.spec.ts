@@ -1,32 +1,14 @@
 import QueueRepository from "../../repositories/QueueRepository";
 import { joinQueue } from "../QueueService";
 import { leaveQueue } from "../QueueService";
-import { BallChaser } from "../../types/common";
-import { BallChaserBuilder } from "../../../.jest/Builder";
-import faker from "faker";
+import { BallChaserQueueBuilder } from "../../../.jest/Builder";
 import { DateTime } from "luxon";
 
 
-function makeBallChaser(
-  ballChaser: BallChaser = BallChaserBuilder.single(),
-  overrides?: Partial<BallChaser>
-): BallChaser {
+const mockPlayer1 = BallChaserQueueBuilder.single({
+  queueTime: DateTime.now(),
+});
 
-  let mockDate = DateTime.now();
-  const queueTime = mockDate;
-
-  return {
-    id: ballChaser.id,
-    mmr: ballChaser.mmr,
-    name: ballChaser.name,
-    isCap: false,
-    team: null,
-    queueTime,
-    ...overrides,
-  };
-}
-
-const mockPlayer1 = makeBallChaser()
 
 describe("QueueService tests", () => {
   describe("Joining queue", () => {
@@ -36,7 +18,7 @@ describe("QueueService tests", () => {
         joinQueue(mockPlayer1.id, mockPlayer1.name);
         const result = await joinQueue(mockPlayer1.id, mockPlayer1.name);
 
-        expect([result[0]]).toBe(Array<BallChaser>().length === 1);
+        expect([result[0]]).toBe(QueueRepository.getAllBallChasersInQueue());
         expect([result].length).toEqual([(await QueueRepository.getAllBallChasersInQueue())].length)
       });
 
