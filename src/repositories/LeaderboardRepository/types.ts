@@ -1,23 +1,4 @@
-import { NotionFormulaElement, NotionNumberElement, NotionTextElement } from "../helpers/NotionTypes";
-
-export interface LeaderboardPageResponseProperties {
-  ID: NotionTextElement;
-  MMR: NotionNumberElement;
-  Name: NotionTextElement;
-  Wins: NotionNumberElement;
-  Losses: NotionNumberElement;
-  MatchesPlayed: NotionFormulaElement;
-  WinPerc: NotionFormulaElement;
-}
-
-export interface LeaderboardPageRequestProperties {
-  ID: NotionTextElement;
-  MMR: NotionNumberElement;
-  Name: NotionTextElement;
-  Wins: NotionNumberElement;
-  Losses: NotionNumberElement;
-}
-
+import { BallChaser, Leaderboard } from "@prisma/client";
 export interface PlayerStats {
   id: string;
   mmr: number;
@@ -28,10 +9,11 @@ export interface PlayerStats {
   winPerc: number;
 }
 
-export interface PlayerStatsUpdates {
+export interface UpdatePlayerStatsInput {
   id: string;
   mmr: number;
-  name: string;
-  wins: number;
-  losses: number;
+  wins?: number;
+  losses?: number;
 }
+
+export type LeaderboardWithBallChaser = Leaderboard & { player: BallChaser };
