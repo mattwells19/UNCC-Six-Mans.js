@@ -35,6 +35,8 @@ export async function handleInteraction(buttonInteraction: Interaction): Promise
 
       if (remainingMembers) {
         await message.edit(MessageBuilder.queueMessage(remainingMembers));
+      } else {
+        await message.edit(MessageBuilder.enabledButtonsLeaving());
       }
       break;
     }
