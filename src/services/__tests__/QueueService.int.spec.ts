@@ -85,7 +85,17 @@ describe("QueueService tests", () => {
       });
     });
 
-    it.todo("Already in the queue | updates queue time to 1 hour from now");
+    it("Already in the queue | updates queue time to 1 hour from now", async () => {
+      const firstJoin = await joinQueue(mockPlayer1.id, mockPlayer1.name);
+      let receivedQueueTime1 = firstJoin[0].queueTime.diffNow().as("minutes");
+      let expectedQueueTime1 = DateTime.now().plus({ minutes: 60 });
+      expect(Math.round(receivedQueueTime1)).toEqual(Math.round(expectedQueueTime1.diffNow().as("minutes")));
+      const secondJoin = await joinQueue(mockPlayer1.id, mockPlayer1.name);
+      let receivedQueueTime2 = secondJoin[0].queueTime.diffNow().as("minutes");
+      let expectedQueueTime2 = DateTime.now().plus({ minutes: 60 });
+      expect(Math.round(receivedQueueTime2)).toEqual(Math.round(expectedQueueTime2.diffNow().as("minutes")));
+      expect(receivedQueueTime1).not.toEqual(receivedQueueTime2);
+    });
   });
 
   describe("Leaving queue", () => {
