@@ -1,5 +1,4 @@
 import { DateTime } from "luxon";
-import LeaderboardRepository from "../repositories/LeaderboardRepository";
 import QueueRepository from "../repositories/QueueRepository";
 import { AddBallChaserToQueueInput, PlayerInQueue } from "../repositories/QueueRepository/types";
 
@@ -10,13 +9,13 @@ export async function joinQueue(userId: string, userName: string): Promise<Reado
     const player: AddBallChaserToQueueInput = {
       id: userId,
       name: userName,
-      queueTime: DateTime.now().plus({ minutes: 60 }).set({ second: 0, millisecond: 0 }),
+      queueTime: DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 }),
     };
     await QueueRepository.addBallChaserToQueue(player);
   } else {
     await QueueRepository.updateBallChaserInQueue({
       id: userId,
-      queueTime: DateTime.now().plus({ minutes: 60 }).set({ second: 0, millisecond: 0 }),
+      queueTime: DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 }),
     });
   }
 
