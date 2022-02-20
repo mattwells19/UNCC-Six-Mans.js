@@ -1,9 +1,12 @@
-import { BallChaser } from "../../../types/common";
 import * as faker from "faker";
-import QueueRepository from "..";
-import { BallChaserBuilder } from "../../../../.jest/Builder";
+import { PlayerInQueue } from "../types";
+import QueueRepository from "../QueueRepository";
+import { BallChaserQueueBuilder } from "../../../../.jest/Builder";
+import { PrismaClient } from "@prisma/client";
+import { DateTime } from "luxon";
+import getEnvVariable from "../../../utils/getEnvVariable";
 
-function verifyBallChasersAreEqual(expectedBallChaser: BallChaser, actualBallChaser: BallChaser): void {
+function verifyBallChasersAreEqual(expectedBallChaser: PlayerInQueue, actualBallChaser: PlayerInQueue): void {
   expect(actualBallChaser).not.toBeNull();
   expect(actualBallChaser?.id).toBe(expectedBallChaser.id);
   expect(actualBallChaser?.mmr).toBe(expectedBallChaser.mmr);
@@ -13,71 +16,196 @@ function verifyBallChasersAreEqual(expectedBallChaser: BallChaser, actualBallCha
   expect(actualBallChaser?.isCap).toBe(expectedBallChaser.isCap);
 }
 
-// set timeout to be longer (10 seconds) since async requests take extra time
-jest.setTimeout(10000);
+let prisma: PrismaClient;
+let seasonSemester: string;
+let seasonYear: string;
 
-describe("Queue Repository Integration Tests", () => {
-  it("add and remove BallChaser from queue", async () => {
-    const ballChaserToAdd = BallChaserBuilder.single();
+beforeEach(async () => {
+  jest.clearAllMocks();
+});
 
-    await QueueRepository.addBallChaserToQueue(ballChaserToAdd);
-    const retrievedBallChaser = await QueueRepository.getBallChaserInQueue(ballChaserToAdd.id);
+beforeAll(async () => {
+  seasonSemester = getEnvVariable("season_semester");
+  seasonYear = getEnvVariable("season_year");
 
-    verifyBallChasersAreEqual(ballChaserToAdd, retrievedBallChaser!);
+  prisma = new PrismaClient();
+  await prisma.$connect();
+  await prisma.leaderboard.deleteMany();
+  await prisma.activeMatch.deleteMany();
+  await prisma.queue.deleteMany();
+  await prisma.ballChaser.deleteMany();
+});
 
-    await QueueRepository.removeBallChaserFromQueue(ballChaserToAdd.id);
-    const retrievedBallChaserShouldBeNull = await QueueRepository.getBallChaserInQueue(ballChaserToAdd.id);
-    expect(retrievedBallChaserShouldBeNull).toBeNull();
+afterEach(async () => {
+  await prisma.leaderboard.deleteMany();
+  await prisma.activeMatch.deleteMany();
+  await prisma.queue.deleteMany();
+  await prisma.ballChaser.deleteMany();
+});
+
+afterAll(async () => {
+  await prisma.$disconnect();
+});
+
+async function manuallyAddBallChaserToQueue(ballChaser: PlayerInQueue) {
+  await prisma.ballChaser.create({
+    data: {
+      id: ballChaser.id,
+      name: ballChaser.name,
+      queue: {
+        create: {
+          isCap: ballChaser.isCap,
+          queueTime: ballChaser.queueTime.toISO(),
+          team: ballChaser.team,
+        },
+      },
+      rank: {
+        create: {
+          mmr: ballChaser.mmr ?? 100,
+          seasonSemester,
+          seasonYear,
+        },
+      },
+    },
+  });
+}
+
+describe("Queue Repository tests", () => {
+  it("gets BallChaser using ID when BallChaser exists", async () => {
+    const expectedBallChaser = BallChaserQueueBuilder.single();
+    await manuallyAddBallChaserToQueue(expectedBallChaser);
+
+    const actualBallChaser = await QueueRepository.getBallChaserInQueue(expectedBallChaser.id);
+
+    expect(actualBallChaser).not.toBeNull();
+    verifyBallChasersAreEqual(expectedBallChaser, actualBallChaser!);
   });
 
-  it("gets and removes everyone from the queue", async () => {
-    const [ballChaserToAdd1, ballChaserToAdd2] = BallChaserBuilder.many(2);
+  it("gets BallChaser from queue when they exist and is not on the Leaderboard", async () => {
+    const expectedBallChaser = BallChaserQueueBuilder.single();
 
-    const addOne = QueueRepository.addBallChaserToQueue(ballChaserToAdd1);
-    const addTwo = QueueRepository.addBallChaserToQueue(ballChaserToAdd2);
-    await Promise.all([addOne, addTwo]);
-
-    const allBallChasers = await QueueRepository.getAllBallChasersInQueue();
-    expect(allBallChasers).toHaveLength(2);
-
-    await QueueRepository.removeAllBallChasersFromQueue();
-    const shouldBeEmptyBallChasers = await QueueRepository.getAllBallChasersInQueue();
-    expect(shouldBeEmptyBallChasers).toHaveLength(0);
-  });
-
-  it("can update a BallChaser", async () => {
-    const ballChaserToAdd = BallChaserBuilder.single();
-
-    await QueueRepository.addBallChaserToQueue(ballChaserToAdd);
-
-    const newName = faker.random.word();
-    const expectedUpdatedBallChaser: BallChaser = {
-      ...ballChaserToAdd,
-      name: newName,
-    };
-    await QueueRepository.updateBallChaserInQueue({
-      id: ballChaserToAdd.id,
-      name: newName,
+    await prisma.ballChaser.create({
+      data: {
+        id: expectedBallChaser.id,
+        name: expectedBallChaser.name,
+        queue: {
+          create: {
+            isCap: expectedBallChaser.isCap,
+            queueTime: expectedBallChaser.queueTime.toISO(),
+            team: expectedBallChaser.team,
+          },
+        },
+      },
     });
 
-    const updatedBallChaser = await QueueRepository.getBallChaserInQueue(ballChaserToAdd.id);
-    verifyBallChasersAreEqual(expectedUpdatedBallChaser, updatedBallChaser!);
+    const actualBallChaser = await QueueRepository.getBallChaserInQueue(expectedBallChaser.id);
 
-    await QueueRepository.removeBallChaserFromQueue(ballChaserToAdd.id);
-    const retrievedBallChaserShouldBeNull = await QueueRepository.getBallChaserInQueue(ballChaserToAdd.id);
-    expect(retrievedBallChaserShouldBeNull).toBeNull();
+    expect(actualBallChaser).not.toBeNull();
+    expect(actualBallChaser?.id).toEqual(expectedBallChaser.id);
+    expect(actualBallChaser?.mmr).toBeNull();
   });
 
-  it("can handle team and queueTime being null", async () => {
-    const ballChaserToAdd = BallChaserBuilder.single({ queueTime: null });
+  it("returns null when BallChaser does not exist with ID", async () => {
+    const actualBallChaser = await QueueRepository.getBallChaserInQueue(faker.datatype.uuid());
+    expect(actualBallChaser).toBeNull();
+  });
 
-    await QueueRepository.addBallChaserToQueue(ballChaserToAdd);
-    const retrievedBallChaser = await QueueRepository.getBallChaserInQueue(ballChaserToAdd.id);
+  it("retrieves all BallChasers in queue", async () => {
+    const expectedBallChasers = BallChaserQueueBuilder.many(2).sort(
+      (a, b) => a.queueTime.toMillis() - b.queueTime.toMillis()
+    );
 
-    verifyBallChasersAreEqual(ballChaserToAdd, retrievedBallChaser!);
+    await manuallyAddBallChaserToQueue(expectedBallChasers[0]);
+    await manuallyAddBallChaserToQueue(expectedBallChasers[1]);
 
-    await QueueRepository.removeBallChaserFromQueue(ballChaserToAdd.id);
-    const retrievedBallChaserShouldBeNull = await QueueRepository.getBallChaserInQueue(ballChaserToAdd.id);
-    expect(retrievedBallChaserShouldBeNull).toBeNull();
+    const actualBallChasers = await QueueRepository.getAllBallChasersInQueue();
+
+    expect(actualBallChasers).toHaveLength(2);
+    verifyBallChasersAreEqual(expectedBallChasers[0], actualBallChasers[0]);
+    verifyBallChasersAreEqual(expectedBallChasers[1], actualBallChasers[1]);
+  });
+
+  it("removes BallChaser when found in queue", async () => {
+    const mockBallChaser = BallChaserQueueBuilder.single();
+    await manuallyAddBallChaserToQueue(mockBallChaser);
+
+    await expect(QueueRepository.removeBallChaserFromQueue(mockBallChaser.id)).resolves.not.toThrowError();
+    const count = await prisma.queue.count();
+    expect(count).toBe(0);
+  });
+
+  it("throws error when trying to remove BallChaser when not found in queue", async () => {
+    await expect(QueueRepository.removeBallChaserFromQueue(faker.datatype.uuid())).rejects.toThrowError();
+  });
+
+  it("removes all BallChasers in queue", async () => {
+    const expectedBallChaser1 = BallChaserQueueBuilder.single();
+    await manuallyAddBallChaserToQueue(expectedBallChaser1);
+    const expectedBallChaser2 = BallChaserQueueBuilder.single();
+    await manuallyAddBallChaserToQueue(expectedBallChaser2);
+
+    await expect(QueueRepository.removeAllBallChasersFromQueue()).resolves.not.toThrowError();
+    const count = await prisma.queue.count();
+    expect(count).toBe(0);
+  });
+
+  it("updates BallChaser when BallChaser is found", async () => {
+    const mockBallChaser = BallChaserQueueBuilder.single();
+    await manuallyAddBallChaserToQueue(mockBallChaser);
+    const updatedBallChaser = BallChaserQueueBuilder.single({ id: mockBallChaser.id });
+
+    await QueueRepository.updateBallChaserInQueue({
+      id: mockBallChaser.id,
+      isCap: updatedBallChaser.isCap,
+      queueTime: updatedBallChaser.queueTime,
+      team: updatedBallChaser.team ?? undefined,
+    });
+
+    const playerInDb = await prisma.queue.findUnique({
+      include: {
+        player: true,
+      },
+      where: {
+        playerId: updatedBallChaser.id,
+      },
+    });
+
+    // should not change
+    expect(playerInDb?.player.id).toEqual(mockBallChaser.id);
+    expect(playerInDb?.player.name).toEqual(mockBallChaser.name);
+
+    // should change
+    expect(playerInDb?.isCap).toEqual(updatedBallChaser.isCap);
+    expect(DateTime.fromJSDate(playerInDb?.queueTime!).toISO()).toEqual(updatedBallChaser.queueTime.toISO());
+    expect(playerInDb?.team).toEqual(updatedBallChaser.team);
+  });
+
+  it("throws when player to update is not found", async () => {
+    await expect(QueueRepository.updateBallChaserInQueue({ id: faker.datatype.uuid() })).rejects.toThrowError();
+  });
+
+  it("adds BallChaser to queue", async () => {
+    const mockBallChaser = BallChaserQueueBuilder.single();
+
+    await QueueRepository.addBallChaserToQueue({
+      id: mockBallChaser.id,
+      name: mockBallChaser.name,
+      queueTime: mockBallChaser.queueTime,
+    });
+
+    const playerInDb = await prisma.queue.findUnique({
+      include: {
+        player: true,
+      },
+      where: {
+        playerId: mockBallChaser.id,
+      },
+    });
+
+    expect(playerInDb?.player.id).toEqual(mockBallChaser.id);
+    expect(playerInDb?.player.name).toEqual(mockBallChaser.name);
+    expect(playerInDb?.isCap).toEqual(false);
+    expect(DateTime.fromJSDate(playerInDb?.queueTime!).toISO()).toEqual(mockBallChaser.queueTime.toISO());
+    expect(playerInDb?.team).toBeNull();
   });
 });

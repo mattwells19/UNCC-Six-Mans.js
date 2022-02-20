@@ -1,5 +1,7 @@
 import { MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
-import { BallChaser, Team } from "../types/common";
+import { BallChaserQueueBuilder } from "../../.jest/Builder";
+import { PlayerInQueue } from "../repositories/QueueRepository/types";
+import { Team } from "../types/common";
 import getEnvVariable from "./getEnvVariable";
 
 export const enum ButtonCustomID {
@@ -47,7 +49,7 @@ export default class MessageBuilder {
       style: "DANGER",
     });
     return {
-      components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
+      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
     };
   }
 
@@ -65,7 +67,7 @@ export default class MessageBuilder {
       style: "DANGER",
     });
     return {
-      components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
+      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
     };
   }
 
@@ -81,11 +83,11 @@ export default class MessageBuilder {
       style: "DANGER",
     });
     return {
-      components: [new MessageActionRow({ components: [joinButton, leaveButton] })]
+      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
     };
   }
 
-  static queueMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>): MessageOptions {
+  static queueMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>): MessageOptions {
     const embed = new MessageEmbed({
       color: "GREEN",
       thumbnail: { url: this.normIconURL },
@@ -116,17 +118,18 @@ export default class MessageBuilder {
     } else {
       const ballChaserList = ballchasers
         .map((ballChaser) => {
-          // + 1 since it seems that joining the queue calculates to 59 instead of 60
+        // + 1 since it seems that joining the queue calculates to 59 instead of 60
           const queueTime = ballChaser.queueTime?.diffNow().as("minutes") ?? 0;
           return `${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
         })
         .join("\n");
 
+
       embed
         .setTitle(`Current Queue: ${ballchasers.length}/6`)
-        .setDescription("Click the green button to join the queue!\n\n" + ballChaserList);
+        .setDescription("Click the green button to join the queue! \n\n" + ballChaserList);
     }
-
+    
     return {
       components: getEnvVariable("ENVIRONMENT") == "dev" ?
         [new MessageActionRow({ components: [joinButton, leaveButton, fillTeamButton, removeAllButton] })] :
@@ -135,7 +138,7 @@ export default class MessageBuilder {
     };
   }
 
-  static fullQueueMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>) : MessageOptions {
+  static fullQueueMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>) : MessageOptions {
     const embed = new MessageEmbed({
       color: "GREEN",
       thumbnail: { url: this.normIconURL },
@@ -151,7 +154,7 @@ export default class MessageBuilder {
       style: "DANGER",
     });
     const removeAllButton = new MessageButton({
-      customId: ButtonCustomID.BreakMatch,
+      customId: ButtonCustomID.RemoveAll,
       label: "DEV: Remove All",
       style: "DANGER",
     });
@@ -166,7 +169,7 @@ export default class MessageBuilder {
 
     embed
       .setTitle("Queue is Full")
-      .setDescription("Click the Create Teams button to get started!\n\n" + ballChaserList);
+      .setDescription("Click the Create Teams button to get started! \n\n" + ballChaserList);
 
     return {
       components: getEnvVariable("ENVIRONMENT") == "dev" ?
@@ -176,9 +179,9 @@ export default class MessageBuilder {
     };
   }
 
-  static activeMatchMessage(ballchasers: ReadonlyArray<Readonly<BallChaser>>) : MessageOptions {
+  static activeMatchMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>) : MessageOptions {
     const embed = new MessageEmbed({
-      color: "#F1C40F",
+      color: "#A62019",
       thumbnail: { url: this.normIconURL },
     });
     const reportMatch = new MessageButton({
@@ -205,9 +208,11 @@ export default class MessageBuilder {
     
     embed
       .setTitle("Teams are set!")
-      .setDescription( 
-        "🔶 Orange Team 🔶\n" + orangeTeam.join("\n") +
-        "\n\n🔷 Blue Team 🔷\n" + blueTeam.join("\n"));
+      .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"))
+      .addField("🔷 Blue Team 🔷", blueTeam.join("\n"));
+    /*       .setDescription( 
+        "🔶 Orange Team 🔶\n" + ) +
+        "\n\n🔷 Blue Team 🔷\n" + blueTeam.join("\n")); */
 
     return {
       components: getEnvVariable("ENVIRONMENT") == "dev" ? 

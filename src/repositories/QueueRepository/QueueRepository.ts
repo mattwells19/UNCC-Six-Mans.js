@@ -1,15 +1,27 @@
-import { BallChaser, Team } from "../../types/common";
-import { BallChaserPageProperties, UpdateBallChaserOptions } from "./types";
-import NotionClient from "../helpers/NotionClient";
-import NotionElementHelper from "../helpers/NotionElementHelper";
-import getEnvVariable from "../../utils/getEnvVariable";
+import { AddBallChaserToQueueInput, PlayerInQueue, QueueWithBallChaser, UpdateBallChaserInQueueInput } from "./types";
+import { PrismaClient, Prisma } from "@prisma/client";
+import { DateTime } from "luxon";
+import LeaderboardRepository from "../LeaderboardRepository";
 
 export class QueueRepository {
-  #Client: NotionClient<BallChaserPageProperties>;
+  #Queue: Prisma.QueueDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
+  #BallChasers: Prisma.BallChaserDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
 
   constructor() {
-    const databaseId = getEnvVariable("notion_queue_id");
-    this.#Client = new NotionClient(databaseId);
+    this.#Queue = new PrismaClient().queue;
+    this.#BallChasers = new PrismaClient().ballChaser;
+  }
+
+  async #getPlayerMmr(playerInQueue: QueueWithBallChaser): Promise<PlayerInQueue> {
+    const lb = await LeaderboardRepository.getPlayerStats(playerInQueue.player.id);
+    return {
+      id: playerInQueue.player.id,
+      isCap: playerInQueue.isCap,
+      mmr: lb?.mmr ?? null,
+      name: playerInQueue.player.name,
+      queueTime: DateTime.fromJSDate(playerInQueue.queueTime),
+      team: playerInQueue.team,
+    };
   }
 
   /**
@@ -17,20 +29,17 @@ export class QueueRepository {
    * @param id Discord ID of the BallChaser to retrieve
    * @returns A BallChaser object if the player is found, otherwise null
    */
-  async getBallChaserInQueue(id: string): Promise<Readonly<BallChaser> | null> {
-    const ballChaserPage = await this.#Client.getById(id);
-
-    if (ballChaserPage) {
-      const { properties } = ballChaserPage;
-
-      return {
-        id: NotionElementHelper.textFromNotionTextElement(properties.ID),
-        isCap: NotionElementHelper.boolFromNotionBooleanElement(properties.isCap),
-        mmr: NotionElementHelper.numberFromNotionNumberElement(properties.MMR),
-        name: NotionElementHelper.textFromNotionTextElement(properties.Name),
-        queueTime: NotionElementHelper.dateTimeFromNotionDateElement(properties.QueueTime),
-        team: NotionElementHelper.valueFromNotionSelectElement<Team>(properties.Team),
-      };
+  async getBallChaserInQueue(id: string): Promise<Readonly<PlayerInQueue> | null> {
+    const playerInQueue = await this.#Queue.findUnique({
+      include: {
+        player: true,
+      },
+      where: {
+        playerId: id,
+      },
+    });
+    if (playerInQueue) {
+      return this.#getPlayerMmr(playerInQueue);
     } else {
       return null;
     }
@@ -40,19 +49,24 @@ export class QueueRepository {
    * Retrieves all BallChasers in the queue
    * @returns A list of all BallChasers currently in the queue
    */
-  async getAllBallChasersInQueue(): Promise<ReadonlyArray<Readonly<BallChaser>>> {
-    const ballChaserPages = await this.#Client.getAll();
-
-    return ballChaserPages.map(({ properties }) => {
-      return {
-        id: NotionElementHelper.textFromNotionTextElement(properties.ID),
-        isCap: NotionElementHelper.boolFromNotionBooleanElement(properties.isCap),
-        mmr: NotionElementHelper.numberFromNotionNumberElement(properties.MMR),
-        name: NotionElementHelper.textFromNotionTextElement(properties.Name),
-        queueTime: NotionElementHelper.dateTimeFromNotionDateElement(properties.QueueTime),
-        team: NotionElementHelper.valueFromNotionSelectElement<Team>(properties.Team),
-      };
+  async getAllBallChasersInQueue(): Promise<ReadonlyArray<Readonly<PlayerInQueue>>> {
+    const allPlayersInQueue = await this.#Queue.findMany({
+      include: {
+        player: true,
+      },
     });
+
+    const allPlayersPromises: Array<Promise<PlayerInQueue>> = [];
+
+    for (const playerInQueue of allPlayersInQueue) {
+      const queuePlayerPromise: Promise<PlayerInQueue> = this.#getPlayerMmr(playerInQueue);
+      allPlayersPromises.push(queuePlayerPromise);
+    }
+
+    const allPlayersWithMmr = await Promise.all(allPlayersPromises);
+    // sort so that shorter queue times are first
+    allPlayersWithMmr.sort((a, b) => a.queueTime.toMillis() - b.queueTime.toMillis());
+    return allPlayersWithMmr;
   }
 
   /**
@@ -60,54 +74,29 @@ export class QueueRepository {
    * @param id Discord ID of the BallChaser to remove from the queue
    */
   async removeBallChaserFromQueue(id: string): Promise<void> {
-    const ballChaserPage = await this.#Client.getById(id);
-
-    if (!ballChaserPage) {
-      throw new Error(`Cannot remove BallChaser. No BallChaser with the ID ${id} was found.`);
-    }
-
-    await this.#Client.remove(ballChaserPage.id);
+    await this.#Queue.delete({ where: { playerId: id } });
   }
 
   /**
    * Removes all BallChasers currently in the queue.
    */
   async removeAllBallChasersFromQueue(): Promise<void> {
-    const allBallChaserPages = await this.#Client.getAll();
-    const allBallChaserPageIds = allBallChaserPages.map((allBallChaserPage) => allBallChaserPage.id);
-
-    await this.#Client.remove(allBallChaserPageIds);
+    await this.#Queue.deleteMany();
   }
 
   /**
    * Function for updating an existing BallChaser in the queue.
    * @param options BallChaser fields to update. ID field is required for retrieving the BallChaser object to update.
    */
-  async updateBallChaserInQueue({ id, ...options }: UpdateBallChaserOptions): Promise<void> {
-    const ballChaserPage = await this.#Client.getById(id);
-
-    if (!ballChaserPage) {
-      throw new Error(`Cannot update BallChaser. No BallChaser with the ID ${id} was found.`);
-    }
-
-    const existingBallChaserProps = ballChaserPage.properties;
-    const propertiesUpdate: BallChaserPageProperties = {
-      ID: NotionElementHelper.notionTextElementFromText(id),
-      MMR: options.mmr ? NotionElementHelper.notionNumberElementFromNumber(options.mmr) : existingBallChaserProps.MMR,
-      Name: options.name ? NotionElementHelper.notionTextElementFromText(options.name) : existingBallChaserProps.Name,
-      QueueTime: options.queueTime
-        ? NotionElementHelper.notionDateElementFromDateTime(options.queueTime)
-        : existingBallChaserProps.QueueTime,
-      Team: options.team
-        ? NotionElementHelper.notionSelectElementFromValue<Team>(options.team)
-        : existingBallChaserProps.Team,
-      isCap:
-        options.isCap !== undefined
-          ? NotionElementHelper.notionBooleanElementFromBool(options.isCap)
-          : existingBallChaserProps.isCap,
-    };
-
-    await this.#Client.update(ballChaserPage.id, propertiesUpdate);
+  async updateBallChaserInQueue({ id, ...updates }: UpdateBallChaserInQueueInput): Promise<void> {
+    await this.#Queue.update({
+      data: {
+        isCap: updates.isCap,
+        queueTime: updates.queueTime?.toISO(),
+        team: updates.team,
+      },
+      where: { playerId: id },
+    });
   }
 
   /**
@@ -151,23 +140,29 @@ export class QueueRepository {
    * Adds a new BallChaser to the queue.
    * @param ballChaserToAdd New BallChaser object to add to the queue.
    */
-  async addBallChaserToQueue(ballChaserToAdd: BallChaser): Promise<void> {
-    const ballChaserAlreadyInQueue = await this.getBallChaserInQueue(ballChaserToAdd.id);
-
-    if (ballChaserAlreadyInQueue) {
-      throw new Error(`BallChaser with the ID ${ballChaserToAdd.id} is already in the queue.`);
-    }
-
-    const newBallChaserProperties: BallChaserPageProperties = {
-      ID: NotionElementHelper.notionTextElementFromText(ballChaserToAdd.id),
-      MMR: NotionElementHelper.notionNumberElementFromNumber(ballChaserToAdd.mmr),
-      Name: NotionElementHelper.notionTextElementFromText(ballChaserToAdd.name),
-      QueueTime: NotionElementHelper.notionDateElementFromDateTime(ballChaserToAdd.queueTime),
-      Team: NotionElementHelper.notionSelectElementFromValue<Team>(ballChaserToAdd.team),
-      isCap: NotionElementHelper.notionBooleanElementFromBool(ballChaserToAdd.isCap),
-    };
-
-    await this.#Client.insert(newBallChaserProperties);
+  async addBallChaserToQueue(ballChaserToAdd: AddBallChaserToQueueInput): Promise<void> {
+    await this.#BallChasers.upsert({
+      create: {
+        id: ballChaserToAdd.id,
+        name: ballChaserToAdd.name,
+        queue: {
+          create: {
+            queueTime: ballChaserToAdd.queueTime.toISO(),
+          },
+        },
+      },
+      update: {
+        name: ballChaserToAdd.name,
+        queue: {
+          create: {
+            queueTime: ballChaserToAdd.queueTime.toISO(),
+          },
+        },
+      },
+      where: {
+        id: ballChaserToAdd.id,
+      },
+    });
   }
 }
 
