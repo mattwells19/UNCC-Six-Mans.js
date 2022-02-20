@@ -1,5 +1,4 @@
 import { MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
-import { BallChaserQueueBuilder } from "../../.jest/Builder";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { Team } from "../types/common";
 import getEnvVariable from "./getEnvVariable";
@@ -210,9 +209,6 @@ export default class MessageBuilder {
       .setTitle("Teams are set!")
       .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"))
       .addField("🔷 Blue Team 🔷", blueTeam.join("\n"));
-    /*       .setDescription( 
-        "🔶 Orange Team 🔶\n" + ) +
-        "\n\n🔷 Blue Team 🔷\n" + blueTeam.join("\n")); */
 
     return {
       components: getEnvVariable("ENVIRONMENT") == "dev" ? 

@@ -35,6 +35,5 @@ export async function createRandomTeams(ballchasers: PlayerInQueue[]):
     }
   });
 
-  console.log(activeMatch);
   return activeMatch;
 }
