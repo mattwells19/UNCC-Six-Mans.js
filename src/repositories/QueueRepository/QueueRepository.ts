@@ -17,7 +17,7 @@ export class QueueRepository {
     return {
       id: playerInQueue.player.id,
       isCap: playerInQueue.isCap,
-      mmr: lb?.mmr ?? null,
+      mmr: lb?.mmr ?? 100,
       name: playerInQueue.player.name,
       queueTime: DateTime.fromJSDate(playerInQueue.queueTime),
       team: playerInQueue.team,
@@ -103,7 +103,7 @@ export class QueueRepository {
    * Function for updating an existing BallChaser in the queue.
    * @param options BallChaser fields to update. ID field is required for retrieving the BallChaser object to update.
    */
-  async updateAllBallChasers(ballChasers: BallChaser[]): Promise<void> {
+  /* async updateAllBallChasers(ballChasers: BallChaser[]): Promise<void> {
     for (const ballChaser of ballChasers) {
       const ballChaserPage = await this.#Client.getById(ballChaser.id);
 
@@ -134,7 +134,7 @@ export class QueueRepository {
 
       await this.#Client.update(ballChaserPage.id, propertiesUpdate);
     }
-  }
+  } */
 
   /**
    * Adds a new BallChaser to the queue.

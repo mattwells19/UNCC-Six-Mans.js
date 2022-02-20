@@ -1,8 +1,8 @@
 import { DateTime } from "luxon";
 import QueueRepository from "../repositories/QueueRepository";
-import { BallChaser } from "../types/common";
+import { PlayerInQueue } from "../repositories/QueueRepository/types";
 
-export async function fillTeams(): Promise<ReadonlyArray<BallChaser>> {
+export async function fillTeams(): Promise<ReadonlyArray<PlayerInQueue>> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
   const numPlayersToFill = 6 - ballchasers.length;
 
@@ -16,7 +16,7 @@ export async function fillTeams(): Promise<ReadonlyArray<BallChaser>> {
   return updatedQueue;
 }
 
-const testPlayers: BallChaser[] = 
+const testPlayers: PlayerInQueue[] = 
 [
   {
     id: "346838372649795595",
