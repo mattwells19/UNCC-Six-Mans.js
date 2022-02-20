@@ -1,26 +1,21 @@
 import { DateTime } from "luxon";
-import LeaderboardRepository from "../repositories/LeaderboardRepository";
 import QueueRepository from "../repositories/QueueRepository";
-import { PlayerInQueue } from "../repositories/QueueRepository/types";
+import { AddBallChaserToQueueInput, PlayerInQueue } from "../repositories/QueueRepository/types";
 
 export async function joinQueue(userId: string, userName: string): Promise<ReadonlyArray<PlayerInQueue>> {
   const queueMember = await QueueRepository.getBallChaserInQueue(userId);
 
   if (!queueMember) {
-    const leaderboardMember = await LeaderboardRepository.getPlayerStats(userId);
-    const player: PlayerInQueue = {
+    const player: AddBallChaserToQueueInput = {
       id: userId,
-      isCap: false,
-      mmr: leaderboardMember ? leaderboardMember.mmr : 100,
       name: userName,
-      queueTime: DateTime.now().plus({ minutes: 60 }),
-      team: null,
+      queueTime: DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 }),
     };
     await QueueRepository.addBallChaserToQueue(player);
   } else {
     await QueueRepository.updateBallChaserInQueue({
       id: userId,
-      queueTime: DateTime.now().plus({ minutes: 60 }),
+      queueTime: DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 }),
     });
   }
 
