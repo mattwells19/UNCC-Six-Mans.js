@@ -62,7 +62,7 @@ describe("QueueService tests", () => {
         let receivedQueueTime = result[0].queueTime.diffNow().as("minutes");
         let expectedQueueTime = DateTime.now().plus({ minutes: 60 });
 
-        expect(mmr).toBe(null);
+        expect(mmr).toBe(100);
         expect(Math.round(receivedQueueTime)).toEqual(Math.round(expectedQueueTime.diffNow().as("minutes")));
       });
       it("On leaderboard | joins queue with Leaderboard MMR and queue time 1 hour from now", async () => {
