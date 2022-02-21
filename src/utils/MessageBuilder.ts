@@ -117,27 +117,27 @@ export default class MessageBuilder {
     } else {
       const ballChaserList = ballchasers
         .map((ballChaser) => {
-        // + 1 since it seems that joining the queue calculates to 59 instead of 60
+          // + 1 since it seems that joining the queue calculates to 59 instead of 60
           const queueTime = ballChaser.queueTime?.diffNow().as("minutes") ?? 0;
           return `${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
         })
         .join("\n");
 
-
       embed
         .setTitle(`Current Queue: ${ballchasers.length}/6`)
         .setDescription("Click the green button to join the queue! \n\n" + ballChaserList);
     }
-    
+
     return {
-      components: getEnvVariable("ENVIRONMENT") == "dev" ?
-        [new MessageActionRow({ components: [joinButton, leaveButton, fillTeamButton, removeAllButton] })] :
-        [new MessageActionRow({ components: [joinButton, leaveButton]})],
+      components:
+        getEnvVariable("ENVIRONMENT") == "dev"
+          ? [new MessageActionRow({ components: [joinButton, leaveButton, fillTeamButton, removeAllButton] })]
+          : [new MessageActionRow({ components: [joinButton, leaveButton] })],
       embeds: [embed],
     };
   }
 
-  static fullQueueMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>) : MessageOptions {
+  static fullQueueMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>): MessageOptions {
     const embed = new MessageEmbed({
       color: "GREEN",
       thumbnail: { url: this.normIconURL },
@@ -171,14 +171,15 @@ export default class MessageBuilder {
       .setDescription("Click the Create Teams button to get started! \n\n" + ballChaserList);
 
     return {
-      components: getEnvVariable("ENVIRONMENT") == "dev" ?
-        [new MessageActionRow({ components: [pickTeamsButton, leaveButton, removeAllButton] })] :
-        [new MessageActionRow({ components: [pickTeamsButton, leaveButton]})],
+      components:
+        getEnvVariable("ENVIRONMENT") == "dev"
+          ? [new MessageActionRow({ components: [pickTeamsButton, leaveButton, removeAllButton] })]
+          : [new MessageActionRow({ components: [pickTeamsButton, leaveButton] })],
       embeds: [embed],
     };
   }
 
-  static activeMatchMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>) : MessageOptions {
+  static activeMatchMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>): MessageOptions {
     const embed = new MessageEmbed({
       color: "#A62019",
       thumbnail: { url: this.normIconURL },
@@ -199,21 +200,22 @@ export default class MessageBuilder {
 
     ballchasers.forEach((ballChaser) => {
       if (ballChaser.team === Team.Blue) {
-        blueTeam.push("<@"+ballChaser.id+">");
+        blueTeam.push("<@" + ballChaser.id + ">");
       } else {
-        orangeTeam.push("<@"+ballChaser.id+">");
+        orangeTeam.push("<@" + ballChaser.id + ">");
       }
     });
-    
+
     embed
       .setTitle("Teams are set!")
       .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"))
       .addField("🔷 Blue Team 🔷", blueTeam.join("\n"));
 
     return {
-      components: getEnvVariable("ENVIRONMENT") == "dev" ? 
-        [new MessageActionRow( {components: [ reportMatch, breakMatch ]} )]:
-        [new MessageActionRow( {components: [ reportMatch ]} )],
+      components:
+        getEnvVariable("ENVIRONMENT") == "dev"
+          ? [new MessageActionRow({ components: [reportMatch, breakMatch] })]
+          : [new MessageActionRow({ components: [reportMatch] })],
       embeds: [embed],
     };
   }

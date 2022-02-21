@@ -2,9 +2,7 @@ import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { Team } from "../types/common";
 
-export async function createRandomTeams(ballchasers: PlayerInQueue[]):
-  Promise<Array<NewActiveMatchInput>> {
-  
+export async function createRandomTeams(ballchasers: PlayerInQueue[]): Promise<Array<NewActiveMatchInput>> {
   const sortedBallChaser = ballchasers.sort((o, b) => (o.mmr > b.mmr ? -1 : 1));
 
   const blueTeam: number[] = [];

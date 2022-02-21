@@ -11,8 +11,7 @@ export async function createRandomMatch(ballChasers: PlayerInQueue[]): Promise<R
 
   ballChasers.forEach((player) => {
     createdTeams.filter((p) => {
-      if (player.id == p.id)
-        player.team = p.team;
+      if (player.id == p.id) player.team = p.team;
     });
   });
 

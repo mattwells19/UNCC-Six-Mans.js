@@ -50,7 +50,7 @@ export async function handleInteraction(buttonInteraction: Interaction): Promise
 
       //Edit the reply to start a match.
       await message.edit(MessageBuilder.activeMatchMessage(ballchasers));
-      
+
       break;
     }
   }
