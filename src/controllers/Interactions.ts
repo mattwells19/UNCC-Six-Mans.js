@@ -18,7 +18,7 @@ export async function handleInteraction(buttonInteraction: Interaction): Promise
 
   switch (buttonInteraction.customId) {
     case ButtonCustomID.JoinQueue: {
-      await message.edit(MessageBuilder.disabledButtonsJoining());
+      await message.edit(MessageBuilder.disabledQueueButtons(buttonInteraction));
       const ballchasers = await joinQueue(buttonInteraction.user.id, buttonInteraction.user.username);
 
       if (ballchasers.length == 6) {
@@ -30,13 +30,13 @@ export async function handleInteraction(buttonInteraction: Interaction): Promise
       break;
     }
     case ButtonCustomID.LeaveQueue: {
-      await message.edit(MessageBuilder.disabledButtonsLeaving());
+      await message.edit(MessageBuilder.disabledQueueButtons(buttonInteraction));
       const remainingMembers = await leaveQueue(buttonInteraction.user.id);
 
       if (remainingMembers) {
         await message.edit(MessageBuilder.queueMessage(remainingMembers));
       } else {
-        await message.edit(MessageBuilder.enabledButtonsLeaving());
+        await message.edit(MessageBuilder.queueMessage([]));
       }
       break;
     }

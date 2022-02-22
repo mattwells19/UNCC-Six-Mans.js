@@ -1,4 +1,4 @@
-import { MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
+import { ButtonInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { Team } from "../types/common";
 import getEnvVariable from "./getEnvVariable";
@@ -34,25 +34,8 @@ export default class MessageBuilder {
     };
   }
 
-  static disabledButtonsJoining(): MessageOptions {
-    const joinButton = new MessageButton({
-      customId: ButtonCustomID.JoinQueue,
-      disabled: true,
-      label: "Please wait...",
-      style: "SUCCESS",
-    });
-    const leaveButton = new MessageButton({
-      customId: ButtonCustomID.LeaveQueue,
-      disabled: true,
-      label: "Leave",
-      style: "DANGER",
-    });
-    return {
-      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
-    };
-  }
-
-  static disabledButtonsLeaving(): MessageOptions {
+  static disabledQueueButtons(buttonInteraction: ButtonInteraction): MessageOptions {
+    const waitLabel = "Please wait...";
     const joinButton = new MessageButton({
       customId: ButtonCustomID.JoinQueue,
       disabled: true,
@@ -62,25 +45,20 @@ export default class MessageBuilder {
     const leaveButton = new MessageButton({
       customId: ButtonCustomID.LeaveQueue,
       disabled: true,
-      label: "Please wait...",
-      style: "DANGER",
-    });
-    return {
-      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
-    };
-  }
-
-  static enabledButtonsLeaving(): MessageOptions {
-    const joinButton = new MessageButton({
-      customId: ButtonCustomID.JoinQueue,
-      label: "Join",
-      style: "SUCCESS",
-    });
-    const leaveButton = new MessageButton({
-      customId: ButtonCustomID.LeaveQueue,
       label: "Leave",
       style: "DANGER",
     });
+
+    switch (buttonInteraction.customId) {
+      case ButtonCustomID.JoinQueue: {
+        joinButton.label = waitLabel;
+        break;
+      }
+      case ButtonCustomID.LeaveQueue: {
+        leaveButton.label = waitLabel;
+        break;
+      }
+    }
     return {
       components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
     };
