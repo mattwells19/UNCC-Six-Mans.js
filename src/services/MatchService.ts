@@ -1,19 +1,25 @@
-import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { createRandomTeams } from "../services/TeamAssignmentService";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
+import QueueRepository from "../repositories/QueueRepository";
+import { PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
 
-export async function createRandomMatch(ballChasers: PlayerInQueue[]): Promise<ReadonlyArray<PlayerInQueue>> {
+export async function createRandomMatch(): Promise<ReadonlyArray<PlayerInActiveMatch>> {
+  const ballChasers = await QueueRepository.getAllBallChasersInQueue();
+
   //Assign teams based on MMR
   const createdTeams = await createRandomTeams(ballChasers);
+
+  const newTeams: PlayerInActiveMatch[] = createdTeams.map((player) => ({
+    id: player.id,
+    matchId: "",
+    reportedTeam: null,
+    team: player.team,
+  }));
 
   //Create Match
   await ActiveMatchRepository.addActiveMatch(createdTeams);
 
-  ballChasers.forEach((player) => {
-    createdTeams.filter((p) => {
-      if (player.id == p.id) player.team = p.team;
-    });
-  });
+  await QueueRepository.removeAllBallChasersFromQueue();
 
-  return ballChasers;
+  return newTeams;
 }

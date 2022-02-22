@@ -1,4 +1,5 @@
 import { ButtonInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
+import { PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { Team } from "../types/common";
 import getEnvVariable from "./getEnvVariable";
@@ -16,6 +17,8 @@ export const enum ButtonCustomID {
 export default class MessageBuilder {
   private static readonly normIconURL =
     "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";
+
+  private static readonly isDev = getEnvVariable("ENVIRONMENT") == "dev" ? true : false;
 
   static leaderboardMessage(leaderboardInfo: string[]): MessageOptions {
     const embeds = leaderboardInfo.map((content, index) => {
@@ -107,10 +110,9 @@ export default class MessageBuilder {
     }
 
     return {
-      components:
-        getEnvVariable("ENVIRONMENT") == "dev"
-          ? [new MessageActionRow({ components: [joinButton, leaveButton, fillTeamButton, removeAllButton] })]
-          : [new MessageActionRow({ components: [joinButton, leaveButton] })],
+      components: this.isDev
+        ? [new MessageActionRow({ components: [joinButton, leaveButton, fillTeamButton, removeAllButton] })]
+        : [new MessageActionRow({ components: [joinButton, leaveButton] })],
       embeds: [embed],
     };
   }
@@ -149,15 +151,14 @@ export default class MessageBuilder {
       .setDescription("Click the Create Teams button to get started! \n\n" + ballChaserList);
 
     return {
-      components:
-        getEnvVariable("ENVIRONMENT") == "dev"
-          ? [new MessageActionRow({ components: [pickTeamsButton, leaveButton, removeAllButton] })]
-          : [new MessageActionRow({ components: [pickTeamsButton, leaveButton] })],
+      components: this.isDev
+        ? [new MessageActionRow({ components: [pickTeamsButton, leaveButton, removeAllButton] })]
+        : [new MessageActionRow({ components: [pickTeamsButton, leaveButton] })],
       embeds: [embed],
     };
   }
 
-  static activeMatchMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>): MessageOptions {
+  static activeMatchMessage(ballchasers: ReadonlyArray<Readonly<PlayerInActiveMatch>>): MessageOptions {
     const embed = new MessageEmbed({
       color: "#A62019",
       thumbnail: { url: this.normIconURL },
@@ -186,14 +187,13 @@ export default class MessageBuilder {
 
     embed
       .setTitle("Teams are set!")
-      .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"))
-      .addField("🔷 Blue Team 🔷", blueTeam.join("\n"));
+      .addField("🔷 Blue Team 🔷", blueTeam.join("\n"))
+      .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"));
 
     return {
-      components:
-        getEnvVariable("ENVIRONMENT") == "dev"
-          ? [new MessageActionRow({ components: [reportMatch, breakMatch] })]
-          : [new MessageActionRow({ components: [reportMatch] })],
+      components: this.isDev
+        ? [new MessageActionRow({ components: [reportMatch, breakMatch] })]
+        : [new MessageActionRow({ components: [reportMatch] })],
       embeds: [embed],
     };
   }
