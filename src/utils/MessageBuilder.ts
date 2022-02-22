@@ -1,5 +1,4 @@
 import { ButtonInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
-import { join } from "path/posix";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 
 export const enum ButtonCustomID {
