@@ -26,7 +26,12 @@ export async function handleInteraction(buttonInteraction: Interaction): Promise
     case ButtonCustomID.LeaveQueue: {
       await message.edit(MessageBuilder.disabledQueueButtons(buttonInteraction));
       const remainingMembers = await leaveQueue(buttonInteraction.user.id);
-      await message.edit(MessageBuilder.queueMessage(remainingMembers));
+
+      if (remainingMembers) {
+        await message.edit(MessageBuilder.queueMessage(remainingMembers));
+      } else {
+        await message.edit(MessageBuilder.enabledQueueButtons());
+      }
       break;
     }
   }

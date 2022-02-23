@@ -6,7 +6,6 @@ import getEnvVariable from "../../utils/getEnvVariable";
 import { PrismaClient } from "@prisma/client";
 import LeaderboardRepository from "../../repositories/LeaderboardRepository";
 import { mocked } from "ts-jest/utils";
-import { join } from "path/posix";
 
 jest.mock("../../utils/getEnvVariable");
 jest.mock("../../repositories/LeaderboardRepository");
@@ -106,7 +105,7 @@ describe("QueueService tests", () => {
     it("does nothing if player is not in queue", async () => {
       const result = await leaveQueue(mockPlayer1.id);
 
-      expect(result).toEqual([]);
+      expect(result).toEqual(null);
     });
   });
 });
