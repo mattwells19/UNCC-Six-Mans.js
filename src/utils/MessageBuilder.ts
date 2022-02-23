@@ -1,8 +1,8 @@
 import { ButtonInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
 import { PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
-import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { Team } from "../types/common";
 import getEnvVariable from "./getEnvVariable";
+import { PlayerInQueue } from "../repositories/QueueRepository/types";
 
 export const enum ButtonCustomID {
   JoinQueue = "joinQueue",
