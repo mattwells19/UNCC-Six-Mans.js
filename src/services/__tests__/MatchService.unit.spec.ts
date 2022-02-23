@@ -18,8 +18,7 @@ beforeEach(async () => {
 
 describe("Match Service tests", () => {
   it("random teams are created", async () => {
-    const mockBallChasers = BallChaserQueueBuilder.many(6);
-    mockBallChasers.forEach((player) => (player.team = null));
+    const mockBallChasers = BallChaserQueueBuilder.many(6, { team: null });
     mocked(QueueRepository.getAllBallChasersInQueue).mockImplementationOnce(() =>
       Promise.resolve(mockBallChasers as Readonly<PlayerInQueue[]>)
     );
