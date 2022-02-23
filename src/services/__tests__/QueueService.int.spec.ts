@@ -1,14 +1,18 @@
+import * as faker from "faker";
 import { joinQueue } from "../QueueService";
 import { leaveQueue } from "../QueueService";
-import { BallChaserQueueBuilder, LeaderboardBuilder } from "../../../.jest/Builder";
+import { ActiveMatchBuilder, BallChaserQueueBuilder, LeaderboardBuilder } from "../../../.jest/Builder";
 import { DateTime } from "luxon";
 import getEnvVariable from "../../utils/getEnvVariable";
 import { PrismaClient } from "@prisma/client";
 import LeaderboardRepository from "../../repositories/LeaderboardRepository";
+import ActiveMatchRepository from "../../repositories/ActiveMatchRepository";
 import { mocked } from "ts-jest/utils";
+import { PlayerInActiveMatch } from "../../repositories/ActiveMatchRepository/types";
 
 jest.mock("../../utils/getEnvVariable");
 jest.mock("../../repositories/LeaderboardRepository");
+jest.mock("../../repositories/ActiveMatchRepository");
 
 let prisma: PrismaClient;
 let seasonSemester: string;
@@ -47,13 +51,14 @@ describe("QueueService tests", () => {
   describe("Joining queue", () => {
     describe("Not already in queue", () => {
       it("joins a player to the queue if they are not already in the queue", async () => {
+        mocked(ActiveMatchRepository.getAllPlayersInActiveMatch).mockResolvedValue([]);
         const result = await joinQueue(mockPlayer1.id, mockPlayer1.name);
 
         expect(result).toHaveLength(1);
         expect(result[0].id).toBe(mockPlayer1.id);
       });
-
       it("Not on leaderboard | joins queue with 100 MMR and queue time 1 hour from now", async () => {
+        mocked(ActiveMatchRepository.getAllPlayersInActiveMatch).mockResolvedValue([]);
         const result = await joinQueue(mockPlayer1.id, mockPlayer1.name);
         const mmr = result[0].mmr;
         const receivedQueueTime = result[0].queueTime;
@@ -65,6 +70,7 @@ describe("QueueService tests", () => {
       it("On leaderboard | joins queue with Leaderboard MMR and queue time 1 hour from now", async () => {
         const mockPlayer2 = LeaderboardBuilder.single();
         mocked(LeaderboardRepository.getPlayerStats).mockResolvedValue(mockPlayer2);
+        mocked(ActiveMatchRepository.getAllPlayersInActiveMatch).mockResolvedValue([]);
         const resultJoin = await joinQueue(mockPlayer2.id, mockPlayer2.name);
         const receivedQueueTime = resultJoin[0].queueTime;
         const expectedQueueTime = DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 });
@@ -73,8 +79,20 @@ describe("QueueService tests", () => {
         expect(resultJoin).toHaveLength(1);
         expect(receivedQueueTime).toEqual(expectedQueueTime);
       });
-    });
+      it("In Active Match | Does not add to queue", async () => {
+        const mockMatchId = faker.datatype.uuid();
+        const mockPlayers = ActiveMatchBuilder.many(6, { matchId: mockMatchId });
+        await manuallyAddActiveMatch(mockPlayers);
 
+        const oneOfThePlayers = faker.random.arrayElement(mockPlayers);
+        mocked(ActiveMatchRepository.getAllPlayersInActiveMatch).mockResolvedValue(mockPlayers);
+
+        const resultJoin = await joinQueue(oneOfThePlayers.id, "MockName");
+
+        expect(resultJoin).toHaveLength(0);
+        expect(resultJoin).toEqual([]);
+      });
+    });
     it("Already in the queue | updates queue time to 1 hour from now", async () => {
       const firstJoin = await joinQueue(mockPlayer1.id, mockPlayer1.name);
       const receivedQueueTime1 = firstJoin[0].queueTime;
@@ -109,3 +127,28 @@ describe("QueueService tests", () => {
     });
   });
 });
+
+async function manuallyAddActiveMatch(activeMatch: PlayerInActiveMatch | Array<PlayerInActiveMatch>) {
+  const playersToAdd = Array.isArray(activeMatch) ? activeMatch : [activeMatch];
+
+  const promises = [];
+  for (const activeMatch of playersToAdd) {
+    promises.push(
+      await prisma.ballChaser.create({
+        data: {
+          id: activeMatch.id,
+          name: faker.name.firstName(),
+          activeMatch: {
+            create: {
+              id: activeMatch.matchId,
+              team: activeMatch.team,
+              reportedTeam: activeMatch.reportedTeam,
+            },
+          },
+        },
+      })
+    );
+  }
+
+  await Promise.all(promises);
+}

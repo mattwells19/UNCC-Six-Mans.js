@@ -3,6 +3,7 @@ import QueueRepository from "../repositories/QueueRepository";
 import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
 import { createRandomMatch } from "../services/MatchService";
+import { PlayerInQueue } from "../repositories/QueueRepository/types";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<void> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
@@ -41,10 +42,16 @@ export async function handleInteraction(buttonInteraction: Interaction): Promise
     }
 
     case ButtonCustomID.CreateRandomTeam: {
-      const ballchasers = await createRandomMatch();
+      const currentMatch = await createRandomMatch();
+      const emptyQueue: PlayerInQueue[] = [];
 
-      //Edit the reply to start a match.
-      await message.edit(MessageBuilder.activeMatchMessage(ballchasers));
+      await Promise.all([
+        //Create new reply to start a match
+        await message.channel.send(MessageBuilder.activeMatchMessage(currentMatch)),
+
+        //Update the embed with an empty queue message
+        await message.edit(MessageBuilder.queueMessage(emptyQueue)),
+      ]);
 
       break;
     }
