@@ -38,7 +38,7 @@ describe("Match Service tests", () => {
       Promise.resolve(mockBallChasers as Readonly<PlayerInQueue[]>)
     );
 
-    let players = await createRandomMatch();
+    await createRandomMatch();
     const addMatchMock = mocked(ActiveMatchRepository.addActiveMatch);
 
     expect(addMatchMock).toHaveBeenCalled();
@@ -51,7 +51,7 @@ describe("Match Service tests", () => {
       Promise.resolve(mockBallChasers as Readonly<PlayerInQueue[]>)
     );
 
-    let players = await createRandomMatch();
+    await createRandomMatch();
     const removePlayersMock = mocked(QueueRepository.removeAllBallChasersFromQueue);
 
     expect(removePlayersMock).toHaveBeenCalled();
