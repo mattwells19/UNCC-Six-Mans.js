@@ -67,6 +67,22 @@ export default class MessageBuilder {
     };
   }
 
+  static enabledQueueButtons(): MessageOptions {
+    const joinButton = new MessageButton({
+      customId: ButtonCustomID.JoinQueue,
+      label: "Join",
+      style: "SUCCESS",
+    });
+    const leaveButton = new MessageButton({
+      customId: ButtonCustomID.LeaveQueue,
+      label: "Leave",
+      style: "DANGER",
+    });
+    return {
+      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
+    };
+  }
+
   static queueMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>): MessageOptions {
     const embed = new MessageEmbed({
       color: "GREEN",
