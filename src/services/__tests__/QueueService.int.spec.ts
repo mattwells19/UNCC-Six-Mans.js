@@ -106,7 +106,7 @@ describe("QueueService tests", () => {
     it("does nothing if player is not in queue", async () => {
       const result = await leaveQueue(mockPlayer1.id);
 
-      expect(result).toEqual(null);
+      expect(result).toEqual([]);
     });
   });
 });
