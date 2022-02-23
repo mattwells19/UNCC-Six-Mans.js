@@ -5,21 +5,15 @@ import { PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types
 
 export async function createRandomMatch(): Promise<ReadonlyArray<PlayerInActiveMatch>> {
   const ballChasers = await QueueRepository.getAllBallChasersInQueue();
-
-  //Assign teams based on MMR
+  //Assign teams based on MMR and
   const createdTeams = await createRandomTeams(ballChasers);
 
-  const newTeams: PlayerInActiveMatch[] = createdTeams.map((player) => ({
-    id: player.id,
-    matchId: "",
-    reportedTeam: null,
-    team: player.team,
-  }));
+  await Promise.all([
+    //Create Match
+    await ActiveMatchRepository.addActiveMatch(createdTeams),
+    //Match is created, reset the queue.
+    await QueueRepository.removeAllBallChasersFromQueue(),
+  ]);
 
-  //Create Match
-  await ActiveMatchRepository.addActiveMatch(createdTeams);
-
-  await QueueRepository.removeAllBallChasersFromQueue();
-
-  return newTeams;
+  return createdTeams;
 }

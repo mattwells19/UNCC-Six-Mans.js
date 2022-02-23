@@ -1,10 +1,10 @@
-import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types";
+import { PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { Team } from "../types/common";
 
 export async function createRandomTeams(
   ballchasers: ReadonlyArray<PlayerInQueue>
-): Promise<Array<NewActiveMatchInput>> {
+): Promise<Array<PlayerInActiveMatch>> {
   const sortedBallChaser = ballchasers
     .map((player) => {
       return player;
@@ -13,7 +13,7 @@ export async function createRandomTeams(
 
   const blueTeam: number[] = [];
   const orangeTeam: number[] = [];
-  const activeMatch: NewActiveMatchInput[] = [];
+  const activeMatch: PlayerInActiveMatch[] = [];
 
   //This splits the teams with the minimal difference in the sum of MMR.
   //This actually splits the ball chasers into two arrays that aren't
@@ -23,18 +23,18 @@ export async function createRandomTeams(
     if (blueTeam.reduce((sum, current) => sum + current, 0) > orangeTeam.reduce((sum, current) => sum + current, 0)) {
       if (orangeTeam.length < sortedBallChaser.length / 2) {
         orangeTeam.push(p.mmr);
-        activeMatch.push({ id: p.id, team: Team.Orange });
+        activeMatch.push({ id: p.id, matchId: "", reportedTeam: null, team: Team.Orange });
       } else {
         blueTeam.push(p.mmr);
-        activeMatch.push({ id: p.id, team: Team.Blue });
+        activeMatch.push({ id: p.id, matchId: "", reportedTeam: null, team: Team.Blue });
       }
     } else {
       if (blueTeam.length < sortedBallChaser.length / 2) {
         blueTeam.push(p.mmr);
-        activeMatch.push({ id: p.id, team: Team.Blue });
+        activeMatch.push({ id: p.id, matchId: "", reportedTeam: null, team: Team.Blue });
       } else {
         orangeTeam.push(p.mmr);
-        activeMatch.push({ id: p.id, team: Team.Orange });
+        activeMatch.push({ id: p.id, matchId: "", reportedTeam: null, team: Team.Orange });
       }
     }
   });
