@@ -65,6 +65,7 @@ describe("QueueService tests", () => {
         const receivedQueueTime = result![0].queueTime;
         const expectedQueueTime = DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 });
 
+        expect(result).not.toBeNull();
         expect(mmr).toBe(100);
         expect(receivedQueueTime).toEqual(expectedQueueTime);
       });
@@ -76,6 +77,7 @@ describe("QueueService tests", () => {
         const receivedQueueTime = resultJoin![0].queueTime;
         const expectedQueueTime = DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 });
 
+        expect(resultJoin).not.toBeNull();
         expect(resultJoin![0].mmr).toEqual(mockPlayer2.mmr);
         expect(resultJoin).toHaveLength(1);
         expect(receivedQueueTime).toEqual(expectedQueueTime);
@@ -94,12 +96,14 @@ describe("QueueService tests", () => {
       const receivedQueueTime1 = firstJoin![0].queueTime;
       const expectedQueueTime1 = DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 });
 
+      expect(firstJoin).not.toBeNull();
       expect(receivedQueueTime1).toEqual(expectedQueueTime1);
 
       const secondJoin = await joinQueue(mockPlayer1.id, mockPlayer1.name);
       const receivedQueueTime2 = secondJoin![0].queueTime;
       const expectedQueueTime2 = DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 });
 
+      expect(secondJoin).not.toBeNull();
       expect(receivedQueueTime2).toEqual(expectedQueueTime2);
     });
   });
