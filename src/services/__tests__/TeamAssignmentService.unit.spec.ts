@@ -2,7 +2,7 @@ import { createRandomTeams } from "../TeamAssignmentService";
 import { Team } from "../../types/common";
 import { BallChaserQueueBuilder } from "../../../.jest/Builder";
 
-const mockBallChasers = BallChaserQueueBuilder.many(6);
+const mockBallChasers = BallChaserQueueBuilder.many(6, { team: null });
 
 //Remove team values and mmr as they will be set below.
 mockBallChasers.forEach((player) => (player.team = null));

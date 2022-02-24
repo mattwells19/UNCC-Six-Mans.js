@@ -3,10 +3,10 @@ import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import QueueRepository from "../repositories/QueueRepository";
 import { AddBallChaserToQueueInput, PlayerInQueue } from "../repositories/QueueRepository/types";
 
-export async function joinQueue(userId: string, userName: string): Promise<ReadonlyArray<PlayerInQueue>> {
+export async function joinQueue(userId: string, userName: string): Promise<ReadonlyArray<PlayerInQueue> | null> {
   //Check if in Active Match so as not to add to the queue.
   const activeMatchMember = await ActiveMatchRepository.isPlayerInActiveMatch(userId);
-  if (activeMatchMember) return await QueueRepository.getAllBallChasersInQueue();
+  if (activeMatchMember) return null;
 
   //Check if in Queue so as not to add to the queue again.
   const queueMember = await QueueRepository.getBallChaserInQueue(userId);

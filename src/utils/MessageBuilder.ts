@@ -176,7 +176,7 @@ export default class MessageBuilder {
 
   static activeMatchMessage(ballchasers: Array<NewActiveMatchInput>): MessageOptions {
     const embed = new MessageEmbed({
-      color: "#A62019",
+      color: "DARK_RED",
       thumbnail: { url: this.normIconURL },
     });
     const reportMatch = new MessageButton({

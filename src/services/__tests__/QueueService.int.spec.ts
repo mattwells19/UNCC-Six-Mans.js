@@ -54,14 +54,15 @@ describe("QueueService tests", () => {
         mocked(ActiveMatchRepository.getAllPlayersInActiveMatch).mockResolvedValue([]);
         const result = await joinQueue(mockPlayer1.id, mockPlayer1.name);
 
+        expect(result).not.toBeNull();
         expect(result).toHaveLength(1);
-        expect(result[0].id).toBe(mockPlayer1.id);
+        expect(result![0].id).toBe(mockPlayer1.id);
       });
       it("Not on leaderboard | joins queue with 100 MMR and queue time 1 hour from now", async () => {
         mocked(ActiveMatchRepository.getAllPlayersInActiveMatch).mockResolvedValue([]);
         const result = await joinQueue(mockPlayer1.id, mockPlayer1.name);
-        const mmr = result[0].mmr;
-        const receivedQueueTime = result[0].queueTime;
+        const mmr = result![0].mmr;
+        const receivedQueueTime = result![0].queueTime;
         const expectedQueueTime = DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 });
 
         expect(mmr).toBe(100);
@@ -72,35 +73,31 @@ describe("QueueService tests", () => {
         mocked(LeaderboardRepository.getPlayerStats).mockResolvedValue(mockPlayer2);
         mocked(ActiveMatchRepository.getAllPlayersInActiveMatch).mockResolvedValue([]);
         const resultJoin = await joinQueue(mockPlayer2.id, mockPlayer2.name);
-        const receivedQueueTime = resultJoin[0].queueTime;
+        const receivedQueueTime = resultJoin![0].queueTime;
         const expectedQueueTime = DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 });
 
-        expect(resultJoin[0].mmr).toEqual(mockPlayer2.mmr);
+        expect(resultJoin![0].mmr).toEqual(mockPlayer2.mmr);
         expect(resultJoin).toHaveLength(1);
         expect(receivedQueueTime).toEqual(expectedQueueTime);
       });
       it("In Active Match | Does not add to queue", async () => {
-        const mockMatchId = faker.datatype.uuid();
-        const mockPlayers = ActiveMatchBuilder.many(6, { matchId: mockMatchId });
-
-        const oneOfThePlayers = faker.random.arrayElement(mockPlayers);
         mocked(ActiveMatchRepository.isPlayerInActiveMatch).mockResolvedValue(true);
 
-        const resultJoin = await joinQueue(oneOfThePlayers.id, "MockName");
+        const resultJoin = await joinQueue(faker.datatype.uuid(), "MockName");
 
-        expect(resultJoin.includes(mockPlayer1)).toBeFalsy();
+        expect(resultJoin?.includes(mockPlayer1)).toBeFalsy();
       });
     });
     it("Already in the queue | updates queue time to 1 hour from now", async () => {
       mocked(ActiveMatchRepository.isPlayerInActiveMatch).mockResolvedValue(false);
       const firstJoin = await joinQueue(mockPlayer1.id, mockPlayer1.name);
-      const receivedQueueTime1 = firstJoin[0].queueTime;
+      const receivedQueueTime1 = firstJoin![0].queueTime;
       const expectedQueueTime1 = DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 });
 
       expect(receivedQueueTime1).toEqual(expectedQueueTime1);
 
       const secondJoin = await joinQueue(mockPlayer1.id, mockPlayer1.name);
-      const receivedQueueTime2 = secondJoin[0].queueTime;
+      const receivedQueueTime2 = secondJoin![0].queueTime;
       const expectedQueueTime2 = DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 });
 
       expect(receivedQueueTime2).toEqual(expectedQueueTime2);
@@ -113,7 +110,7 @@ describe("QueueService tests", () => {
       const resultJoin = await joinQueue(mockPlayer1.id, mockPlayer1.name);
 
       expect(resultJoin).toHaveLength(1);
-      expect(resultJoin[0].id).toEqual(mockPlayer1.id);
+      expect(resultJoin![0].id).toEqual(mockPlayer1.id);
 
       const resultLeave = await leaveQueue(mockPlayer1.id);
 
@@ -127,28 +124,3 @@ describe("QueueService tests", () => {
     });
   });
 });
-
-async function manuallyAddActiveMatch(activeMatch: PlayerInActiveMatch | Array<PlayerInActiveMatch>) {
-  const playersToAdd = Array.isArray(activeMatch) ? activeMatch : [activeMatch];
-
-  const promises = [];
-  for (const activeMatch of playersToAdd) {
-    promises.push(
-      await prisma.ballChaser.create({
-        data: {
-          id: activeMatch.id,
-          name: faker.name.firstName(),
-          activeMatch: {
-            create: {
-              id: activeMatch.matchId,
-              team: activeMatch.team,
-              reportedTeam: activeMatch.reportedTeam,
-            },
-          },
-        },
-      })
-    );
-  }
-
-  await Promise.all(promises);
-}
