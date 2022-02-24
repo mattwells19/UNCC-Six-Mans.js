@@ -2,26 +2,19 @@ import { joinQueue } from "../QueueService";
 import { leaveQueue } from "../QueueService";
 import { BallChaserQueueBuilder, LeaderboardBuilder } from "../../../.jest/Builder";
 import { DateTime } from "luxon";
-import getEnvVariable from "../../utils/getEnvVariable";
 import { PrismaClient } from "@prisma/client";
 import LeaderboardRepository from "../../repositories/LeaderboardRepository";
-import { mocked } from "ts-jest/utils";
 
 jest.mock("../../utils/getEnvVariable");
 jest.mock("../../repositories/LeaderboardRepository");
 
 let prisma: PrismaClient;
-let seasonSemester: string;
-let seasonYear: string;
 
 beforeEach(async () => {
   jest.clearAllMocks();
 });
 
 beforeAll(async () => {
-  seasonSemester = getEnvVariable("season_semester");
-  seasonYear = getEnvVariable("season_year");
-
   prisma = new PrismaClient();
   await prisma.$connect();
   await prisma.leaderboard.deleteMany();
@@ -64,7 +57,7 @@ describe("QueueService tests", () => {
       });
       it("On leaderboard | joins queue with Leaderboard MMR and queue time 1 hour from now", async () => {
         const mockPlayer2 = LeaderboardBuilder.single();
-        mocked(LeaderboardRepository.getPlayerStats).mockResolvedValue(mockPlayer2);
+        jest.mocked(LeaderboardRepository.getPlayerStats).mockResolvedValue(mockPlayer2);
         const resultJoin = await joinQueue(mockPlayer2.id, mockPlayer2.name);
         const receivedQueueTime = resultJoin[0].queueTime;
         const expectedQueueTime = DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 });
