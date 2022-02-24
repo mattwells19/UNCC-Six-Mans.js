@@ -1,17 +1,13 @@
-import { PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
+import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { Team } from "../types/common";
 
 export async function createRandomTeams(
   ballchasers: ReadonlyArray<PlayerInQueue>
-): Promise<Array<PlayerInActiveMatch>> {
-  const sortedBallChaser = ballchasers
-    .map((player) => {
-      return player;
-    })
-    .sort((o, b) => o.mmr - b.mmr);
+): Promise<Array<NewActiveMatchInput>> {
+  const sortedBallChaser = ballchasers.slice().sort((o, b) => o.mmr - b.mmr);
 
-  const activeMatch: PlayerInActiveMatch[] = [];
+  const activeMatch: NewActiveMatchInput[] = [];
   let orangeTeamMmr = 0;
   let blueTeamMmr = 0;
   let orangeTeamCounter = 0;
@@ -25,21 +21,21 @@ export async function createRandomTeams(
     if (blueTeamMmr > orangeTeamMmr) {
       if (orangeTeamCounter < sortedBallChaser.length / 2) {
         orangeTeamMmr += p.mmr;
-        activeMatch.push({ id: p.id, matchId: "", reportedTeam: null, team: Team.Orange });
+        activeMatch.push({ id: p.id, team: Team.Orange });
         orangeTeamCounter++;
       } else {
         blueTeamMmr += p.mmr;
-        activeMatch.push({ id: p.id, matchId: "", reportedTeam: null, team: Team.Blue });
+        activeMatch.push({ id: p.id, team: Team.Blue });
         blueTeamCounter++;
       }
     } else {
       if (blueTeamCounter < sortedBallChaser.length / 2) {
         blueTeamMmr += p.mmr;
-        activeMatch.push({ id: p.id, matchId: "", reportedTeam: null, team: Team.Blue });
+        activeMatch.push({ id: p.id, team: Team.Blue });
         blueTeamCounter++;
       } else {
         orangeTeamMmr += p.mmr;
-        activeMatch.push({ id: p.id, matchId: "", reportedTeam: null, team: Team.Orange });
+        activeMatch.push({ id: p.id, team: Team.Orange });
         orangeTeamCounter++;
       }
     }

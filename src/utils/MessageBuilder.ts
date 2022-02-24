@@ -1,5 +1,5 @@
 import { ButtonInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
-import { PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
+import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types";
 import { Team } from "../types/common";
 import getEnvVariable from "./getEnvVariable";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
@@ -18,7 +18,7 @@ export default class MessageBuilder {
   private static readonly normIconURL =
     "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";
 
-  private static readonly isDev = getEnvVariable("ENVIRONMENT") == "dev" ? true : false;
+  private static readonly isDev = getEnvVariable("ENVIRONMENT") === "dev";
 
   static leaderboardMessage(leaderboardInfo: string[]): MessageOptions {
     const embeds = leaderboardInfo.map((content, index) => {
@@ -174,7 +174,7 @@ export default class MessageBuilder {
     };
   }
 
-  static activeMatchMessage(ballchasers: ReadonlyArray<Readonly<PlayerInActiveMatch>>): MessageOptions {
+  static activeMatchMessage(ballchasers: Array<NewActiveMatchInput>): MessageOptions {
     const embed = new MessageEmbed({
       color: "#A62019",
       thumbnail: { url: this.normIconURL },

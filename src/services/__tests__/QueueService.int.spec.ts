@@ -82,14 +82,13 @@ describe("QueueService tests", () => {
       it("In Active Match | Does not add to queue", async () => {
         const mockMatchId = faker.datatype.uuid();
         const mockPlayers = ActiveMatchBuilder.many(6, { matchId: mockMatchId });
-        await manuallyAddActiveMatch(mockPlayers);
 
         const oneOfThePlayers = faker.random.arrayElement(mockPlayers);
         mocked(ActiveMatchRepository.isPlayerInActiveMatch).mockResolvedValue(true);
 
         const resultJoin = await joinQueue(oneOfThePlayers.id, "MockName");
 
-        expect(resultJoin.find((id) => id)).not.toBe(mockPlayer1.id);
+        expect(resultJoin.includes(mockPlayer1)).toBeFalsy();
       });
     });
     it("Already in the queue | updates queue time to 1 hour from now", async () => {

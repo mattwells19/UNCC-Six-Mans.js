@@ -1,12 +1,10 @@
-import { Interaction, Message } from "discord.js";
+import { ButtonInteraction, Message } from "discord.js";
 import QueueRepository from "../repositories/QueueRepository";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
 import { fillTeams } from "../utils/devFillTeams";
 
-export async function handleDevInteraction(buttonInteraction: Interaction): Promise<void> {
-  if (!buttonInteraction.isButton()) return;
-
+export async function handleDevInteraction(buttonInteraction: ButtonInteraction): Promise<void> {
   const message = buttonInteraction.message;
   if (!(message instanceof Message)) return;
 

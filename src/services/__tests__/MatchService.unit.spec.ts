@@ -10,27 +10,23 @@ jest.mock("../../repositories/ActiveMatchRepository");
 jest.mock("../../repositories/QueueRepository");
 jest.mock("../../utils/getEnvVariable");
 
-beforeEach(async () => {
+beforeEach(() => {
   jest.clearAllMocks();
 });
 
 describe("Match Service tests", () => {
   it("random teams are created", async () => {
     const mockBallChasers = BallChaserQueueBuilder.many(6, { team: null });
-    mocked(QueueRepository.getAllBallChasersInQueue).mockImplementationOnce(() =>
-      Promise.resolve(mockBallChasers as Readonly<PlayerInQueue[]>)
-    );
+    mocked(QueueRepository.getAllBallChasersInQueue).mockResolvedValueOnce(mockBallChasers);
 
-    let players = await createRandomMatch();
+    const players = await createRandomMatch();
 
-    mocked(ActiveMatchRepository.addActiveMatch);
     expect(players.filter((player) => player.team === Team.Orange)).toHaveLength(3);
     expect(players.filter((player) => player.team === Team.Blue)).toHaveLength(3);
   });
 
   it("updates queue with update player teams", async () => {
-    const mockBallChasers = BallChaserQueueBuilder.many(6);
-    mockBallChasers.forEach((player) => (player.team = null));
+    const mockBallChasers = BallChaserQueueBuilder.many(6, { team: null });
     mocked(QueueRepository.getAllBallChasersInQueue).mockImplementationOnce(() =>
       Promise.resolve(mockBallChasers as Readonly<PlayerInQueue[]>)
     );
@@ -42,8 +38,7 @@ describe("Match Service tests", () => {
   });
 
   it("removes players from queue", async () => {
-    const mockBallChasers = BallChaserQueueBuilder.many(6);
-    mockBallChasers.forEach((player) => (player.team = null));
+    const mockBallChasers = BallChaserQueueBuilder.many(6, { team: null });
     mocked(QueueRepository.getAllBallChasersInQueue).mockImplementationOnce(() =>
       Promise.resolve(mockBallChasers as Readonly<PlayerInQueue[]>)
     );

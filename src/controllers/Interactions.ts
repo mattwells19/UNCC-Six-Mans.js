@@ -1,4 +1,4 @@
-import { Interaction, Message, TextChannel } from "discord.js";
+import { ButtonInteraction, Message, TextChannel } from "discord.js";
 import QueueRepository from "../repositories/QueueRepository";
 import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
@@ -10,9 +10,7 @@ export async function postCurrentQueue(queueChannel: TextChannel): Promise<void>
   await queueChannel.send(MessageBuilder.queueMessage(ballchasers));
 }
 
-export async function handleInteraction(buttonInteraction: Interaction): Promise<void> {
-  if (!buttonInteraction.isButton()) return;
-
+export async function handleInteraction(buttonInteraction: ButtonInteraction): Promise<void> {
   const message = buttonInteraction.message;
   if (!(message instanceof Message)) return;
 
