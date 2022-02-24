@@ -85,15 +85,15 @@ describe("QueueService tests", () => {
         await manuallyAddActiveMatch(mockPlayers);
 
         const oneOfThePlayers = faker.random.arrayElement(mockPlayers);
-        mocked(ActiveMatchRepository.getAllPlayersInActiveMatch).mockResolvedValue(mockPlayers);
+        mocked(ActiveMatchRepository.isPlayerInActiveMatch).mockResolvedValue(true);
 
         const resultJoin = await joinQueue(oneOfThePlayers.id, "MockName");
 
-        expect(resultJoin).toHaveLength(0);
-        expect(resultJoin).toEqual([]);
+        expect(resultJoin.find((id) => id)).not.toBe(mockPlayer1.id);
       });
     });
     it("Already in the queue | updates queue time to 1 hour from now", async () => {
+      mocked(ActiveMatchRepository.isPlayerInActiveMatch).mockResolvedValue(false);
       const firstJoin = await joinQueue(mockPlayer1.id, mockPlayer1.name);
       const receivedQueueTime1 = firstJoin[0].queueTime;
       const expectedQueueTime1 = DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 });
@@ -110,6 +110,7 @@ describe("QueueService tests", () => {
 
   describe("Leaving queue", () => {
     it("removes player from queue when they exist", async () => {
+      mocked(ActiveMatchRepository.isPlayerInActiveMatch).mockResolvedValue(false);
       const resultJoin = await joinQueue(mockPlayer1.id, mockPlayer1.name);
 
       expect(resultJoin).toHaveLength(1);

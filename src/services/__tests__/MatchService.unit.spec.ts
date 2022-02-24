@@ -4,9 +4,7 @@ import { mocked } from "ts-jest/utils";
 import ActiveMatchRepository from "../../repositories/ActiveMatchRepository";
 import QueueRepository from "../../repositories/QueueRepository";
 import { Team } from "../../types/common";
-import { NewActiveMatchInput, PlayerInActiveMatch } from "../../repositories/ActiveMatchRepository/types";
 import { PlayerInQueue } from "../../repositories/QueueRepository/types";
-import { createRandomTeams } from "../TeamAssignmentService";
 
 jest.mock("../../repositories/ActiveMatchRepository");
 jest.mock("../../repositories/QueueRepository");
