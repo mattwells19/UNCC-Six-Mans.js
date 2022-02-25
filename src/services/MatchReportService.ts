@@ -32,7 +32,7 @@ export async function mmr(activeMatchBallChasers: Promise<ReadonlyArray<Readonly
   let blueTeam = teams.blueTeam;
   let orangeTeam = teams.orangeTeam;
 
-  blueTeam.forEach((x) => {});
+  //Get each Team MMR here
 
   let difference = (orangeTeamMMR - blueTeamMMR) / 400;
 
