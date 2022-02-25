@@ -12,6 +12,8 @@ export const enum ButtonCustomID {
   ReportMatch = "reportMatch",
   RemoveAll = "removeAll",
   BreakMatch = "breakMatch",
+  ReportBlue = "reportBlue",
+  ReportOrange = "reportOrange",
 }
 
 export default class MessageBuilder {
@@ -80,6 +82,22 @@ export default class MessageBuilder {
     });
     return {
       components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
+    };
+  }
+
+  static reportMatchButtons(): MessageOptions {
+    const reportBlue = new MessageButton({
+      customId: ButtonCustomID.ReportBlue,
+      label: "🔷 Blue Team Won 🔷",
+      style: "SECONDARY",
+    });
+    const reportOrange = new MessageButton({
+      customId: ButtonCustomID.ReportOrange,
+      label: "🔶 Orange Team Won 🔶",
+      style: "SECONDARY",
+    });
+    return {
+      components: [new MessageActionRow({ components: [reportBlue, reportOrange] })],
     };
   }
 
