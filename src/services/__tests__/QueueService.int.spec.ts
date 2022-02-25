@@ -1,14 +1,13 @@
 import * as faker from "faker";
 import { joinQueue } from "../QueueService";
 import { leaveQueue } from "../QueueService";
-import { ActiveMatchBuilder, BallChaserQueueBuilder, LeaderboardBuilder } from "../../../.jest/Builder";
+import { BallChaserQueueBuilder, LeaderboardBuilder } from "../../../.jest/Builder";
 import { DateTime } from "luxon";
 import getEnvVariable from "../../utils/getEnvVariable";
 import { PrismaClient } from "@prisma/client";
 import LeaderboardRepository from "../../repositories/LeaderboardRepository";
 import ActiveMatchRepository from "../../repositories/ActiveMatchRepository";
 import { mocked } from "ts-jest/utils";
-import { PlayerInActiveMatch } from "../../repositories/ActiveMatchRepository/types";
 
 jest.mock("../../utils/getEnvVariable");
 jest.mock("../../repositories/LeaderboardRepository");
