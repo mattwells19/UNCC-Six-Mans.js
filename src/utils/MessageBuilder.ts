@@ -140,8 +140,8 @@ export default class MessageBuilder {
     });
     const pickTeamsButton = new MessageButton({
       customId: ButtonCustomID.CreateRandomTeam,
-      label: "Create Teams",
-      style: "SUCCESS",
+      label: "Random",
+      style: "PRIMARY",
     });
     const leaveButton = new MessageButton({
       customId: ButtonCustomID.LeaveQueue,
