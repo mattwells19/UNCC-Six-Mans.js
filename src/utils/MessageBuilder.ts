@@ -101,6 +101,34 @@ export default class MessageBuilder {
     };
   }
 
+  static reportedTeamButtons(buttonInteraction: ButtonInteraction): MessageOptions {
+    const primaryStyle = "PRIMARY";
+    const reportBlue = new MessageButton({
+      customId: ButtonCustomID.ReportBlue,
+      label: "🔷 Blue Team Won 🔷",
+      style: "SECONDARY",
+    });
+    const reportOrange = new MessageButton({
+      customId: ButtonCustomID.ReportOrange,
+      label: "🔶 Orange Team Won 🔶",
+      style: "SECONDARY",
+    });
+
+    switch (buttonInteraction.customId) {
+      case ButtonCustomID.ReportBlue: {
+        reportBlue.style = primaryStyle;
+        break;
+      }
+      case ButtonCustomID.ReportOrange: {
+        reportOrange.style = primaryStyle;
+        break;
+      }
+    }
+    return {
+      components: [new MessageActionRow({ components: [reportBlue, reportOrange] })],
+    };
+  }
+
   static queueMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>): MessageOptions {
     const embed = new MessageEmbed({
       color: "GREEN",

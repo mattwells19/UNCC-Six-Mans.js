@@ -66,10 +66,12 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     }
 
     case ButtonCustomID.ReportBlue: {
+      await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction));
       break;
     }
 
     case ButtonCustomID.ReportOrange: {
+      await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction));
       break;
     }
   }

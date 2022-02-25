@@ -2,6 +2,7 @@ import { ButtonInteraction } from "discord.js";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import { PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
 import { Team } from "../types/common";
+import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
 
 async function organizeTeams(ballChasers: Promise<ReadonlyArray<Readonly<PlayerInActiveMatch>>>) {
   const blueTeam: Readonly<PlayerInActiveMatch>[] = [];
@@ -50,5 +51,27 @@ export async function mmr(activeMatchBallChasers: Promise<ReadonlyArray<Readonly
 }
 
 export async function reportMatch(buttonInteraction: ButtonInteraction) {
-  let reportCounter = 0;
+  let reportedTeam;
+
+  switch (buttonInteraction.customId) {
+    case ButtonCustomID.ReportBlue: {
+      if (reportedTeam != Team.Blue) {
+        reportedTeam = Team.Blue;
+        MessageBuilder.reportedTeamButtons(buttonInteraction);
+      } else {
+        //code for report confirm goes here
+      }
+      break;
+    }
+
+    case ButtonCustomID.ReportOrange: {
+      if (reportedTeam != Team.Orange) {
+        reportedTeam = Team.Orange;
+        MessageBuilder.reportedTeamButtons(buttonInteraction);
+      } else {
+        //code for report confirm goes here
+      }
+      break;
+    }
+  }
 }
