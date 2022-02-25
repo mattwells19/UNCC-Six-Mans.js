@@ -1,3 +1,4 @@
+import { ButtonInteraction } from "discord.js";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import { PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
 import { Team } from "../types/common";
@@ -46,4 +47,8 @@ export async function mmr(activeMatchBallChasers: Promise<ReadonlyArray<Readonly
   mmr = Math.max(5, mmr);
 
   return Math.round(mmr);
+}
+
+export async function reportMatch(buttonInteraction: ButtonInteraction) {
+  let reportCounter = 0;
 }
