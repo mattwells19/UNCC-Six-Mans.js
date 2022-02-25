@@ -12,7 +12,7 @@ export interface UpdateBallChaserInQueueInput {
 export type PlayerInQueue = {
   id: string;
   isCap: boolean;
-  mmr: number | null;
+  mmr: number;
   name: string;
   queueTime: DateTime;
   team: Team | null;

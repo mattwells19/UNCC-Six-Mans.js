@@ -17,7 +17,7 @@ export class QueueRepository {
     return {
       id: playerInQueue.player.id,
       isCap: playerInQueue.isCap,
-      mmr: lb?.mmr ?? null,
+      mmr: lb?.mmr ?? 100,
       name: playerInQueue.player.name,
       queueTime: DateTime.fromJSDate(playerInQueue.queueTime),
       team: playerInQueue.team,

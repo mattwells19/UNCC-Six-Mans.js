@@ -98,6 +98,16 @@ export class ActiveMatchRepository {
       team: playerInMatch.team,
     }));
   }
+
+  async isPlayerInActiveMatch(playerInMatchId: string): Promise<boolean> {
+    const playerInMatch = await this.#ActiveMatch.count({
+      where: {
+        playerId: playerInMatchId,
+      },
+    });
+
+    return playerInMatch > 0;
+  }
 }
 
 export default new ActiveMatchRepository();
