@@ -26,11 +26,24 @@ async function organizeTeams(ballChasers: Promise<ReadonlyArray<Readonly<PlayerI
 }
 
 export async function mmr(activeMatchBallChasers: Promise<ReadonlyArray<Readonly<PlayerInActiveMatch>>>) {
-  const blueTeamMMR = 0;
-  const orangeTeamMMR = 0;
+  let blueTeamMMR = 0;
+  let orangeTeamMMR = 0;
   const teams = await organizeTeams(activeMatchBallChasers);
   let blueTeam = teams.blueTeam;
   let orangeTeam = teams.orangeTeam;
 
   blueTeam.forEach((x) => {});
+
+  let difference = (orangeTeamMMR - blueTeamMMR) / 400;
+
+  let power = Math.pow(10, difference) + 1;
+
+  let probability = 1 / power;
+
+  let mmr = (1 - probability) * 20;
+
+  mmr = Math.min(15, mmr);
+  mmr = Math.max(5, mmr);
+
+  return Math.round(mmr);
 }
