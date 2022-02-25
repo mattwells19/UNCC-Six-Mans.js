@@ -24,9 +24,7 @@ export async function handleDevInteraction(buttonInteraction: ButtonInteraction)
     }
     case ButtonCustomID.BreakMatch: {
       await ActiveMatchRepository.removeAllPlayersInActiveMatch("346838372649795595");
-
-      const ballChasers = await QueueRepository.getAllBallChasersInQueue();
-      await message.edit(MessageBuilder.queueMessage(ballChasers));
+      await message.delete();
       break;
     }
   }
