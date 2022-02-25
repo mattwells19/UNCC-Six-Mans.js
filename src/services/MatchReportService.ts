@@ -27,7 +27,7 @@ async function organizeTeams(ballChasers: Promise<ReadonlyArray<Readonly<PlayerI
   return { blueTeam: blueTeam, orangeTeam: orangeTeam };
 }
 
-export async function mmr(activeMatchBallChasers: Promise<ReadonlyArray<Readonly<PlayerInActiveMatch>>>) {
+export async function calculateMMR(activeMatchBallChasers: Promise<ReadonlyArray<Readonly<PlayerInActiveMatch>>>) {
   let blueTeamMMR = 0;
   let orangeTeamMMR = 0;
   const teams = await organizeTeams(activeMatchBallChasers);
