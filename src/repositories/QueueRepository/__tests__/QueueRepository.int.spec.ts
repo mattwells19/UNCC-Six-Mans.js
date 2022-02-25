@@ -102,7 +102,7 @@ describe("Queue Repository tests", () => {
 
     expect(actualBallChaser).not.toBeNull();
     expect(actualBallChaser?.id).toEqual(expectedBallChaser.id);
-    expect(actualBallChaser?.mmr).toBeNull();
+    expect(actualBallChaser?.mmr).toEqual(100);
   });
 
   it("returns null when BallChaser does not exist with ID", async () => {
