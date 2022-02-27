@@ -4,6 +4,7 @@ import { handleInteraction, postCurrentQueue } from "./controllers/Interactions"
 import getDiscordChannelById from "./utils/getDiscordChannelById";
 import getEnvVariable from "./utils/getEnvVariable";
 import { handleDevInteraction } from "./controllers/DevInteractions";
+import { handleMenuInteraction } from "./controllers/MenuInteractions";
 
 const NormClient = new Client({ intents: "GUILDS" });
 
@@ -29,11 +30,15 @@ NormClient.on("ready", () => {
 });
 
 NormClient.on("interactionCreate", async (interaction) => {
-  if (!interaction.isButton()) return;
-  await interaction.deferUpdate();
-
-  handleInteraction(interaction);
-  handleDevInteraction(interaction);
+  if (interaction.isButton()) {
+    await interaction.deferUpdate();
+    handleInteraction(interaction);
+    handleDevInteraction(interaction);
+  }
+  if (interaction.isSelectMenu()) {
+    await interaction.deferUpdate();
+    handleMenuInteraction(interaction);
+  }
 });
 
 NormClient.login(discordToken);

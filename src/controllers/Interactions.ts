@@ -2,7 +2,7 @@ import { ButtonInteraction, Message, TextChannel } from "discord.js";
 import QueueRepository from "../repositories/QueueRepository";
 import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
-import { createRandomMatch } from "../services/MatchService";
+import { blueCaptainsChoice, createRandomMatch } from "../services/MatchService";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<void> {
@@ -46,6 +46,11 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     }
 
     case ButtonCustomID.CreateRandomTeam: {
+      const ballchasers = await QueueRepository.getAllBallChasersInQueue();
+      if (!ballchasers.find((player) => player.id === buttonInteraction.user.id)) {
+        await message.edit(MessageBuilder.fullQueueMessage(ballchasers));
+      }
+
       const currentMatch = await createRandomMatch();
       const emptyQueue: PlayerInQueue[] = [];
 
@@ -57,6 +62,18 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
         await message.edit(MessageBuilder.queueMessage(emptyQueue)),
       ]);
 
+      break;
+    }
+
+    case ButtonCustomID.ChooseTeam: {
+      const ballchasers = await QueueRepository.getAllBallChasersInQueue();
+      if (!ballchasers.find((player) => player.id === buttonInteraction.user.id)) {
+        await message.edit(MessageBuilder.fullQueueMessage(ballchasers));
+      }
+
+      const players = await blueCaptainsChoice(null);
+
+      await message.edit(MessageBuilder.blueChooseMessage(players));
       break;
     }
   }
