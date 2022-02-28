@@ -1,7 +1,6 @@
 import { BallChaser, PrismaClient } from "@prisma/client";
 import * as faker from "faker";
 import { LeaderboardBuilder } from "../../../../.jest/Builder";
-import getEnvVariable from "../../../utils/getEnvVariable";
 import LeaderboardRepository from "../LeaderboardRepository";
 import { PlayerStats } from "../types";
 
@@ -14,11 +13,20 @@ beforeEach(async () => {
 });
 
 beforeAll(async () => {
-  seasonSemester = getEnvVariable("season_semester");
-  seasonYear = getEnvVariable("season_year");
+  seasonSemester = "SPRING";
+  seasonYear = "2022";
 
   prisma = new PrismaClient();
   await prisma.$connect();
+  await prisma.season.deleteMany();
+
+  await prisma.season.create({
+    data: {
+      seasonSemester,
+      seasonYear,
+    },
+  });
+
   await prisma.leaderboard.deleteMany();
   await prisma.activeMatch.deleteMany();
   await prisma.queue.deleteMany();
@@ -27,6 +35,15 @@ beforeAll(async () => {
 
 afterEach(async () => {
   await prisma.leaderboard.deleteMany();
+  await prisma.season.deleteMany();
+
+  await prisma.season.create({
+    data: {
+      seasonSemester,
+      seasonYear,
+    },
+  });
+
   await prisma.activeMatch.deleteMany();
   await prisma.queue.deleteMany();
   await prisma.ballChaser.deleteMany();
@@ -159,6 +176,36 @@ describe("LeaderboardRepository tests", () => {
     expect(actual?.losses).toBe(mockPlayerStats.losses);
   });
 
+  it("adds player stats for the correct season", async () => {
+    await prisma.season.create({
+      data: {
+        seasonSemester: "SUMMER",
+        seasonYear: "2021",
+        seasonEnded: faker.date.past(),
+      },
+    });
+
+    const mockPlayerStats = LeaderboardBuilder.single();
+    await manuallyAddBallChaser(mockPlayerStats);
+
+    await LeaderboardRepository.updatePlayersStats([mockPlayerStats]);
+
+    const actual = await prisma.leaderboard.findUnique({
+      include: {
+        player: true,
+      },
+      where: {
+        seasonSemester_seasonYear_playerId: {
+          playerId: mockPlayerStats.id,
+          seasonSemester,
+          seasonYear,
+        },
+      },
+    });
+
+    expect(actual).not.toBeNull();
+  });
+
   it("gets top n player stats", async () => {
     const playersToAdd = LeaderboardBuilder.many(10);
     await manuallyAddPlayerStatsToLeaderboard(playersToAdd);
@@ -201,6 +248,21 @@ describe("LeaderboardRepository tests", () => {
 
 describe("Leaderboard schema tests", () => {
   it("can have the same player with different seasons", async () => {
+    await prisma.season.createMany({
+      data: [
+        {
+          seasonSemester: "SUMMER",
+          seasonYear: "2021",
+          seasonEnded: faker.date.past(),
+        },
+        {
+          seasonSemester: "SPRING",
+          seasonYear: "2021",
+          seasonEnded: faker.date.past(),
+        },
+      ],
+    });
+
     await expect(
       prisma.ballChaser.create({
         data: {
@@ -210,18 +272,18 @@ describe("Leaderboard schema tests", () => {
             createMany: {
               data: [
                 {
-                  seasonSemester: "SPRING",
-                  seasonYear: "2022",
+                  seasonSemester,
+                  seasonYear,
                   mmr: faker.datatype.number(),
                 },
                 {
                   seasonSemester: "SUMMER",
-                  seasonYear: "2022",
+                  seasonYear: "2021",
                   mmr: faker.datatype.number(),
                 },
                 {
                   seasonSemester: "SPRING",
-                  seasonYear: "2023",
+                  seasonYear: "2021",
                   mmr: faker.datatype.number(),
                 },
               ],

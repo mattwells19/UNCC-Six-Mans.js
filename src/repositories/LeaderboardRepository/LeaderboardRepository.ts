@@ -1,16 +1,34 @@
 import { Leaderboard, Prisma, PrismaClient } from "@prisma/client";
-import getEnvVariable from "../../utils/getEnvVariable";
-import { LeaderboardWithBallChaser, PlayerStats, UpdatePlayerStatsInput } from "./types";
+import { CurrentSeason, LeaderboardWithBallChaser, PlayerStats, UpdatePlayerStatsInput } from "./types";
 
 export class LeaderboardRepository {
+  #Season: Prisma.SeasonDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
   #Leaderboard: Prisma.LeaderboardDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
-  #seasonSemester: string;
-  #seasonYear: string;
+  #currentSeasonCache: CurrentSeason | null;
 
   constructor() {
-    this.#Leaderboard = new PrismaClient().leaderboard;
-    this.#seasonSemester = getEnvVariable("season_semester");
-    this.#seasonYear = getEnvVariable("season_year");
+    const prisma = new PrismaClient();
+    this.#Leaderboard = prisma.leaderboard;
+    this.#Season = prisma.season;
+    this.#currentSeasonCache = null;
+  }
+
+  async #getCurrentSeason(): Promise<CurrentSeason> {
+    if (this.#currentSeasonCache) {
+      return this.#currentSeasonCache;
+    }
+
+    const currentSeason = await this.#Season.findFirst({
+      select: { seasonSemester: true, seasonYear: true },
+      where: { seasonEnded: null },
+    });
+
+    if (!currentSeason) {
+      throw new Error("No current season.");
+    }
+
+    this.#currentSeasonCache = currentSeason;
+    return currentSeason;
   }
 
   #calculatePlayerStats(playerStats: LeaderboardWithBallChaser): PlayerStats {
@@ -31,6 +49,7 @@ export class LeaderboardRepository {
    * @returns returns the player's stats if they exist, otherwise null
    */
   async getPlayerStats(id: string): Promise<Readonly<PlayerStats> | null> {
+    const currentSeason = await this.#getCurrentSeason();
     const playerStats = await this.#Leaderboard.findUnique({
       include: {
         player: true,
@@ -38,8 +57,7 @@ export class LeaderboardRepository {
       where: {
         seasonSemester_seasonYear_playerId: {
           playerId: id,
-          seasonSemester: this.#seasonSemester,
-          seasonYear: this.#seasonYear,
+          ...currentSeason,
         },
       },
     });
@@ -57,16 +75,14 @@ export class LeaderboardRepository {
    * @returns An array of the top 'n' players in the leaderboard
    */
   async getPlayersStats(n?: number): Promise<ReadonlyArray<Readonly<PlayerStats>>> {
+    const currentSeason = await this.#getCurrentSeason();
     const playersStats = await this.#Leaderboard.findMany({
       include: {
         player: true,
       },
       orderBy: [{ mmr: "desc" }, { wins: "desc" }],
       take: n,
-      where: {
-        seasonSemester: this.#seasonSemester,
-        seasonYear: this.#seasonYear,
-      },
+      where: currentSeason,
     });
 
     return playersStats.map((playerStats) => this.#calculatePlayerStats(playerStats));
@@ -78,6 +94,8 @@ export class LeaderboardRepository {
    * @param playersUpdates An array of player stats to update the leaderboard with.
    */
   async updatePlayersStats(playersUpdates: Array<UpdatePlayerStatsInput>): Promise<void> {
+    const currentSeason = await this.#getCurrentSeason();
+
     const promises: Array<Promise<Leaderboard>> = [];
     for (const playerUpdates of playersUpdates) {
       const leaderboardUpdate = this.#Leaderboard.upsert({
@@ -85,9 +103,8 @@ export class LeaderboardRepository {
           losses: playerUpdates.losses,
           mmr: playerUpdates.mmr,
           playerId: playerUpdates.id,
-          seasonSemester: this.#seasonSemester,
-          seasonYear: this.#seasonYear,
           wins: playerUpdates.wins,
+          ...currentSeason,
         },
         update: {
           losses: playerUpdates.losses,
@@ -97,8 +114,7 @@ export class LeaderboardRepository {
         where: {
           seasonSemester_seasonYear_playerId: {
             playerId: playerUpdates.id,
-            seasonSemester: this.#seasonSemester,
-            seasonYear: this.#seasonYear,
+            ...currentSeason,
           },
         },
       });

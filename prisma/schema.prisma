@@ -18,9 +18,19 @@ model BallChaser {
   queue       Queue?
 }
 
+model Season {
+  seasonSemester String
+  seasonYear     String
+  seasonEnded    DateTime?
+  leaderboard    Leaderboard[]
+
+  @@id([seasonSemester, seasonYear])
+}
+
 model Leaderboard {
   seasonSemester String
   seasonYear     String
+  season         Season     @relation(fields: [seasonSemester, seasonYear], references: [seasonSemester, seasonYear])
   playerId       String
   player         BallChaser @relation(fields: [playerId], references: [id])
   mmr            Int

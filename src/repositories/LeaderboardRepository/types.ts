@@ -17,3 +17,5 @@ export interface UpdatePlayerStatsInput {
 }
 
 export type LeaderboardWithBallChaser = Leaderboard & { player: BallChaser };
+
+export type CurrentSeason = { seasonSemester: string; seasonYear: string };
