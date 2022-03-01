@@ -1,34 +1,13 @@
-import { Leaderboard, Prisma, PrismaClient } from "@prisma/client";
-import { CurrentSeason, LeaderboardWithBallChaser, PlayerStats, UpdatePlayerStatsInput } from "./types";
+import { Prisma, PrismaClient } from "@prisma/client";
+import { LeaderboardWithBallChaser, PlayerStats, UpdatePlayerStatsInput } from "./types";
+import EventRepository from "../EventRepository";
+import { waitForAllPromises } from "../../utils";
 
 export class LeaderboardRepository {
-  #Season: Prisma.SeasonDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
   #Leaderboard: Prisma.LeaderboardDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
-  #currentSeasonCache: CurrentSeason | null;
 
   constructor() {
-    const prisma = new PrismaClient();
-    this.#Leaderboard = prisma.leaderboard;
-    this.#Season = prisma.season;
-    this.#currentSeasonCache = null;
-  }
-
-  async #getCurrentSeason(): Promise<CurrentSeason> {
-    if (this.#currentSeasonCache) {
-      return this.#currentSeasonCache;
-    }
-
-    const currentSeason = await this.#Season.findFirst({
-      select: { seasonSemester: true, seasonYear: true },
-      where: { seasonEnded: null },
-    });
-
-    if (!currentSeason) {
-      throw new Error("No current season.");
-    }
-
-    this.#currentSeasonCache = currentSeason;
-    return currentSeason;
+    this.#Leaderboard = new PrismaClient().leaderboard;
   }
 
   #calculatePlayerStats(playerStats: LeaderboardWithBallChaser): PlayerStats {
@@ -49,15 +28,16 @@ export class LeaderboardRepository {
    * @returns returns the player's stats if they exist, otherwise null
    */
   async getPlayerStats(id: string): Promise<Readonly<PlayerStats> | null> {
-    const currentSeason = await this.#getCurrentSeason();
+    const { id: currentEventId } = await EventRepository.getCurrentEvent();
+
     const playerStats = await this.#Leaderboard.findUnique({
       include: {
         player: true,
       },
       where: {
-        seasonSemester_seasonYear_playerId: {
+        eventId_playerId: {
+          eventId: currentEventId,
           playerId: id,
-          ...currentSeason,
         },
       },
     });
@@ -75,14 +55,17 @@ export class LeaderboardRepository {
    * @returns An array of the top 'n' players in the leaderboard
    */
   async getPlayersStats(n?: number): Promise<ReadonlyArray<Readonly<PlayerStats>>> {
-    const currentSeason = await this.#getCurrentSeason();
+    const { id: currentEventId } = await EventRepository.getCurrentEvent();
+
     const playersStats = await this.#Leaderboard.findMany({
       include: {
         player: true,
       },
       orderBy: [{ mmr: "desc" }, { wins: "desc" }],
       take: n,
-      where: currentSeason,
+      where: {
+        eventId: currentEventId,
+      },
     });
 
     return playersStats.map((playerStats) => this.#calculatePlayerStats(playerStats));
@@ -94,17 +77,16 @@ export class LeaderboardRepository {
    * @param playersUpdates An array of player stats to update the leaderboard with.
    */
   async updatePlayersStats(playersUpdates: Array<UpdatePlayerStatsInput>): Promise<void> {
-    const currentSeason = await this.#getCurrentSeason();
+    const { id: currentEventId } = await EventRepository.getCurrentEvent();
 
-    const promises: Array<Promise<Leaderboard>> = [];
-    for (const playerUpdates of playersUpdates) {
-      const leaderboardUpdate = this.#Leaderboard.upsert({
+    await waitForAllPromises(playersUpdates, async (playerUpdates) => {
+      await this.#Leaderboard.upsert({
         create: {
+          eventId: currentEventId,
           losses: playerUpdates.losses,
           mmr: playerUpdates.mmr,
           playerId: playerUpdates.id,
           wins: playerUpdates.wins,
-          ...currentSeason,
         },
         update: {
           losses: playerUpdates.losses,
@@ -112,17 +94,13 @@ export class LeaderboardRepository {
           wins: playerUpdates.wins,
         },
         where: {
-          seasonSemester_seasonYear_playerId: {
+          eventId_playerId: {
+            eventId: currentEventId,
             playerId: playerUpdates.id,
-            ...currentSeason,
           },
         },
       });
-
-      promises.push(leaderboardUpdate);
-    }
-
-    await Promise.all(promises);
+    });
   }
 }
 

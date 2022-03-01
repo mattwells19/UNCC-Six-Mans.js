@@ -5,7 +5,7 @@ import faker from "faker";
 import { BallChaserQueueBuilder } from "../../../.jest/Builder";
 import { PlayerInQueue } from "../../repositories/QueueRepository/types";
 
-jest.mock("../../utils/getEnvVariable");
+jest.mock("../../utils");
 jest.mock("../../repositories/LeaderboardRepository");
 
 function makePlayerStats(

@@ -6,7 +6,7 @@ import { Team } from "../../types/common";
 
 jest.mock("../../repositories/ActiveMatchRepository");
 jest.mock("../../repositories/QueueRepository");
-jest.mock("../../utils/getEnvVariable");
+jest.mock("../../utils");
 
 beforeEach(() => {
   jest.clearAllMocks();

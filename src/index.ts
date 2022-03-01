@@ -1,8 +1,8 @@
 import { Client } from "discord.js";
 import { updateLeaderboardChannel } from "./controllers/LeaderboardChannelController";
 import { handleInteraction, postCurrentQueue } from "./controllers/Interactions";
-import getDiscordChannelById from "./utils/getDiscordChannelById";
-import getEnvVariable from "./utils/getEnvVariable";
+import { getDiscordChannelById } from "./utils/discordUtils";
+import { getEnvVariable } from "./utils";
 import { handleDevInteraction } from "./controllers/DevInteractions";
 
 const NormClient = new Client({ intents: "GUILDS" });
