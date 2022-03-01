@@ -80,30 +80,3 @@ export async function orangePlayerChosen(chosenPlayers: string[]): Promise<void>
     });
   }
 }
-
-export async function createMatchFromChosenTeams(): Promise<Array<NewActiveMatchInput>> {
-  const createdTeams: NewActiveMatchInput[] = [];
-
-  //Update the last available player to blue and push all players into Active Match
-  const ballchasers = await QueueRepository.getAllBallChasersInQueue();
-  for (const p of ballchasers) {
-    if (p.team !== null) {
-      createdTeams.push({ id: p.id, team: p.team });
-    } else {
-      await QueueRepository.updateBallChaserInQueue({
-        id: p.id,
-        team: Team.Blue,
-      });
-      createdTeams.push({ id: p.id, team: Team.Blue });
-    }
-  }
-
-  await Promise.all([
-    //Create Match
-    await ActiveMatchRepository.addActiveMatch(createdTeams),
-    //Match is created, reset the queue.
-    await QueueRepository.removeAllBallChasersFromQueue(),
-  ]);
-
-  return createdTeams;
-}

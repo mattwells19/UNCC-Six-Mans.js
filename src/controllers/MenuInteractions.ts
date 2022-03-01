@@ -1,7 +1,6 @@
 import { Message, SelectMenuInteraction } from "discord.js";
 import QueueRepository from "../repositories/QueueRepository";
-import { blueCaptainsChoice, orangeCaptainsChoice } from "../services/MatchService";
-import { createMatchFromChosenTeams } from "../services/TeamAssignmentService";
+import { blueCaptainsChoice, createMatchFromChosenTeams, orangeCaptainsChoice } from "../services/MatchService";
 import { Team } from "../types/common";
 import getEnvVariable from "../utils/getEnvVariable";
 import MessageBuilder, { MenuCustomID } from "../utils/MessageBuilder";
