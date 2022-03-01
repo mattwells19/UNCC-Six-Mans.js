@@ -66,6 +66,7 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     }
 
     case ButtonCustomID.ChooseTeam: {
+      // 🐧 I think it would be useful to add a `isPlayerInQueue` function to the QueueRepository to handle this check
       const ballchasers = await QueueRepository.getAllBallChasersInQueue();
       if (!ballchasers.find((player) => player.id === buttonInteraction.user.id)) {
         await message.edit(MessageBuilder.fullQueueMessage(ballchasers));

@@ -49,6 +49,8 @@ export async function createRandomTeams(
 export async function setCaptains(ballChasers: ReadonlyArray<PlayerInQueue>): Promise<Array<PlayerInQueue>> {
   const sortedBallChaser = ballChasers.slice().sort((o, b) => o.mmr - b.mmr);
 
+  // 🐧 random thought: what if we allowed the second highest rated player in the queue sorted `sortedBallChaser[1]`
+  // 🐧 to pick first? Would that be slightly more balanced?
   await Promise.all([
     await QueueRepository.updateBallChaserInQueue({
       id: sortedBallChaser[0].id,
@@ -65,6 +67,7 @@ export async function setCaptains(ballChasers: ReadonlyArray<PlayerInQueue>): Pr
   return sortedBallChaser;
 }
 
+// 🐧 I'd probably add the check to make sure the player was in the queue as part of this function
 export async function bluePlayerChosen(chosenPlayer: string): Promise<void> {
   await QueueRepository.updateBallChaserInQueue({
     id: chosenPlayer,
@@ -72,6 +75,7 @@ export async function bluePlayerChosen(chosenPlayer: string): Promise<void> {
   });
 }
 
+// 🐧 I'd probably add the check to make sure both players are in the queue as part of this function
 export async function orangePlayerChosen(chosenPlayers: string[]): Promise<void> {
   for (const p of chosenPlayers) {
     await QueueRepository.updateBallChaserInQueue({

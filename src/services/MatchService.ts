@@ -25,6 +25,8 @@ export async function createRandomMatch(): Promise<Array<NewActiveMatchInput>> {
   return createdTeams;
 }
 
+// 🐧  I think this method is unnecessary. Just call `setCaptains` in Interaction.ts where you know it'll be null
+// 🐧 Then just call `bluePlayerChosen` in MenuInteraction.ts where you verify that a player in the queue was chosen
 export async function blueCaptainsChoice(chosenPlayers: string | null): Promise<ReadonlyArray<PlayerInQueue>> {
   const ballChasers = await QueueRepository.getAllBallChasersInQueue();
 
@@ -37,6 +39,7 @@ export async function blueCaptainsChoice(chosenPlayers: string | null): Promise<
   return await QueueRepository.getAllBallChasersInQueue();
 }
 
+// 🐧 Don't think this method is really necessary. Just call `orangePlayerChosen` in MenuInteraction.ts
 export async function orangeCaptainsChoice(chosenPlayers: string[]): Promise<void> {
   await orangePlayerChosen(chosenPlayers);
 }

@@ -14,6 +14,8 @@ export async function handleMenuInteraction(menuInteraction: SelectMenuInteracti
   switch (menuInteraction.customId) {
     case MenuCustomID.BlueSelect: {
       // If user is not the captain and not in dev
+      // 🐧 Might be handy to add a `QueueRepository.getCaptains()` function that returns the orange and blue captain to
+      // 🐧 do the captains checks
       const ballchasers = await QueueRepository.getAllBallChasersInQueue();
       if (
         !ballchasers.find(
@@ -21,6 +23,7 @@ export async function handleMenuInteraction(menuInteraction: SelectMenuInteracti
         ) &&
         !isDev
       ) {
+        // 🐧 do we need to edit the message? Can we just do nothing, or does that break things?
         await message.edit(MessageBuilder.blueChooseMessage(ballchasers));
         break;
       } else {
