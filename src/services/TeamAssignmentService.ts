@@ -48,8 +48,6 @@ export async function createRandomTeams(
 
 export async function setCaptains(ballChasers: ReadonlyArray<PlayerInQueue>): Promise<Array<PlayerInQueue>> {
   const sortedBallChaser = ballChasers.slice().sort((o, b) => o.mmr - b.mmr);
-  sortedBallChaser[0].team = Team.Blue;
-  sortedBallChaser[1].team = Team.Orange;
 
   await Promise.all([
     await QueueRepository.updateBallChaserInQueue({
