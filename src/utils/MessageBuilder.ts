@@ -270,9 +270,9 @@ export default class MessageBuilder {
 
     embed
       .setTitle("Captains pick your players")
-      .setDescription("🔷" + blueCaptain + "'s 🔷 chooses first")
-      .addField("🔷 Blue Team 🔷", "<@" + ballChasers[0].id + ">")
-      .addField("🔶 Orange Team 🔶", "<@" + ballChasers[1].id + ">");
+      .setDescription("🔷 " + blueCaptain + " 🔷 chooses first")
+      .addField("🔷 Blue Team 🔷", blueTeam.join("\n"))
+      .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"));
 
     return {
       components: this.isDev

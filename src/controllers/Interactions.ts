@@ -1,9 +1,10 @@
 import { ButtonInteraction, Message, TextChannel } from "discord.js";
-import QueueRepository from "../repositories/QueueRepository";
 import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
-import { blueCaptainsChoice, createRandomMatch } from "../services/MatchService";
+import { createRandomMatch } from "../services/MatchService";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
+import QueueRepository from "../repositories/QueueRepository";
+import { setCaptains } from "../services/TeamAssignmentService";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<void> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
@@ -46,36 +47,38 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     }
 
     case ButtonCustomID.CreateRandomTeam: {
-      const ballchasers = await QueueRepository.getAllBallChasersInQueue();
-      if (!ballchasers.find((player) => player.id === buttonInteraction.user.id)) {
-        await message.edit(MessageBuilder.fullQueueMessage(ballchasers));
+      const playerInQueue = await QueueRepository.isPlayerInQueue(buttonInteraction.user.id);
+
+      if (!playerInQueue) {
+        break;
+      } else {
+        const currentMatch = await createRandomMatch();
+        const emptyQueue: PlayerInQueue[] = [];
+
+        await Promise.all([
+          //Create new reply to start a match
+          await message.channel.send(MessageBuilder.activeMatchMessage(currentMatch)),
+
+          //Update the embed with an empty queue message
+          await message.edit(MessageBuilder.queueMessage(emptyQueue)),
+        ]);
+
+        break;
       }
-
-      const currentMatch = await createRandomMatch();
-      const emptyQueue: PlayerInQueue[] = [];
-
-      await Promise.all([
-        //Create new reply to start a match
-        await message.channel.send(MessageBuilder.activeMatchMessage(currentMatch)),
-
-        //Update the embed with an empty queue message
-        await message.edit(MessageBuilder.queueMessage(emptyQueue)),
-      ]);
-
-      break;
     }
 
     case ButtonCustomID.ChooseTeam: {
-      // 🐧 I think it would be useful to add a `isPlayerInQueue` function to the QueueRepository to handle this check
-      const ballchasers = await QueueRepository.getAllBallChasersInQueue();
-      if (!ballchasers.find((player) => player.id === buttonInteraction.user.id)) {
-        await message.edit(MessageBuilder.fullQueueMessage(ballchasers));
+      const playerInQueue = await QueueRepository.isPlayerInQueue(buttonInteraction.user.id);
+
+      if (!playerInQueue) {
+        break;
+      } else {
+        const ballChasers = await QueueRepository.getAllBallChasersInQueue();
+        const players = await setCaptains(ballChasers);
+
+        await message.edit(MessageBuilder.blueChooseMessage(players));
+        break;
       }
-
-      const players = await blueCaptainsChoice(null);
-
-      await message.edit(MessageBuilder.blueChooseMessage(players));
-      break;
     }
   }
 }

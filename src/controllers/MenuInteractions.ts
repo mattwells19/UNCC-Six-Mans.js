@@ -1,6 +1,7 @@
 import { Message, SelectMenuInteraction } from "discord.js";
 import QueueRepository from "../repositories/QueueRepository";
-import { blueCaptainsChoice, createMatchFromChosenTeams, orangeCaptainsChoice } from "../services/MatchService";
+import { createMatchFromChosenTeams } from "../services/MatchService";
+import { bluePlayerChosen, orangePlayerChosen } from "../services/TeamAssignmentService";
 import { Team } from "../types/common";
 import getEnvVariable from "../utils/getEnvVariable";
 import MessageBuilder, { MenuCustomID } from "../utils/MessageBuilder";
@@ -14,44 +15,29 @@ export async function handleMenuInteraction(menuInteraction: SelectMenuInteracti
   switch (menuInteraction.customId) {
     case MenuCustomID.BlueSelect: {
       // If user is not the captain and not in dev
-      // 🐧 Might be handy to add a `QueueRepository.getCaptains()` function that returns the orange and blue captain to
-      // 🐧 do the captains checks
-      const ballchasers = await QueueRepository.getAllBallChasersInQueue();
-      if (
-        !ballchasers.find(
-          (player) => player.isCap && player.team === Team.Blue && player.id === menuInteraction.user.id
-        ) &&
-        !isDev
-      ) {
-        // 🐧 do we need to edit the message? Can we just do nothing, or does that break things?
-        await message.edit(MessageBuilder.blueChooseMessage(ballchasers));
-        break;
-      } else {
-        const updatedPlayers = await blueCaptainsChoice(menuInteraction.values[0]);
+      const isCaptain = await QueueRepository.isTeamCaptain(menuInteraction.user.id, Team.Blue);
+      if (isCaptain || isDev) {
+        const playersLeft = await bluePlayerChosen(menuInteraction.values[0]);
 
-        await message.edit(MessageBuilder.orangeChooseMessage(updatedPlayers));
+        await message.edit(MessageBuilder.orangeChooseMessage(playersLeft));
         break;
       }
+
+      break;
     }
     case MenuCustomID.OrangeSelect: {
       // If user is not the captain and not in dev
-      const ballchasers = await QueueRepository.getAllBallChasersInQueue();
-      if (
-        !ballchasers.find(
-          (player) => player.isCap && player.team === Team.Orange && player.id === menuInteraction.user.id
-        ) &&
-        !isDev
-      ) {
-        await message.edit(MessageBuilder.orangeChooseMessage(ballchasers));
-        break;
-      } else {
-        await orangeCaptainsChoice(menuInteraction.values);
+      const isCaptain = await QueueRepository.isTeamCaptain(menuInteraction.user.id, Team.Blue);
+      if (isCaptain || isDev) {
+        await orangePlayerChosen(menuInteraction.values);
 
         const match = await createMatchFromChosenTeams();
 
         await message.edit(MessageBuilder.activeMatchMessage(match));
         break;
       }
+
+      break;
     }
   }
 }

@@ -1,4 +1,3 @@
-import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types";
 import QueueRepository from "../repositories/QueueRepository";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
@@ -46,36 +45,39 @@ export async function createRandomTeams(
   return activeMatch;
 }
 
-export async function setCaptains(ballChasers: ReadonlyArray<PlayerInQueue>): Promise<Array<PlayerInQueue>> {
+export async function setCaptains(ballChasers: ReadonlyArray<PlayerInQueue>): Promise<ReadonlyArray<PlayerInQueue>> {
   const sortedBallChaser = ballChasers.slice().sort((o, b) => o.mmr - b.mmr);
 
-  // 🐧 random thought: what if we allowed the second highest rated player in the queue sorted `sortedBallChaser[1]`
-  // 🐧 to pick first? Would that be slightly more balanced?
+  //We are going to set the Blue Captain (firt person to choose) as the second highest MMR.
+  //The thought is that this will even out the teams a little more.
   await Promise.all([
     await QueueRepository.updateBallChaserInQueue({
       id: sortedBallChaser[0].id,
       isCap: true,
-      team: Team.Blue,
+      team: Team.Orange,
     }),
     await QueueRepository.updateBallChaserInQueue({
       id: sortedBallChaser[1].id,
       isCap: true,
-      team: Team.Orange,
+      team: Team.Blue,
     }),
   ]);
 
-  return sortedBallChaser;
+  const updatedBallChasers = await QueueRepository.getAllBallChasersInQueue();
+
+  return updatedBallChasers;
 }
 
-// 🐧 I'd probably add the check to make sure the player was in the queue as part of this function
-export async function bluePlayerChosen(chosenPlayer: string): Promise<void> {
+export async function bluePlayerChosen(chosenPlayer: string): Promise<ReadonlyArray<PlayerInQueue>> {
   await QueueRepository.updateBallChaserInQueue({
     id: chosenPlayer,
     team: Team.Blue,
   });
+
+  const ballPlayers = await QueueRepository.getAllBallChasersInQueue();
+  return ballPlayers;
 }
 
-// 🐧 I'd probably add the check to make sure both players are in the queue as part of this function
 export async function orangePlayerChosen(chosenPlayers: string[]): Promise<void> {
   for (const p of chosenPlayers) {
     await QueueRepository.updateBallChaserInQueue({
