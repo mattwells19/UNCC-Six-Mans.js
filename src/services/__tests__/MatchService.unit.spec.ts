@@ -1,9 +1,9 @@
 import { BallChaserQueueBuilder } from "../../../.jest/Builder";
-import { blueCaptainsChoice, createRandomMatch } from "../MatchService";
+import { createMatchFromChosenTeams, createRandomMatch } from "../MatchService";
 import ActiveMatchRepository from "../../repositories/ActiveMatchRepository";
 import QueueRepository from "../../repositories/QueueRepository";
 import { Team } from "../../types/common";
-import faker from "faker";
+import { PlayerInQueue } from "../../repositories/QueueRepository/types";
 
 jest.mock("../../repositories/ActiveMatchRepository");
 jest.mock("../../repositories/QueueRepository");
@@ -34,7 +34,7 @@ describe("Match Service tests", () => {
       expect(addMatchMock).toHaveBeenCalled();
     });
     it("removes players from queue", async () => {
-      const mockBallChasers = BallChaserQueueBuilder.many(6, { team: null });
+      const mockBallChasers = BallChaserQueueBuilder.many(6);
       jest.mocked(QueueRepository.getAllBallChasersInQueue).mockResolvedValueOnce(mockBallChasers);
 
       await createRandomMatch();
@@ -44,29 +44,34 @@ describe("Match Service tests", () => {
     });
   });
   describe("Captains button was pressed", () => {
-    it("captains are set", async () => {
-      const mockBallChasers = BallChaserQueueBuilder.many(6, { team: null, isCap: false });
-      jest.mocked(QueueRepository.getAllBallChasersInQueue).mockResolvedValueOnce(mockBallChasers);
-      jest.mocked(QueueRepository.updateBallChaserInQueue({ id: mockBallChasers[0].id, isCap: true, team: Team.Blue }));
-      jest.mocked(
-        QueueRepository.updateBallChaserInQueue({ id: mockBallChasers[1].id, isCap: true, team: Team.Orange })
-      );
+    it("last available queueMember is placed on blue team", async () => {
+      const mockBallChasers: PlayerInQueue[] = [];
+      const mockOrangeBallChasers = BallChaserQueueBuilder.many(3, { team: Team.Orange });
+      const mockBlueBallChasers = BallChaserQueueBuilder.many(2, { team: Team.Blue });
+      const mockBallChaserNoTeam = BallChaserQueueBuilder.single({ team: null, isCap: false });
+      mockBallChasers.push(mockBallChaserNoTeam);
+      mockOrangeBallChasers.forEach((p) => {
+        mockBallChasers.push(p);
+      });
+      mockBlueBallChasers.forEach((p) => {
+        mockBallChasers.push(p);
+      });
 
       jest.mocked(QueueRepository.getAllBallChasersInQueue).mockResolvedValueOnce(mockBallChasers);
-      const players = await blueCaptainsChoice(null);
 
-      expect(players.filter((player) => player.team === Team.Orange)).toHaveLength(1);
-      expect(players.filter((player) => player.team === Team.Blue)).toHaveLength(1);
-      expect(players.filter((player) => player.isCap)).toHaveLength(2);
+      const players = await createMatchFromChosenTeams();
+
+      expect(players.filter((player) => player.team === Team.Orange)).toHaveLength(3);
+      expect(players.filter((player) => player.team === Team.Blue)).toHaveLength(3);
     });
-    it("blue captains choice is set", async () => {
-      const mockBallChasers = BallChaserQueueBuilder.many(6, { team: null });
+    it("removes players from queue", async () => {
+      const mockBallChasers = BallChaserQueueBuilder.many(6);
       jest.mocked(QueueRepository.getAllBallChasersInQueue).mockResolvedValueOnce(mockBallChasers);
-      jest.mocked(QueueRepository.updateBallChaserInQueue({ id: mockBallChasers[2].id, isCap: true, team: Team.Blue }));
-      jest.mocked(QueueRepository.getAllBallChasersInQueue).mockResolvedValueOnce(mockBallChasers);
-      const players = await blueCaptainsChoice(mockBallChasers[2].id);
 
-      expect(players.filter((player) => player.team === Team.Blue)).toHaveLength(2);
+      await createRandomMatch();
+      const removePlayersMock = jest.mocked(QueueRepository.removeAllBallChasersFromQueue);
+
+      expect(removePlayersMock).toHaveBeenCalled();
     });
   });
 });
