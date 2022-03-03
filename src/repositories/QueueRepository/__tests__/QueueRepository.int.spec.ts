@@ -5,6 +5,7 @@ import { BallChaserQueueBuilder } from "../../../../.jest/Builder";
 import { PrismaClient } from "@prisma/client";
 import { DateTime } from "luxon";
 import getEnvVariable from "../../../utils/getEnvVariable";
+import { Team } from "../../../types/common";
 
 function verifyBallChasersAreEqual(expectedBallChaser: PlayerInQueue, actualBallChaser: PlayerInQueue): void {
   expect(actualBallChaser).not.toBeNull();
@@ -207,5 +208,35 @@ describe("Queue Repository tests", () => {
     expect(playerInDb?.isCap).toEqual(false);
     expect(DateTime.fromJSDate(playerInDb?.queueTime!).toISO()).toEqual(mockBallChaser.queueTime.toISO());
     expect(playerInDb?.team).toBeNull();
+  });
+  it("check if player is in queue", async () => {
+    const mockBallChaser = BallChaserQueueBuilder.single();
+    await manuallyAddBallChaserToQueue(mockBallChaser);
+
+    const playerInQueue = await QueueRepository.isPlayerInQueue(mockBallChaser.id);
+
+    const playerInDb = await prisma.queue.count({
+      where: {
+        playerId: mockBallChaser.id,
+      },
+    });
+
+    expect(playerInDb).toEqual(1);
+    expect(playerInQueue).toEqual(true);
+  });
+  it("check if player is team captain", async () => {
+    const mockBallChaser = BallChaserQueueBuilder.single({ team: Team.Blue });
+    await manuallyAddBallChaserToQueue(mockBallChaser);
+
+    const isCaptain = await QueueRepository.isTeamCaptain(mockBallChaser.id, Team.Blue);
+
+    const playerInDb = await prisma.queue.count({
+      where: {
+        playerId: mockBallChaser.id,
+      },
+    });
+
+    expect(playerInDb).toEqual(1);
+    expect(isCaptain).toEqual(true);
   });
 });

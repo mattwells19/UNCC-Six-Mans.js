@@ -140,14 +140,14 @@ export class QueueRepository {
   }
 
   async isTeamCaptain(ballChaserToCheck: string, teamToCheck: Team): Promise<boolean> {
-    const playerInMatch = await this.#Queue.count({
+    const isCaptain = await this.#Queue.count({
       where: {
         playerId: ballChaserToCheck,
         team: teamToCheck,
       },
     });
 
-    return playerInMatch > 0;
+    return isCaptain > 0;
   }
 }
 

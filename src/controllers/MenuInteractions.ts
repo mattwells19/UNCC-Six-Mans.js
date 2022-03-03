@@ -27,7 +27,7 @@ export async function handleMenuInteraction(menuInteraction: SelectMenuInteracti
     }
     case MenuCustomID.OrangeSelect: {
       // If user is not the captain and not in dev
-      const isCaptain = await QueueRepository.isTeamCaptain(menuInteraction.user.id, Team.Blue);
+      const isCaptain = await QueueRepository.isTeamCaptain(menuInteraction.user.id, Team.Orange);
       if (isCaptain || isDev) {
         await orangePlayerChosen(menuInteraction.values);
 
