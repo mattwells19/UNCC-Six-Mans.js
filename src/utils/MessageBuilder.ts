@@ -321,7 +321,7 @@ export default class MessageBuilder {
 
     embed
       .setTitle("Captains pick your players")
-      .setDescription("🔶" + orangeCaptain + "🔶 choose 2 players")
+      .setDescription("🔶 " + orangeCaptain + " 🔶 choose 2 players")
       .addField("🔷 Blue Team 🔷", blueTeam.join("\n"))
       .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"));
 
