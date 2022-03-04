@@ -30,17 +30,10 @@ describe("Match Service tests", () => {
 
       await createRandomMatch();
       const addMatchMock = jest.mocked(ActiveMatchRepository.addActiveMatch);
-
-      expect(addMatchMock).toHaveBeenCalled();
-    });
-    it("removes players from queue", async () => {
-      const mockBallChasers = BallChaserQueueBuilder.many(6);
-      jest.mocked(QueueRepository.getAllBallChasersInQueue).mockResolvedValueOnce(mockBallChasers);
-
-      await createRandomMatch();
       const removePlayersMock = jest.mocked(QueueRepository.removeAllBallChasersFromQueue);
 
       expect(removePlayersMock).toHaveBeenCalled();
+      expect(addMatchMock).toHaveBeenCalled();
     });
   });
   describe("Captains button was pressed", () => {
@@ -53,18 +46,13 @@ describe("Match Service tests", () => {
       jest.mocked(QueueRepository.getAllBallChasersInQueue).mockResolvedValueOnce(mockBallChasers);
 
       const players = await createMatchFromChosenTeams();
-
-      expect(players.filter((player) => player.team === Team.Orange)).toHaveLength(3);
-      expect(players.filter((player) => player.team === Team.Blue)).toHaveLength(3);
-    });
-    it("removes players from queue", async () => {
-      const mockBallChasers = BallChaserQueueBuilder.many(6);
-      jest.mocked(QueueRepository.getAllBallChasersInQueue).mockResolvedValueOnce(mockBallChasers);
-
-      await createRandomMatch();
       const removePlayersMock = jest.mocked(QueueRepository.removeAllBallChasersFromQueue);
+      const addMatchMock = jest.mocked(ActiveMatchRepository.addActiveMatch);
 
       expect(removePlayersMock).toHaveBeenCalled();
+      expect(addMatchMock).toHaveBeenCalled();
+      expect(players.filter((player) => player.team === Team.Orange)).toHaveLength(3);
+      expect(players.filter((player) => player.team === Team.Blue)).toHaveLength(3);
     });
   });
 });
