@@ -214,29 +214,19 @@ describe("Queue Repository tests", () => {
     await manuallyAddBallChaserToQueue(mockBallChaser);
 
     const playerInQueue = await QueueRepository.isPlayerInQueue(mockBallChaser.id);
+    const playerNotInQueue = await QueueRepository.isPlayerInQueue(faker.datatype.uuid());
 
-    const playerInDb = await prisma.queue.count({
-      where: {
-        playerId: mockBallChaser.id,
-      },
-    });
-
-    expect(playerInDb).toEqual(1);
     expect(playerInQueue).toEqual(true);
+    expect(playerNotInQueue).toEqual(false);
   });
   it("check if player is team captain", async () => {
     const mockBallChaser = BallChaserQueueBuilder.single({ team: Team.Blue });
     await manuallyAddBallChaserToQueue(mockBallChaser);
 
     const isCaptain = await QueueRepository.isTeamCaptain(mockBallChaser.id, Team.Blue);
+    const isNotCaptain = await QueueRepository.isTeamCaptain(faker.datatype.uuid(), Team.Orange);
 
-    const playerInDb = await prisma.queue.count({
-      where: {
-        playerId: mockBallChaser.id,
-      },
-    });
-
-    expect(playerInDb).toEqual(1);
     expect(isCaptain).toEqual(true);
+    expect(isNotCaptain).toEqual(false);
   });
 });

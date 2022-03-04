@@ -45,17 +45,10 @@ describe("Match Service tests", () => {
   });
   describe("Captains button was pressed", () => {
     it("last available queueMember is placed on blue team", async () => {
-      const mockBallChasers: PlayerInQueue[] = [];
       const mockOrangeBallChasers = BallChaserQueueBuilder.many(3, { team: Team.Orange });
       const mockBlueBallChasers = BallChaserQueueBuilder.many(2, { team: Team.Blue });
       const mockBallChaserNoTeam = BallChaserQueueBuilder.single({ team: null, isCap: false });
-      mockBallChasers.push(mockBallChaserNoTeam);
-      mockOrangeBallChasers.forEach((p) => {
-        mockBallChasers.push(p);
-      });
-      mockBlueBallChasers.forEach((p) => {
-        mockBallChasers.push(p);
-      });
+      const mockBallChasers: PlayerInQueue[] = [...mockOrangeBallChasers, ...mockBlueBallChasers, mockBallChaserNoTeam];
 
       jest.mocked(QueueRepository.getAllBallChasersInQueue).mockResolvedValueOnce(mockBallChasers);
 

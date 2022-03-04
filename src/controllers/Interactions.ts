@@ -70,9 +70,7 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     case ButtonCustomID.ChooseTeam: {
       const playerInQueue = await QueueRepository.isPlayerInQueue(buttonInteraction.user.id);
 
-      if (!playerInQueue) {
-        break;
-      } else {
+      if (playerInQueue) {
         const ballChasers = await QueueRepository.getAllBallChasersInQueue();
         const players = await setCaptains(ballChasers);
 
