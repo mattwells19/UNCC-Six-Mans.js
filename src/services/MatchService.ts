@@ -31,10 +31,6 @@ export async function createMatchFromChosenTeams(): Promise<Array<NewActiveMatch
     if (p.team !== null) {
       createdTeams.push({ id: p.id, team: p.team });
     } else {
-      await QueueRepository.updateBallChaserInQueue({
-        id: p.id,
-        team: Team.Blue,
-      });
       createdTeams.push({ id: p.id, team: Team.Blue });
     }
   }
