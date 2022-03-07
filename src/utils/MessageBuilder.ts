@@ -157,7 +157,7 @@ export default class MessageBuilder {
       label: "Random",
       style: "PRIMARY",
     });
-    const pickTeamsButton = new MessageButton({
+    const pickCaptainsButton = new MessageButton({
       customId: ButtonCustomID.ChooseTeam,
       label: "Captains",
       style: "PRIMARY",
@@ -187,8 +187,8 @@ export default class MessageBuilder {
 
     return {
       components: this.isDev
-        ? [new MessageActionRow({ components: [pickTeamsButton, randomTeamsButton, leaveButton, removeAllButton] })]
-        : [new MessageActionRow({ components: [pickTeamsButton, randomTeamsButton, leaveButton] })],
+        ? [new MessageActionRow({ components: [pickCaptainsButton, randomTeamsButton, leaveButton, removeAllButton] })]
+        : [new MessageActionRow({ components: [pickCaptainsButton, randomTeamsButton, leaveButton] })],
       embeds: [embed],
     };
   }

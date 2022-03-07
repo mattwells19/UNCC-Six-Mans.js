@@ -240,7 +240,7 @@ describe("Queue Repository tests", () => {
       const mockBlueCaptain = BallChaserQueueBuilder.single({ team: Team.Blue, isCap: true });
       await manuallyAddBallChaserToQueue(mockBlueCaptain);
 
-      const isCaptain = await QueueRepository.isTeamCaptain(faker.datatype.uuid(), Team.Orange);
+      const isCaptain = await QueueRepository.isTeamCaptain(mockBlueCaptain.id, Team.Orange);
 
       expect(isCaptain).toEqual(false);
     });
