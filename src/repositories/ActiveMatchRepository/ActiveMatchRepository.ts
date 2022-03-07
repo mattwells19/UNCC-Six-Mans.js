@@ -1,7 +1,10 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { ActiveMatch, Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
+import { Team } from "../../types/common";
 import generateRandomId from "../../utils/randomId";
-import { NewActiveMatchInput, PlayerInActiveMatch, UpdatePlayerInActiveMatchInput } from "./types";
+import { splitArray } from "../../utils/splitArrays";
+import LeaderboardRepository from "../LeaderboardRepository";
+import { ActiveMatchTeams, NewActiveMatchInput, PlayerInActiveMatch, UpdatePlayerInActiveMatchInput } from "./types";
 
 export class ActiveMatchRepository {
   #ActiveMatch: Prisma.ActiveMatchDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
@@ -68,7 +71,7 @@ export class ActiveMatchRepository {
       });
   }
 
-  async getAllPlayersInActiveMatch(playerInMatchId: string): Promise<ReadonlyArray<Readonly<PlayerInActiveMatch>>> {
+  async getAllPlayersInActiveMatch(playerInMatchId: string): Promise<ActiveMatchTeams> {
     const allPlayersInMatch = await this.#ActiveMatch
       .findUnique({
         select: {
@@ -91,12 +94,30 @@ export class ActiveMatchRepository {
         });
       });
 
-    return allPlayersInMatch.map((playerInMatch) => ({
-      id: playerInMatch.playerId,
-      matchId: playerInMatch.id,
-      reportedTeam: playerInMatch.reportedTeam,
-      team: playerInMatch.team,
-    }));
+    const promises: Array<Promise<PlayerInActiveMatch>> = [];
+    for (const playerInMatch of allPlayersInMatch) {
+      promises.push(this.#getPlayerInActiveMatchWithMmr(playerInMatch));
+    }
+    const allPlayersInActiveMatch = await Promise.all(promises);
+
+    const [blueTeam, orangeTeam] = splitArray(allPlayersInActiveMatch, (p) => p.team === Team.Blue);
+
+    return {
+      blueTeam,
+      orangeTeam,
+    };
+  }
+
+  #getPlayerInActiveMatchWithMmr(playerInMatch: ActiveMatch): Promise<PlayerInActiveMatch> {
+    return LeaderboardRepository.getPlayerStats(playerInMatch.id).then((stats) => {
+      return {
+        id: playerInMatch.playerId,
+        matchId: playerInMatch.id,
+        mmr: stats ? stats.mmr : 100,
+        reportedTeam: playerInMatch.reportedTeam,
+        team: playerInMatch.team,
+      };
+    });
   }
 
   async isPlayerInActiveMatch(playerInMatchId: string): Promise<boolean> {

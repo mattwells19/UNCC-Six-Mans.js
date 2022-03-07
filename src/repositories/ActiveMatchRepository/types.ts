@@ -7,6 +7,11 @@ export interface PlayerInActiveMatch {
   matchId: string;
 }
 
+export interface ActiveMatchTeams {
+  blueTeam: ReadonlyArray<PlayerInActiveMatch>;
+  orangeTeam: ReadonlyArray<PlayerInActiveMatch>;
+}
+
 export interface UpdatePlayerInActiveMatchInput {
   reportedTeam?: Team;
   brokenQueue?: boolean;
