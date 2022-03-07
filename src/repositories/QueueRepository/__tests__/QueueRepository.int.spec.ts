@@ -229,20 +229,28 @@ describe("Queue Repository tests", () => {
   });
   describe("check if player is team captain", () => {
     it("player is team captain", async () => {
-      const mockBallChaser = BallChaserQueueBuilder.single({ team: Team.Blue });
+      const mockBallChaser = BallChaserQueueBuilder.single({ team: Team.Blue, isCap: true });
       await manuallyAddBallChaserToQueue(mockBallChaser);
 
       const isCaptain = await QueueRepository.isTeamCaptain(mockBallChaser.id, Team.Blue);
 
       expect(isCaptain).toEqual(true);
     });
-    it("player is not team captain", async () => {
-      const mockBallChaser = BallChaserQueueBuilder.single({ team: Team.Blue });
-      await manuallyAddBallChaserToQueue(mockBallChaser);
+    it("player is team captain but wrong team", async () => {
+      const mockBlueCaptain = BallChaserQueueBuilder.single({ team: Team.Blue, isCap: true });
+      await manuallyAddBallChaserToQueue(mockBlueCaptain);
 
-      const isNotCaptain = await QueueRepository.isTeamCaptain(faker.datatype.uuid(), Team.Orange);
+      const isCaptain = await QueueRepository.isTeamCaptain(faker.datatype.uuid(), Team.Orange);
 
-      expect(isNotCaptain).toEqual(false);
+      expect(isCaptain).toEqual(false);
+    });
+    it("player is team member but not captain", async () => {
+      const mockBlueTeamMember = BallChaserQueueBuilder.single({ team: Team.Blue, isCap: false });
+      await manuallyAddBallChaserToQueue(mockBlueTeamMember);
+
+      const isCaptain = await QueueRepository.isTeamCaptain(faker.datatype.uuid(), Team.Blue);
+
+      expect(isCaptain).toEqual(false);
     });
   });
 });
