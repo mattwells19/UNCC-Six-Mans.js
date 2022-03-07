@@ -259,13 +259,13 @@ export default class MessageBuilder {
       } else if (player.team === Team.Orange) {
         orangeTeam.push("<@" + player.id + ">");
       } else {
-        availablePlayers.push({ description: "MMR:" + player.mmr, label: player.name, value: player.id });
+        availablePlayers.push({ description: "MMR: " + player.mmr, label: player.name, value: player.id });
       }
     });
 
     const playerChoices = new MessageSelectMenu()
       .setCustomId(MenuCustomID.BlueSelect)
-      .setPlaceholder(blueCaptain + " Choose a Player")
+      .setPlaceholder(blueCaptain + " choose a player")
       .addOptions(availablePlayers);
 
     embed
@@ -308,13 +308,13 @@ export default class MessageBuilder {
         }
         orangeTeam.push("<@" + player.id + ">");
       } else {
-        availablePlayers.push({ description: "MMR:" + player.mmr, label: player.name, value: player.id });
+        availablePlayers.push({ description: "MMR: " + player.mmr, label: player.name, value: player.id });
       }
     });
 
     const playerChoices = new MessageSelectMenu()
       .setCustomId(MenuCustomID.OrangeSelect)
-      .setPlaceholder(orangeCaptain + " Choose 2 Players")
+      .setPlaceholder(orangeCaptain + " choose 2 players")
       .setMinValues(2)
       .setMaxValues(2)
       .addOptions(availablePlayers);

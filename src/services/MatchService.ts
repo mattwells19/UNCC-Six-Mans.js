@@ -22,9 +22,12 @@ export async function createRandomMatch(): Promise<Array<NewActiveMatchInput>> {
 export async function createMatchFromChosenTeams(): Promise<Array<NewActiveMatchInput>> {
   const createdTeams: NewActiveMatchInput[] = [];
 
-  //Update the last available player to blue and push all players into Active Match
+  //Sort the ballchasers so those without a team go at the end of the array for ActiveMatch embed visual fix
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
-  for (const p of ballchasers) {
+  const sortedBallChasers = ballchasers.slice().sort((a, b) => (a.team ?? 100) - (b.team ?? 100));
+
+  //Update the last available player to blue and push all players into Active Match
+  for (const p of sortedBallChasers) {
     if (p.team !== null) {
       createdTeams.push({ id: p.id, team: p.team });
     } else {
