@@ -1,7 +1,7 @@
 import { ButtonInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
 import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types";
 import { Team } from "../types/common";
-import getEnvVariable from "./getEnvVariable";
+import { getEnvVariable } from "./utils";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 
 export const enum ButtonCustomID {

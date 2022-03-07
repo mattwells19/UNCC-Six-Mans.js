@@ -15,6 +15,7 @@ beforeEach(async () => {
 beforeAll(async () => {
   prisma = new PrismaClient();
   await prisma.$connect();
+  await prisma.leaderboard.deleteMany();
   await prisma.event.deleteMany();
 
   await prisma.event.create({
@@ -24,7 +25,6 @@ beforeAll(async () => {
     },
   });
 
-  await prisma.leaderboard.deleteMany();
   await prisma.activeMatch.deleteMany();
   await prisma.queue.deleteMany();
   await prisma.ballChaser.deleteMany();
@@ -168,6 +168,7 @@ describe("LeaderboardRepository tests", () => {
   it("adds player stats for the correct season", async () => {
     await prisma.event.create({
       data: {
+        id: 50,
         name: "Fake season",
         endDate: faker.date.past(),
       },
