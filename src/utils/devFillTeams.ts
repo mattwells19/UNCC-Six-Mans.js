@@ -20,7 +20,7 @@ const testPlayers: PlayerInQueue[] = [
   {
     id: "346838372649795595",
     isCap: false,
-    mmr: 150,
+    mmr: 178,
     name: "Tux",
     queueTime: DateTime.now(),
     team: null,
@@ -36,7 +36,7 @@ const testPlayers: PlayerInQueue[] = [
   {
     id: "163667436229361664",
     isCap: false,
-    mmr: 26,
+    mmr: 200,
     name: "h.",
     queueTime: DateTime.now(),
     team: null,

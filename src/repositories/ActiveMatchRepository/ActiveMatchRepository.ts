@@ -132,38 +132,27 @@ export class ActiveMatchRepository {
     return playerInMatch > 0;
   }
 
-  async getPlayerInActiveMatch(playerInMatchId: string): Promise<PlayerInActiveMatch | undefined> {
-    const allPlayersInMatch = await this.#ActiveMatch
+  async getPlayerInActiveMatch(playerInMatchId: string): Promise<PlayerInActiveMatch | null> {
+    const playerInMatch = await this.#ActiveMatch
       .findUnique({
-        select: {
-          id: true,
-        },
         where: {
           playerId: playerInMatchId,
         },
       })
-      .then((match) => {
-        if (!match) {
-          console.warn(`Player with ID: ${playerInMatchId} is not in an active match.`);
-          return [];
-        }
-
-        return this.#ActiveMatch.findMany({
+      .then((player) => {
+        if (!player) return null;
+        return this.#ActiveMatch.findUnique({
           where: {
-            id: match.id,
+            playerId: player.playerId,
           },
         });
       });
 
-    const player = allPlayersInMatch.find((p) => {
-      playerInMatchId === p.id;
-    });
-
-    if (player) {
-      const playerInMatch = this.#getPlayerInActiveMatchWithMmr(player);
-      return playerInMatch;
+    if (playerInMatch) {
+      const player = this.#getPlayerInActiveMatchWithMmr(playerInMatch);
+      return player;
     } else {
-      return undefined;
+      return null;
     }
   }
 }

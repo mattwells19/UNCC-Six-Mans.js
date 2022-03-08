@@ -3,6 +3,9 @@ import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import { Team } from "../types/common";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
 
+let reportedTeam: Team = -1;
+let reportingTeam: Team = -1;
+
 export async function calculateMMR(playerInMatchId: string) {
   let blueTeamMMR = 0;
   let orangeTeamMMR = 0;
@@ -32,8 +35,6 @@ export async function calculateMMR(playerInMatchId: string) {
 }
 
 export async function reportMatch(buttonInteraction: ButtonInteraction, playerInMatchId: string) {
-  let reportedTeam;
-  let reportingTeam;
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
   const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(playerInMatchId);
 
@@ -47,12 +48,10 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
       if (reportedTeam != Team.Blue) {
         reportedTeam = Team.Blue;
         reportingTeam = reporter.team;
-        MessageBuilder.reportedTeamButtons(buttonInteraction);
       } else {
         if (reportingTeam === reporter.team) {
-          return;
         } else {
-          console.log("success");
+          //report logic here
         }
       }
       break;

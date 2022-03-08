@@ -3,6 +3,7 @@ import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types
 import { Team } from "../types/common";
 import getEnvVariable from "./getEnvVariable";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
+import { reportMatch } from "../services/MatchReportService";
 
 export const enum ButtonCustomID {
   JoinQueue = "joinQueue",
@@ -117,10 +118,12 @@ export default class MessageBuilder {
     switch (buttonInteraction.customId) {
       case ButtonCustomID.ReportBlue: {
         reportBlue.style = primaryStyle;
+        reportMatch(buttonInteraction, buttonInteraction.user.id);
         break;
       }
       case ButtonCustomID.ReportOrange: {
         reportOrange.style = primaryStyle;
+        reportMatch(buttonInteraction, buttonInteraction.user.id);
         break;
       }
     }
@@ -238,6 +241,7 @@ export default class MessageBuilder {
 
     const orangeTeam: Array<string> = [];
     const blueTeam: Array<string> = [];
+    const mmr: number = 0;
 
     ballchasers.forEach((ballChaser) => {
       if (ballChaser.team === Team.Blue) {
