@@ -5,6 +5,7 @@ import { BallChaserQueueBuilder } from "../../../../.jest/Builder";
 import { PrismaClient } from "@prisma/client";
 import { DateTime } from "luxon";
 import getEnvVariable from "../../../utils/getEnvVariable";
+import { Team } from "../../../types/common";
 
 function verifyBallChasersAreEqual(expectedBallChaser: PlayerInQueue, actualBallChaser: PlayerInQueue): void {
   expect(actualBallChaser).not.toBeNull();
@@ -207,5 +208,49 @@ describe("Queue Repository tests", () => {
     expect(playerInDb?.isCap).toEqual(false);
     expect(DateTime.fromJSDate(playerInDb?.queueTime!).toISO()).toEqual(mockBallChaser.queueTime.toISO());
     expect(playerInDb?.team).toBeNull();
+  });
+  describe("check if player is in queue", () => {
+    it("player is in queue", async () => {
+      const mockBallChaser = BallChaserQueueBuilder.single();
+      await manuallyAddBallChaserToQueue(mockBallChaser);
+
+      const playerInQueue = await QueueRepository.isPlayerInQueue(mockBallChaser.id);
+
+      expect(playerInQueue).toEqual(true);
+    });
+    it("player is not in queue", async () => {
+      const mockBallChaser = BallChaserQueueBuilder.single();
+      await manuallyAddBallChaserToQueue(mockBallChaser);
+
+      const playerNotInQueue = await QueueRepository.isPlayerInQueue(faker.datatype.uuid());
+
+      expect(playerNotInQueue).toEqual(false);
+    });
+  });
+  describe("check if player is team captain", () => {
+    it("player is team captain", async () => {
+      const mockBallChaser = BallChaserQueueBuilder.single({ team: Team.Blue, isCap: true });
+      await manuallyAddBallChaserToQueue(mockBallChaser);
+
+      const isCaptain = await QueueRepository.isTeamCaptain(mockBallChaser.id, Team.Blue);
+
+      expect(isCaptain).toEqual(true);
+    });
+    it("player is team captain but wrong team", async () => {
+      const mockBlueCaptain = BallChaserQueueBuilder.single({ team: Team.Blue, isCap: true });
+      await manuallyAddBallChaserToQueue(mockBlueCaptain);
+
+      const isCaptain = await QueueRepository.isTeamCaptain(mockBlueCaptain.id, Team.Orange);
+
+      expect(isCaptain).toEqual(false);
+    });
+    it("player is team member but not captain", async () => {
+      const mockBlueTeamMember = BallChaserQueueBuilder.single({ team: Team.Blue, isCap: false });
+      await manuallyAddBallChaserToQueue(mockBlueTeamMember);
+
+      const isCaptain = await QueueRepository.isTeamCaptain(faker.datatype.uuid(), Team.Blue);
+
+      expect(isCaptain).toEqual(false);
+    });
   });
 });
