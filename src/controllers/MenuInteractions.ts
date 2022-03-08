@@ -3,7 +3,7 @@ import QueueRepository from "../repositories/QueueRepository";
 import { createMatchFromChosenTeams } from "../services/MatchService";
 import { bluePlayerChosen, orangePlayerChosen } from "../services/TeamAssignmentService";
 import { Team } from "../types/common";
-import getEnvVariable from "../utils/getEnvVariable";
+import { getEnvVariable } from "../utils";
 import MessageBuilder, { MenuCustomID } from "../utils/MessageBuilder";
 
 export async function handleMenuInteraction(menuInteraction: SelectMenuInteraction): Promise<void> {

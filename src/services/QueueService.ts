@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import QueueRepository from "../repositories/QueueRepository";
-import { AddBallChaserToQueueInput, PlayerInQueue } from "../repositories/QueueRepository/types";
+import { PlayerInQueue } from "../repositories/QueueRepository/types";
 
 export async function joinQueue(userId: string, userName: string): Promise<ReadonlyArray<PlayerInQueue> | null> {
   //Check if in Active Match so as not to add to the queue.
@@ -11,12 +11,11 @@ export async function joinQueue(userId: string, userName: string): Promise<Reado
   //Check if in Queue so as not to add to the queue again.
   const queueMember = await QueueRepository.getBallChaserInQueue(userId);
   if (!queueMember) {
-    const player: AddBallChaserToQueueInput = {
+    await QueueRepository.addBallChaserToQueue({
       id: userId,
       name: userName,
       queueTime: DateTime.now().plus({ minutes: 60 }).set({ millisecond: 0, second: 0 }),
-    };
-    await QueueRepository.addBallChaserToQueue(player);
+    });
   } else {
     await QueueRepository.updateBallChaserInQueue({
       id: userId,
