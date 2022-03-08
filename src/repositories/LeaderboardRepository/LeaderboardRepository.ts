@@ -1,16 +1,13 @@
-import { Leaderboard, Prisma, PrismaClient } from "@prisma/client";
-import getEnvVariable from "../../utils/getEnvVariable";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { LeaderboardWithBallChaser, PlayerStats, UpdatePlayerStatsInput } from "./types";
+import EventRepository from "../EventRepository";
+import { waitForAllPromises } from "../../utils";
 
 export class LeaderboardRepository {
   #Leaderboard: Prisma.LeaderboardDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
-  #seasonSemester: string;
-  #seasonYear: string;
 
   constructor() {
     this.#Leaderboard = new PrismaClient().leaderboard;
-    this.#seasonSemester = getEnvVariable("season_semester");
-    this.#seasonYear = getEnvVariable("season_year");
   }
 
   #calculatePlayerStats(playerStats: LeaderboardWithBallChaser): PlayerStats {
@@ -31,15 +28,16 @@ export class LeaderboardRepository {
    * @returns returns the player's stats if they exist, otherwise null
    */
   async getPlayerStats(id: string): Promise<Readonly<PlayerStats> | null> {
+    const { id: currentEventId } = await EventRepository.getCurrentEvent();
+
     const playerStats = await this.#Leaderboard.findUnique({
       include: {
         player: true,
       },
       where: {
-        seasonSemester_seasonYear_playerId: {
+        eventId_playerId: {
+          eventId: currentEventId,
           playerId: id,
-          seasonSemester: this.#seasonSemester,
-          seasonYear: this.#seasonYear,
         },
       },
     });
@@ -57,6 +55,8 @@ export class LeaderboardRepository {
    * @returns An array of the top 'n' players in the leaderboard
    */
   async getPlayersStats(n?: number): Promise<ReadonlyArray<Readonly<PlayerStats>>> {
+    const { id: currentEventId } = await EventRepository.getCurrentEvent();
+
     const playersStats = await this.#Leaderboard.findMany({
       include: {
         player: true,
@@ -64,8 +64,7 @@ export class LeaderboardRepository {
       orderBy: [{ mmr: "desc" }, { wins: "desc" }],
       take: n,
       where: {
-        seasonSemester: this.#seasonSemester,
-        seasonYear: this.#seasonYear,
+        eventId: currentEventId,
       },
     });
 
@@ -78,15 +77,15 @@ export class LeaderboardRepository {
    * @param playersUpdates An array of player stats to update the leaderboard with.
    */
   async updatePlayersStats(playersUpdates: Array<UpdatePlayerStatsInput>): Promise<void> {
-    const promises: Array<Promise<Leaderboard>> = [];
-    for (const playerUpdates of playersUpdates) {
-      const leaderboardUpdate = this.#Leaderboard.upsert({
+    const { id: currentEventId } = await EventRepository.getCurrentEvent();
+
+    await waitForAllPromises(playersUpdates, async (playerUpdates) => {
+      await this.#Leaderboard.upsert({
         create: {
+          eventId: currentEventId,
           losses: playerUpdates.losses,
           mmr: playerUpdates.mmr,
           playerId: playerUpdates.id,
-          seasonSemester: this.#seasonSemester,
-          seasonYear: this.#seasonYear,
           wins: playerUpdates.wins,
         },
         update: {
@@ -95,18 +94,13 @@ export class LeaderboardRepository {
           wins: playerUpdates.wins,
         },
         where: {
-          seasonSemester_seasonYear_playerId: {
+          eventId_playerId: {
+            eventId: currentEventId,
             playerId: playerUpdates.id,
-            seasonSemester: this.#seasonSemester,
-            seasonYear: this.#seasonYear,
           },
         },
       });
-
-      promises.push(leaderboardUpdate);
-    }
-
-    await Promise.all(promises);
+    });
   }
 }
 

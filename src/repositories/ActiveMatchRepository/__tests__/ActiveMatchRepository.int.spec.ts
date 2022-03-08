@@ -4,6 +4,7 @@ import ActiveMatchRepository from "../ActiveMatchRepository";
 import { PlayerInActiveMatch } from "../types";
 import { Team } from "../../../types/common";
 import { ActiveMatch, BallChaser, PrismaClient } from "@prisma/client";
+import { waitForAllPromises } from "../../../utils";
 
 let prisma: PrismaClient;
 
@@ -34,26 +35,21 @@ afterAll(async () => {
 async function manuallyAddActiveMatch(activeMatch: PlayerInActiveMatch | Array<PlayerInActiveMatch>) {
   const playersToAdd = Array.isArray(activeMatch) ? activeMatch : [activeMatch];
 
-  const promises = [];
-  for (const activeMatch of playersToAdd) {
-    promises.push(
-      await prisma.ballChaser.create({
-        data: {
-          id: activeMatch.id,
-          name: faker.name.firstName(),
-          activeMatch: {
-            create: {
-              id: activeMatch.matchId,
-              team: activeMatch.team,
-              reportedTeam: activeMatch.reportedTeam,
-            },
+  await waitForAllPromises(playersToAdd, async (activeMatch) => {
+    await prisma.ballChaser.create({
+      data: {
+        id: activeMatch.id,
+        name: faker.name.firstName(),
+        activeMatch: {
+          create: {
+            id: activeMatch.matchId,
+            team: activeMatch.team,
+            reportedTeam: activeMatch.reportedTeam,
           },
         },
-      })
-    );
-  }
-
-  await Promise.all(promises);
+      },
+    });
+  });
 }
 
 async function manuallyAddBallChaser(ballChaser: BallChaser | Array<BallChaser>) {

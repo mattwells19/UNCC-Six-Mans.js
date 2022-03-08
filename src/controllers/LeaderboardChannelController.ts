@@ -1,6 +1,6 @@
 import { TextChannel } from "discord.js";
 import { LeaderboardToString } from "../services/LeaderboardService";
-import deleteAllMessagesInTextChannel from "../utils/deleteAllMessagesInTextChannel";
+import { deleteAllMessagesInTextChannel } from "../utils/discordUtils";
 import MessageBuilder from "../utils/MessageBuilder";
 
 export async function updateLeaderboardChannel(leaderboardChannel: TextChannel): Promise<void> {

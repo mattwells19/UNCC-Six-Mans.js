@@ -2,6 +2,7 @@ import { AddBallChaserToQueueInput, PlayerInQueue, QueueWithBallChaser, UpdateBa
 import { PrismaClient, Prisma } from "@prisma/client";
 import { DateTime } from "luxon";
 import LeaderboardRepository from "../LeaderboardRepository";
+import { waitForAllPromises } from "../../utils";
 import { Team } from "../../types/common";
 import { InvalidCommand, isRecordNotFoundError } from "../../utils/InvalidCommand";
 
@@ -58,14 +59,10 @@ export class QueueRepository {
       },
     });
 
-    const allPlayersPromises: Array<Promise<PlayerInQueue>> = [];
+    const allPlayersWithMmr = await waitForAllPromises(allPlayersInQueue, async (playerInQueue) => {
+      return await this.#getPlayerMmr(playerInQueue);
+    });
 
-    for (const playerInQueue of allPlayersInQueue) {
-      const queuePlayerPromise: Promise<PlayerInQueue> = this.#getPlayerMmr(playerInQueue);
-      allPlayersPromises.push(queuePlayerPromise);
-    }
-
-    const allPlayersWithMmr = await Promise.all(allPlayersPromises);
     // sort so that shorter queue times are first
     allPlayersWithMmr.sort((a, b) => a.queueTime.toMillis() - b.queueTime.toMillis());
     return allPlayersWithMmr;

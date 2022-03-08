@@ -7,7 +7,6 @@ import { PrismaClient } from "@prisma/client";
 import LeaderboardRepository from "../../repositories/LeaderboardRepository";
 import ActiveMatchRepository from "../../repositories/ActiveMatchRepository";
 
-jest.mock("../../utils/getEnvVariable");
 jest.mock("../../repositories/LeaderboardRepository");
 jest.mock("../../repositories/ActiveMatchRepository");
 
@@ -20,6 +19,15 @@ beforeEach(async () => {
 beforeAll(async () => {
   prisma = new PrismaClient();
   await prisma.$connect();
+
+  await prisma.event.deleteMany();
+
+  await prisma.event.create({
+    data: {
+      id: 1,
+      name: "Test Event",
+    },
+  });
   await prisma.leaderboard.deleteMany();
   await prisma.activeMatch.deleteMany();
   await prisma.queue.deleteMany();
@@ -37,7 +45,7 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
-const mockPlayer1 = BallChaserQueueBuilder.single({});
+const mockPlayer1 = BallChaserQueueBuilder.single();
 
 describe("QueueService tests", () => {
   describe("Joining queue", () => {
