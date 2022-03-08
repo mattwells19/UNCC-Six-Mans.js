@@ -47,11 +47,13 @@ NormClient.on("ready", async (client) => {
 NormClient.on("interactionCreate", async (interaction) => {
   if (interaction.isButton()) {
     await interaction.deferUpdate();
-    handleInteraction(interaction);
-    handleDevInteraction(interaction);
+
+    await handleInteraction(interaction);
+    await handleDevInteraction(interaction);
   } else if (interaction.isSelectMenu()) {
     await interaction.deferUpdate();
-    handleMenuInteraction(interaction);
+
+    await handleMenuInteraction(interaction);
   } else if (interaction.isCommand()) {
     if (!queueEmbed) throw new Error("No queue embed set.");
 

@@ -1,10 +1,11 @@
 import { CommandInteraction, GuildMemberRoleManager, Message } from "discord.js";
 import QueueRepository from "../repositories/QueueRepository";
-import { leaveQueue } from "../services/QueueService";
 import { REST } from "@discordjs/rest";
 import { RESTPostAPIApplicationCommandsJSONBody, Routes } from "discord-api-types/v9";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import MessageBuilder from "../utils/MessageBuilder";
+import { kickPlayerFromQueue } from "../services/AdminService";
+import { InvalidCommand } from "../utils/InvalidCommand";
 
 const enum AdminCommandOptions {
   Kick = "kick",
@@ -29,16 +30,21 @@ export async function handleAdminInteraction(slashCommandInteraction: CommandInt
       const playerToRemove = slashCommandInteraction.options.getUser("player");
       if (!playerToRemove) return;
 
-      await leaveQueue(playerToRemove.id).then((updatedList) => {
-        if (updatedList) {
-          Promise.all([
-            queueEmbed.edit(MessageBuilder.queueMessage(updatedList)),
-            slashCommandInteraction.editReply(`${playerToRemove.username} has been removed from the queue.`),
-          ]);
-        } else {
-          slashCommandInteraction.editReply(`${playerToRemove.username} is not in the queue.`);
+      try {
+        const updatedList = await kickPlayerFromQueue(playerToRemove.id);
+
+        Promise.all([
+          queueEmbed.edit(MessageBuilder.queueMessage(updatedList)),
+          slashCommandInteraction.editReply(`${playerToRemove.username} has been removed from the queue.`),
+        ]);
+      } catch (err) {
+        if (err instanceof InvalidCommand) {
+          slashCommandInteraction.editReply(
+            `Error trying to remove: ${playerToRemove.username}\n${err.name}: ${err.message}`
+          );
         }
-      });
+      }
+
       break;
     }
     case AdminCommandOptions.Clear:

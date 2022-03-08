@@ -3,10 +3,11 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import { DateTime } from "luxon";
 import LeaderboardRepository from "../LeaderboardRepository";
 import { Team } from "../../types/common";
+import { InvalidCommand, isRecordNotFoundError } from "../../utils/InvalidCommand";
 
 export class QueueRepository {
-  #Queue: Prisma.QueueDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
-  #BallChasers: Prisma.BallChaserDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
+  #Queue: Prisma.QueueDelegate<Prisma.RejectPerOperation>;
+  #BallChasers: Prisma.BallChaserDelegate<Prisma.RejectPerOperation>;
 
   constructor() {
     this.#Queue = new PrismaClient().queue;
@@ -75,7 +76,13 @@ export class QueueRepository {
    * @param id Discord ID of the BallChaser to remove from the queue
    */
   async removeBallChaserFromQueue(id: string): Promise<void> {
-    await this.#Queue.delete({ where: { playerId: id } });
+    await this.#Queue.delete({ where: { playerId: id } }).catch((err) => {
+      if (isRecordNotFoundError(err)) {
+        throw new InvalidCommand("Player not in queue.");
+      } else {
+        console.error(err);
+      }
+    });
   }
 
   /**

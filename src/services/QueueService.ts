@@ -27,11 +27,7 @@ export async function joinQueue(userId: string, userName: string): Promise<Reado
   return await QueueRepository.getAllBallChasersInQueue();
 }
 
-export async function leaveQueue(userId: string): Promise<ReadonlyArray<PlayerInQueue> | null> {
-  const member = await QueueRepository.getBallChaserInQueue(userId);
-
-  if (!member) return null;
-
+export async function leaveQueue(userId: string): Promise<ReadonlyArray<PlayerInQueue>> {
   await QueueRepository.removeBallChaserFromQueue(userId);
   return await QueueRepository.getAllBallChasersInQueue();
 }
