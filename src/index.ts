@@ -5,6 +5,7 @@ import getDiscordChannelById from "./utils/getDiscordChannelById";
 import getEnvVariable from "./utils/getEnvVariable";
 import { handleDevInteraction } from "./controllers/DevInteractions";
 import { handleAdminInteraction, registerAdminSlashCommands } from "./controllers/AdminController";
+import { handleMenuInteraction } from "./controllers/MenuInteractions";
 
 const NormClient = new Client({ intents: "GUILDS" });
 
@@ -46,18 +47,17 @@ NormClient.on("ready", async (client) => {
 NormClient.on("interactionCreate", async (interaction) => {
   if (interaction.isButton()) {
     await interaction.deferUpdate();
-    await handleInteraction(interaction);
-    await handleDevInteraction(interaction);
+    handleInteraction(interaction);
+    handleDevInteraction(interaction);
+  } else if (interaction.isSelectMenu()) {
+    await interaction.deferUpdate();
+    handleMenuInteraction(interaction);
   } else if (interaction.isCommand()) {
     if (!queueEmbed) throw new Error("No queue embed set.");
 
     await interaction.deferReply({ ephemeral: true });
     await handleAdminInteraction(interaction, queueEmbed);
   }
-  // if (interaction.isSelectMenu()) {
-  //   await interaction.deferUpdate();
-  //   handleMenuInteraction(interaction);
-  // }
 });
 
 NormClient.login(discordToken);
