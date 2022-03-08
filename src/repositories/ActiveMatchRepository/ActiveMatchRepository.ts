@@ -1,5 +1,7 @@
 import { ActiveMatch, Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
+import { match } from "assert";
+import { ButtonInteraction } from "discord.js";
 import { Team } from "../../types/common";
 import generateRandomId from "../../utils/randomId";
 import { splitArray } from "../../utils/splitArrays";
@@ -128,6 +130,41 @@ export class ActiveMatchRepository {
     });
 
     return playerInMatch > 0;
+  }
+
+  async getPlayerInActiveMatch(playerInMatchId: string): Promise<PlayerInActiveMatch | undefined> {
+    const allPlayersInMatch = await this.#ActiveMatch
+      .findUnique({
+        select: {
+          id: true,
+        },
+        where: {
+          playerId: playerInMatchId,
+        },
+      })
+      .then((match) => {
+        if (!match) {
+          console.warn(`Player with ID: ${playerInMatchId} is not in an active match.`);
+          return [];
+        }
+
+        return this.#ActiveMatch.findMany({
+          where: {
+            id: match.id,
+          },
+        });
+      });
+
+    const player = allPlayersInMatch.find((p) => {
+      playerInMatchId === p.id;
+    });
+
+    if (player) {
+      const playerInMatch = this.#getPlayerInActiveMatchWithMmr(player);
+      return playerInMatch;
+    } else {
+      return undefined;
+    }
   }
 }
 

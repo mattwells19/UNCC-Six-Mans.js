@@ -1,40 +1,21 @@
 import { ButtonInteraction } from "discord.js";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
-import { PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
 import { Team } from "../types/common";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
 
-async function organizeTeams(ballChasers: Promise<ReadonlyArray<Readonly<PlayerInActiveMatch>>>) {
-  const blueTeam: Readonly<PlayerInActiveMatch>[] = [];
-  const orangeTeam: Readonly<PlayerInActiveMatch>[] = [];
-  (await ballChasers).forEach((ballChaser) => {
-    if (ballChaser.team === Team.Blue) {
-      blueTeam.push({
-        id: ballChaser.id,
-        reportedTeam: ballChaser.reportedTeam,
-        matchId: ballChaser.matchId,
-        team: ballChaser.team,
-      });
-    } else {
-      orangeTeam.push({
-        id: ballChaser.id,
-        reportedTeam: ballChaser.reportedTeam,
-        matchId: ballChaser.matchId,
-        team: ballChaser.team,
-      });
-    }
-  });
-  return { blueTeam: blueTeam, orangeTeam: orangeTeam };
-}
-
-export async function calculateMMR(activeMatchBallChasers: Promise<ReadonlyArray<Readonly<PlayerInActiveMatch>>>) {
+export async function calculateMMR(playerInMatchId: string) {
   let blueTeamMMR = 0;
   let orangeTeamMMR = 0;
-  const teams = await organizeTeams(activeMatchBallChasers);
+  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
   let blueTeam = teams.blueTeam;
   let orangeTeam = teams.orangeTeam;
 
-  //Get each Team MMR here
+  blueTeam.forEach((ballChaser) => {
+    blueTeamMMR += ballChaser.mmr;
+  });
+  orangeTeam.forEach((ballChaer) => {
+    orangeTeamMMR += ballChaer.mmr;
+  });
 
   let difference = (orangeTeamMMR - blueTeamMMR) / 400;
 
@@ -50,16 +31,29 @@ export async function calculateMMR(activeMatchBallChasers: Promise<ReadonlyArray
   return Math.round(mmr);
 }
 
-export async function reportMatch(buttonInteraction: ButtonInteraction) {
+export async function reportMatch(buttonInteraction: ButtonInteraction, playerInMatchId: string) {
   let reportedTeam;
+  let reportingTeam;
+  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
+  const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(playerInMatchId);
+
+  const playerIsInMatch = await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id);
+  if (!playerIsInMatch || !reporter) {
+    return;
+  }
 
   switch (buttonInteraction.customId) {
     case ButtonCustomID.ReportBlue: {
       if (reportedTeam != Team.Blue) {
         reportedTeam = Team.Blue;
+        reportingTeam = reporter.team;
         MessageBuilder.reportedTeamButtons(buttonInteraction);
       } else {
-        //code for report confirm goes here
+        if (reportingTeam === reporter.team) {
+          return;
+        } else {
+          console.log("success");
+        }
       }
       break;
     }

@@ -5,6 +5,7 @@ export interface PlayerInActiveMatch {
   team: Team;
   reportedTeam: Team | null;
   matchId: string;
+  mmr: number;
 }
 
 export interface ActiveMatchTeams {
