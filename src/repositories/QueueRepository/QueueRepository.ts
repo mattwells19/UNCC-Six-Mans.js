@@ -3,6 +3,7 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import { DateTime } from "luxon";
 import LeaderboardRepository from "../LeaderboardRepository";
 import { waitForAllPromises } from "../../utils";
+import { Team } from "../../types/common";
 
 export class QueueRepository {
   #Queue: Prisma.QueueDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
@@ -123,6 +124,27 @@ export class QueueRepository {
         id: ballChaserToAdd.id,
       },
     });
+  }
+
+  async isPlayerInQueue(ballChaserToCheck: string): Promise<boolean> {
+    const playerInMatch = await this.#Queue.count({
+      where: {
+        playerId: ballChaserToCheck,
+      },
+    });
+
+    return playerInMatch > 0;
+  }
+
+  async isTeamCaptain(ballChaserToCheck: string, teamToCheck: Team): Promise<boolean> {
+    const isCaptain = await this.#Queue.count({
+      where: {
+        playerId: ballChaserToCheck,
+        team: teamToCheck,
+      },
+    });
+
+    return isCaptain > 0;
   }
 }
 
