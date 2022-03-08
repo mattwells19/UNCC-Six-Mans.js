@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
-import generateRandomId from "../../utils/randomId";
+import { generateRandomId } from "../../utils";
 import { NewActiveMatchInput, PlayerInActiveMatch, UpdatePlayerInActiveMatchInput } from "./types";
 
 export class ActiveMatchRepository {
