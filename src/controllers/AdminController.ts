@@ -15,6 +15,7 @@ const enum AdminCommandOptions {
 export async function handleAdminInteraction(slashCommandInteraction: CommandInteraction, queueEmbed: Message) {
   const memberRoles = slashCommandInteraction.member?.roles;
   if (
+    !memberRoles ||
     (memberRoles instanceof GuildMemberRoleManager && memberRoles.cache.every((role) => role.name !== "Bot Admin")) ||
     (Array.isArray(memberRoles) && !memberRoles.includes("Bot Admin"))
   ) {
@@ -33,13 +34,13 @@ export async function handleAdminInteraction(slashCommandInteraction: CommandInt
       try {
         const updatedList = await kickPlayerFromQueue(playerToRemove.id);
 
-        Promise.all([
+        await Promise.all([
           queueEmbed.edit(MessageBuilder.queueMessage(updatedList)),
           slashCommandInteraction.editReply(`${playerToRemove.username} has been removed from the queue.`),
         ]);
       } catch (err) {
         if (err instanceof InvalidCommand) {
-          slashCommandInteraction.editReply(
+          await slashCommandInteraction.editReply(
             `Error trying to remove: ${playerToRemove.username}\n${err.name}: ${err.message}`
           );
         }
@@ -52,7 +53,7 @@ export async function handleAdminInteraction(slashCommandInteraction: CommandInt
       await QueueRepository.removeAllBallChasersFromQueue();
       await Promise.all([
         queueEmbed.edit(MessageBuilder.queueMessage([])),
-        await slashCommandInteraction.editReply("Queue has been cleared."),
+        slashCommandInteraction.editReply("Queue has been cleared."),
       ]);
       break;
   }
