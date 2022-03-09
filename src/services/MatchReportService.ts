@@ -1,10 +1,11 @@
 import { ButtonInteraction } from "discord.js";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
+import LeaderboardRepository from "../repositories/LeaderboardRepository";
+import { UpdatePlayerStatsInput } from "../repositories/LeaderboardRepository/types";
 import { Team } from "../types/common";
-import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
+import { ButtonCustomID } from "../utils/MessageBuilder";
 
-let reportedTeam: Team = -1;
-let reportingTeam: Team = -1;
+let reportingTeam: Team;
 
 export async function calculateMMR(playerInMatchId: string): Promise<number> {
   let blueTeamMMR = 0;
@@ -39,33 +40,84 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
   const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(playerInMatchId);
 
   const playerIsInMatch = await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id);
+  const hasPlayerReported = [...teams.blueTeam, ...teams.orangeTeam].some((p) => {
+    return p.reportedTeam !== null;
+  });
+
   if (!playerIsInMatch || !reporter) {
     return;
   }
 
   switch (buttonInteraction.customId) {
     case ButtonCustomID.ReportBlue: {
-      if (reportedTeam != Team.Blue) {
-        reportedTeam = Team.Blue;
-        reportingTeam = reporter.team;
+      if (hasPlayerReported) {
+        reporter.team = Team.Blue;
       } else {
         if (reportingTeam === reporter.team) {
           return;
         } else {
+          const mmr = calculateMMR(playerInMatchId);
+          let updateStats: Array<UpdatePlayerStatsInput> = [];
+          for (const player of teams.blueTeam) {
+            const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
+            if (playerStats) {
+              const stats: UpdatePlayerStatsInput = {
+                id: player.id,
+                mmr: player.mmr + (await mmr),
+                wins: playerStats.wins + 1,
+              };
+              updateStats.push(stats);
+            }
+          }
+          for (const player of teams.orangeTeam) {
+            const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
+            if (playerStats) {
+              const stats: UpdatePlayerStatsInput = {
+                id: player.id,
+                mmr: player.mmr - (await mmr),
+                losses: playerStats.losses + 1,
+              };
+              updateStats.push(stats);
+            }
+          }
+          LeaderboardRepository.updatePlayersStats(updateStats);
         }
       }
       break;
     }
 
     case ButtonCustomID.ReportOrange: {
-      if (reportedTeam != Team.Orange) {
-        reportedTeam = Team.Orange;
-        reportingTeam = reporter.team;
+      if (hasPlayerReported) {
+        reporter.team = Team.Orange;
       } else {
         if (reportingTeam === reporter.team) {
           return;
         } else {
-          //report confirm goes here
+          const mmr = calculateMMR(playerInMatchId);
+          let updateStats: Array<UpdatePlayerStatsInput> = [];
+          for (const player of teams.orangeTeam) {
+            const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
+            if (playerStats) {
+              const stats: UpdatePlayerStatsInput = {
+                id: player.id,
+                mmr: player.mmr + (await mmr),
+                wins: playerStats.wins + 1,
+              };
+              updateStats.push(stats);
+            }
+          }
+          for (const player of teams.blueTeam) {
+            const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
+            if (playerStats) {
+              const stats: UpdatePlayerStatsInput = {
+                id: player.id,
+                mmr: player.mmr - (await mmr),
+                losses: playerStats.losses + 1,
+              };
+              updateStats.push(stats);
+            }
+          }
+          LeaderboardRepository.updatePlayersStats(updateStats);
         }
       }
       break;
