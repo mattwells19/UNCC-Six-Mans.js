@@ -6,9 +6,9 @@ import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import QueueRepository from "../repositories/QueueRepository";
 import { setCaptains } from "../services/TeamAssignmentService";
 
-export async function postCurrentQueue(queueChannel: TextChannel): Promise<void> {
+export async function postCurrentQueue(queueChannel: TextChannel): Promise<Message> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
-  await queueChannel.send(MessageBuilder.queueMessage(ballchasers));
+  return await queueChannel.send(MessageBuilder.queueMessage(ballchasers));
 }
 
 export async function handleInteraction(buttonInteraction: ButtonInteraction): Promise<void> {
@@ -36,13 +36,15 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
 
     case ButtonCustomID.LeaveQueue: {
       await message.edit(MessageBuilder.disabledQueueButtons(buttonInteraction));
-      const remainingMembers = await leaveQueue(buttonInteraction.user.id);
 
-      if (remainingMembers) {
-        await message.edit(MessageBuilder.queueMessage(remainingMembers));
-      } else {
-        await message.edit(MessageBuilder.enabledQueueButtons());
-      }
+      await leaveQueue(buttonInteraction.user.id)
+        .then((remainingMembers) => {
+          return message.edit(MessageBuilder.queueMessage(remainingMembers));
+        })
+        .catch(() => {
+          return message.edit(MessageBuilder.enabledQueueButtons());
+        });
+
       break;
     }
 

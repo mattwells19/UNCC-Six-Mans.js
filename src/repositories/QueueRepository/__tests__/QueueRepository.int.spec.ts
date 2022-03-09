@@ -5,6 +5,7 @@ import { BallChaserQueueBuilder } from "../../../../.jest/Builder";
 import { PrismaClient } from "@prisma/client";
 import { DateTime } from "luxon";
 import { Team } from "../../../types/common";
+import { InvalidCommand } from "../../../utils/InvalidCommand";
 
 function verifyBallChasersAreEqual(expectedBallChaser: PlayerInQueue, actualBallChaser: PlayerInQueue): void {
   expect(actualBallChaser).not.toBeNull();
@@ -139,7 +140,7 @@ describe("Queue Repository tests", () => {
   });
 
   it("throws error when trying to remove BallChaser when not found in queue", async () => {
-    await expect(QueueRepository.removeBallChaserFromQueue(faker.datatype.uuid())).rejects.toThrowError();
+    await expect(QueueRepository.removeBallChaserFromQueue(faker.datatype.uuid())).rejects.toThrowError(InvalidCommand);
   });
 
   it("removes all BallChasers in queue", async () => {

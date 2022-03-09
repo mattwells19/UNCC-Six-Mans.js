@@ -7,7 +7,7 @@ import { Team } from "../types/common";
 export async function createRandomMatch(): Promise<Array<NewActiveMatchInput>> {
   const ballChasers = await QueueRepository.getAllBallChasersInQueue();
   //Assign teams based on MMR and
-  const createdTeams = await createRandomTeams(ballChasers);
+  const createdTeams = createRandomTeams(ballChasers);
 
   await Promise.all([
     //Create Match
