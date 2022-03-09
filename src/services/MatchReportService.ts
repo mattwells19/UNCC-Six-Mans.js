@@ -33,7 +33,7 @@ export async function calculateMMR(playerInMatchId: string): Promise<number> {
   return Math.round(mmr);
 }
 
-export async function reportMatch(buttonInteraction: ButtonInteraction, playerInMatchId: string) {
+export async function reportMatch(buttonInteraction: ButtonInteraction, playerInMatchId: string): Promise<void> {
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
   let reporter = await ActiveMatchRepository.getPlayerInActiveMatch(playerInMatchId);
 
@@ -99,6 +99,7 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
             }
           }
           LeaderboardRepository.updatePlayersStats(updateStats);
+          ActiveMatchRepository.removeAllPlayersInActiveMatch(playerInMatchId);
         }
       }
       break;
@@ -152,6 +153,7 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
             }
           }
           LeaderboardRepository.updatePlayersStats(updateStats);
+          ActiveMatchRepository.removeAllPlayersInActiveMatch(playerInMatchId);
         }
       }
       break;
