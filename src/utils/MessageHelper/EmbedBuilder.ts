@@ -1,5 +1,4 @@
 import { ColorResolvable, MessageEmbed } from "discord.js";
-import { getEnvVariable } from "../utils";
 
 class BaseEmbed extends MessageEmbed {
   private static readonly normIconURL =
@@ -14,10 +13,6 @@ class BaseEmbed extends MessageEmbed {
 }
 
 export default class EmbedBuilder {
-  private static readonly isDev = getEnvVariable("ENVIRONMENT") === "dev";
-  private static readonly normIconURL =
-    "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";
-
   static leaderboardEmbed(description: string, title: string): MessageEmbed {
     return new BaseEmbed("BLUE", description, title);
   }

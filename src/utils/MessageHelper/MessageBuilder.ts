@@ -12,16 +12,13 @@ export const enum MenuCustomID {
 }
 
 export default class MessageBuilder {
-  private static readonly normIconURL =
-    "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";
-
   private static readonly isDev = getEnvVariable("ENVIRONMENT") === "dev";
 
   static leaderboardMessage(leaderboardInfo: string[]): MessageOptions {
     const embeds = leaderboardInfo.map((content, index) => {
       const embedCtr = leaderboardInfo.length > 1 ? `(${index + 1}/${leaderboardInfo.length})` : "";
 
-      return EmbedBuilder.leaderboardEmbed(`UNCC 6 Mans | Leaderboard ${embedCtr}`.trim(), "```" + content + "```");
+      return EmbedBuilder.leaderboardEmbed("```" + content + "```", `UNCC 6 Mans | Leaderboard ${embedCtr}`.trim());
     });
 
     return {

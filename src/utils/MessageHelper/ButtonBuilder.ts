@@ -109,10 +109,8 @@ export default class ButtonBuilder extends MessageButton {
   }
 
   static enabledQueueButtons(): MessageOptions {
-    const joinButton = this.joinButton();
-    const leaveButton = this.leaveButton();
     return {
-      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
+      components: [new MessageActionRow({ components: [this.joinButton(), this.leaveButton()] })],
     };
   }
 
