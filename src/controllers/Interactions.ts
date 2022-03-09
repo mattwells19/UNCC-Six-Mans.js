@@ -4,10 +4,20 @@ import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
 import { createRandomMatch } from "../services/MatchService";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
+import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<void> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
   await queueChannel.send(MessageBuilder.queueMessage(ballchasers));
+}
+
+export async function deleteCurrentMessage(buttonInteraction: ButtonInteraction): Promise<void> {
+  const isQueueFinished = await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id);
+  const message = buttonInteraction.message;
+  if (!(message instanceof Message)) return;
+  if (!isQueueFinished) {
+    await message.delete();
+  }
 }
 
 export async function handleInteraction(buttonInteraction: ButtonInteraction): Promise<void> {
