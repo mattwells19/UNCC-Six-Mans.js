@@ -50,10 +50,10 @@ const testPlayers: PlayerInQueue[] = [
     team: null,
   },
   {
-    id: "347083937216200704",
+    id: "929967919763439656",
     isCap: false,
     mmr: 302,
-    name: "cash",
+    name: "GamerDadOf4",
     queueTime: DateTime.now(),
     team: null,
   },

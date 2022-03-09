@@ -5,8 +5,6 @@ import { UpdatePlayerStatsInput } from "../repositories/LeaderboardRepository/ty
 import { Team } from "../types/common";
 import { ButtonCustomID } from "../utils/MessageBuilder";
 
-let reportingTeam: Team;
-
 export async function calculateMMR(playerInMatchId: string): Promise<number> {
   let blueTeamMMR = 0;
   let orangeTeamMMR = 0;
@@ -37,12 +35,16 @@ export async function calculateMMR(playerInMatchId: string): Promise<number> {
 
 export async function reportMatch(buttonInteraction: ButtonInteraction, playerInMatchId: string) {
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
-  const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(playerInMatchId);
+  let reporter = await ActiveMatchRepository.getPlayerInActiveMatch(playerInMatchId);
 
   const playerIsInMatch = await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id);
   const hasPlayerReported = [...teams.blueTeam, ...teams.orangeTeam].some((p) => {
     return p.reportedTeam !== null;
   });
+  const reportedPlayer = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
+    return p.reportedTeam !== null;
+  });
+  const teamWhoReported = reportedPlayer?.team;
 
   if (!playerIsInMatch || !reporter) {
     return;
@@ -50,22 +52,30 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
 
   switch (buttonInteraction.customId) {
     case ButtonCustomID.ReportBlue: {
-      if (hasPlayerReported) {
-        reporter.reportedTeam = Team.Blue;
-        reportingTeam = reporter.team;
+      if (!hasPlayerReported) {
+        await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
+          reportedTeam: Team.Blue,
+        });
       } else {
-        if (reportingTeam === reporter.team) {
+        if (teamWhoReported === reporter.team) {
           return;
         } else {
-          const mmr = calculateMMR(playerInMatchId);
+          const mmr = await calculateMMR(playerInMatchId);
           let updateStats: Array<UpdatePlayerStatsInput> = [];
           for (const player of teams.blueTeam) {
             const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
             if (playerStats) {
               const stats: UpdatePlayerStatsInput = {
                 id: player.id,
-                mmr: player.mmr + (await mmr),
+                mmr: player.mmr + mmr,
                 wins: playerStats.wins + 1,
+              };
+              updateStats.push(stats);
+            } else {
+              const stats: UpdatePlayerStatsInput = {
+                id: player.id,
+                mmr: 100 + mmr,
+                wins: 1,
               };
               updateStats.push(stats);
             }
@@ -75,8 +85,15 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
             if (playerStats) {
               const stats: UpdatePlayerStatsInput = {
                 id: player.id,
-                mmr: player.mmr - (await mmr),
+                mmr: player.mmr - mmr,
                 losses: playerStats.losses + 1,
+              };
+              updateStats.push(stats);
+            } else {
+              const stats: UpdatePlayerStatsInput = {
+                id: player.id,
+                mmr: 100 - mmr,
+                losses: 1,
               };
               updateStats.push(stats);
             }
@@ -88,21 +105,30 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
     }
 
     case ButtonCustomID.ReportOrange: {
-      if (hasPlayerReported) {
-        reporter.team = Team.Orange;
+      if (!hasPlayerReported) {
+        await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
+          reportedTeam: Team.Orange,
+        });
       } else {
-        if (reportingTeam === reporter.team) {
+        if (teamWhoReported === reporter.team) {
           return;
         } else {
-          const mmr = calculateMMR(playerInMatchId);
+          const mmr = await calculateMMR(playerInMatchId);
           let updateStats: Array<UpdatePlayerStatsInput> = [];
           for (const player of teams.orangeTeam) {
             const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
             if (playerStats) {
               const stats: UpdatePlayerStatsInput = {
                 id: player.id,
-                mmr: player.mmr + (await mmr),
+                mmr: player.mmr + mmr,
                 wins: playerStats.wins + 1,
+              };
+              updateStats.push(stats);
+            } else {
+              const stats: UpdatePlayerStatsInput = {
+                id: player.id,
+                mmr: 100 + mmr,
+                wins: 1,
               };
               updateStats.push(stats);
             }
@@ -112,8 +138,15 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
             if (playerStats) {
               const stats: UpdatePlayerStatsInput = {
                 id: player.id,
-                mmr: player.mmr - (await mmr),
+                mmr: player.mmr - mmr,
                 losses: playerStats.losses + 1,
+              };
+              updateStats.push(stats);
+            } else {
+              const stats: UpdatePlayerStatsInput = {
+                id: player.id,
+                mmr: 100 - mmr,
+                losses: 1,
               };
               updateStats.push(stats);
             }
