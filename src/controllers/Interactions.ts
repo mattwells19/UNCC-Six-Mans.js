@@ -11,13 +11,10 @@ export async function postCurrentQueue(queueChannel: TextChannel): Promise<void>
   await queueChannel.send(MessageBuilder.queueMessage(ballchasers));
 }
 
-export async function deleteCurrentMessage(buttonInteraction: ButtonInteraction): Promise<void> {
-  const isQueueFinished = await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id);
+export async function deleteActiveMatchEmbed(buttonInteraction: ButtonInteraction): Promise<void> {
   const message = buttonInteraction.message;
   if (!(message instanceof Message)) return;
-  if (!isQueueFinished) {
-    await message.delete();
-  }
+  await message.delete();
 }
 
 export async function handleInteraction(buttonInteraction: ButtonInteraction): Promise<void> {

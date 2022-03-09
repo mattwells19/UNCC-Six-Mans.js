@@ -1,4 +1,5 @@
 import { ButtonInteraction } from "discord.js";
+import { deleteActiveMatchEmbed } from "../controllers/Interactions";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import LeaderboardRepository from "../repositories/LeaderboardRepository";
 import { UpdatePlayerStatsInput } from "../repositories/LeaderboardRepository/types";
@@ -52,7 +53,7 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
 
   switch (buttonInteraction.customId) {
     case ButtonCustomID.ReportBlue: {
-      if (!hasPlayerReported) {
+      if (!hasPlayerReported || reportedPlayer?.reportedTeam !== Team.Blue) {
         await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
           reportedTeam: Team.Blue,
         });
@@ -71,6 +72,7 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
                 mmr: player.mmr + mmr,
                 wins: playerStats.wins + 1,
               };
+              console.log("exist " + stats.mmr);
               updateStats.push(stats);
             } else {
               const stats: UpdatePlayerStatsInput = {
@@ -78,6 +80,7 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
                 mmr: 100 + mmr,
                 wins: 1,
               };
+              console.log("new " + stats.mmr);
               updateStats.push(stats);
             }
           }
@@ -89,6 +92,7 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
                 mmr: player.mmr - mmr,
                 losses: playerStats.losses + 1,
               };
+              console.log("exist " + stats.mmr);
               updateStats.push(stats);
             } else {
               const stats: UpdatePlayerStatsInput = {
@@ -96,18 +100,20 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
                 mmr: 100 - mmr,
                 losses: 1,
               };
+              console.log("new " + stats.mmr);
               updateStats.push(stats);
             }
           }
           LeaderboardRepository.updatePlayersStats(updateStats);
           ActiveMatchRepository.removeAllPlayersInActiveMatch(playerInMatchId);
+          deleteActiveMatchEmbed(buttonInteraction);
         }
       }
       break;
     }
 
     case ButtonCustomID.ReportOrange: {
-      if (!hasPlayerReported) {
+      if (!hasPlayerReported || reportedPlayer?.reportedTeam !== Team.Orange) {
         await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
           reportedTeam: Team.Orange,
         });
@@ -156,6 +162,7 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
           }
           LeaderboardRepository.updatePlayersStats(updateStats);
           ActiveMatchRepository.removeAllPlayersInActiveMatch(playerInMatchId);
+          deleteActiveMatchEmbed(buttonInteraction);
         }
       }
       break;

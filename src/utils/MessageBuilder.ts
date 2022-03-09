@@ -4,7 +4,7 @@ import { Team } from "../types/common";
 import getEnvVariable from "./getEnvVariable";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { calculateMMR, reportMatch } from "../services/MatchReportService";
-import { deleteCurrentMessage } from "../controllers/Interactions";
+import { deleteActiveMatchEmbed } from "../controllers/Interactions";
 
 export const enum ButtonCustomID {
   JoinQueue = "joinQueue",
@@ -120,7 +120,6 @@ export default class MessageBuilder {
       case ButtonCustomID.ReportBlue: {
         reportBlue.style = primaryStyle;
         reportMatch(buttonInteraction, buttonInteraction.user.id);
-        deleteCurrentMessage(buttonInteraction);
         break;
       }
       case ButtonCustomID.ReportOrange: {
