@@ -51,7 +51,7 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
 
       await Promise.all([
         //Create new reply to start a match
-        await message.channel.send(MessageBuilder.activeMatchMessage(currentMatch)),
+        await message.channel.send(await MessageBuilder.activeMatchMessage(currentMatch)),
 
         //Update the embed with an empty queue message
         await message.edit(MessageBuilder.queueMessage(emptyQueue)),

@@ -3,7 +3,7 @@ import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types
 import { Team } from "../types/common";
 import getEnvVariable from "./getEnvVariable";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
-import { reportMatch } from "../services/MatchReportService";
+import { calculateMMR, reportMatch } from "../services/MatchReportService";
 
 export const enum ButtonCustomID {
   JoinQueue = "joinQueue",
@@ -223,7 +223,7 @@ export default class MessageBuilder {
     };
   }
 
-  static activeMatchMessage(ballchasers: Array<NewActiveMatchInput>): MessageOptions {
+  static async activeMatchMessage(ballchasers: Array<NewActiveMatchInput>): Promise<MessageOptions> {
     const embed = new MessageEmbed({
       color: "DARK_RED",
       thumbnail: { url: this.normIconURL },
@@ -241,7 +241,7 @@ export default class MessageBuilder {
 
     const orangeTeam: Array<string> = [];
     const blueTeam: Array<string> = [];
-    const mmr: number = 0;
+    const mmr = await calculateMMR(ballchasers[0].id);
 
     ballchasers.forEach((ballChaser) => {
       if (ballChaser.team === Team.Blue) {
@@ -254,7 +254,8 @@ export default class MessageBuilder {
     embed
       .setTitle("Teams are set!")
       .addField("🔷 Blue Team 🔷", blueTeam.join("\n"))
-      .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"));
+      .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"))
+      .addField("MMR Stake:\n", mmr.toString());
 
     return {
       components: this.isDev
