@@ -12,9 +12,9 @@ beforeEach(() => {
 
 describe("Team Assignment Service tests", () => {
   describe("create random teams", () => {
-    it("splits teams equally in size", async () => {
+    it("splits teams equally in size", () => {
       const mockBallChasers = BallChaserQueueBuilder.many(6, { team: null });
-      const sortedBallChasers = await createRandomTeams(mockBallChasers);
+      const sortedBallChasers = createRandomTeams(mockBallChasers);
 
       expect(sortedBallChasers).toHaveLength(6);
       expect(sortedBallChasers.filter((player) => player.team === Team.Orange)).toHaveLength(3);

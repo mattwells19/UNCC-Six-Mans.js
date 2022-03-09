@@ -7,9 +7,9 @@ import QueueRepository from "../repositories/QueueRepository";
 import { setCaptains } from "../services/TeamAssignmentService";
 import ButtonBuilder, { ButtonCustomID } from "../utils/MessageHelper/ButtonBuilder";
 
-export async function postCurrentQueue(queueChannel: TextChannel): Promise<void> {
+export async function postCurrentQueue(queueChannel: TextChannel): Promise<Message> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
-  await queueChannel.send(MessageBuilder.queueMessage(ballchasers));
+  return await queueChannel.send(MessageBuilder.queueMessage(ballchasers));
 }
 
 export async function handleInteraction(buttonInteraction: ButtonInteraction): Promise<void> {

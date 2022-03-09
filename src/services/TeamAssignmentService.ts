@@ -3,9 +3,7 @@ import QueueRepository from "../repositories/QueueRepository";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { Team } from "../types/common";
 
-export async function createRandomTeams(
-  ballchasers: ReadonlyArray<PlayerInQueue>
-): Promise<Array<NewActiveMatchInput>> {
+export function createRandomTeams(ballchasers: ReadonlyArray<PlayerInQueue>): Array<NewActiveMatchInput> {
   const sortedBallChaser = ballchasers.slice().sort((o, b) => o.mmr - b.mmr);
 
   const activeMatch: NewActiveMatchInput[] = [];
