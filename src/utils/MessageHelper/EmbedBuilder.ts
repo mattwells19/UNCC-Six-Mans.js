@@ -1,4 +1,4 @@
-import { ColorResolvable, MessageOptions, MessageEmbedOptions, MessageEmbed } from "discord.js";
+import { ColorResolvable, MessageEmbed } from "discord.js";
 import { getEnvVariable } from "../utils";
 
 class BaseEmbed extends MessageEmbed {
@@ -6,7 +6,7 @@ class BaseEmbed extends MessageEmbed {
     "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";
   constructor(color: ColorResolvable, description?: string, title?: string | null) {
     super();
-    this.url = BaseEmbed.normIconURL;
+    this.thumbnail = { url: BaseEmbed.normIconURL };
     this.setColor(color);
     this.description = !description ? null : description;
     this.title = !title ? null : title;
@@ -23,11 +23,11 @@ export default class EmbedBuilder {
   }
 
   static queueEmbed(description?: string, title?: string): MessageEmbed {
-    return new BaseEmbed("GREEN", title, description);
+    return new BaseEmbed("GREEN", description, title);
   }
 
   static fullQueueEmbed(description?: string | undefined): BaseEmbed {
-    return new BaseEmbed("GREEN", "Queue is Full", description);
+    return new BaseEmbed("GREEN", description, "Queue is Full");
   }
 
   static activeMatchEmbed(): BaseEmbed {
@@ -38,6 +38,6 @@ export default class EmbedBuilder {
     const description =
       color === "BLUE" ? "🔷 " + captain + " 🔷 chooses first" : "🔶 " + captain + " 🔶 choose 2 players";
 
-    return new BaseEmbed(color, "Captains pick your players", description);
+    return new BaseEmbed(color, description, "Captains pick your players");
   }
 }

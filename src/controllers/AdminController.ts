@@ -3,9 +3,9 @@ import QueueRepository from "../repositories/QueueRepository";
 import { REST } from "@discordjs/rest";
 import { RESTPostAPIApplicationCommandsJSONBody, Routes } from "discord-api-types/v9";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import MessageBuilder from "../utils/MessageBuilder";
 import { kickPlayerFromQueue } from "../services/AdminService";
 import { InvalidCommand } from "../utils/InvalidCommand";
+import MessageBuilder from "../utils/MessageHelper/MessageBuilder";
 
 const enum AdminCommandOptions {
   Kick = "kick",

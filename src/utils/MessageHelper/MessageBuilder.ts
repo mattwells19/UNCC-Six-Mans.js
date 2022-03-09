@@ -1,12 +1,4 @@
-import {
-  ButtonInteraction,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed,
-  MessageOptions,
-  MessageSelectMenu,
-  MessageSelectOptionData,
-} from "discord.js";
+import { MessageActionRow, MessageOptions, MessageSelectMenu, MessageSelectOptionData } from "discord.js";
 import { NewActiveMatchInput } from "../../repositories/ActiveMatchRepository/types";
 import { Team } from "../../types/common";
 import { getEnvVariable } from "../utils";
@@ -29,7 +21,7 @@ export default class MessageBuilder {
     const embeds = leaderboardInfo.map((content, index) => {
       const embedCtr = leaderboardInfo.length > 1 ? `(${index + 1}/${leaderboardInfo.length})` : "";
 
-      return EmbedBuilder.leaderboardEmbed("```" + content + "```", `UNCC 6 Mans | Leaderboard ${embedCtr}`.trim());
+      return EmbedBuilder.leaderboardEmbed(`UNCC 6 Mans | Leaderboard ${embedCtr}`.trim(), "```" + content + "```");
     });
 
     return {
@@ -40,7 +32,7 @@ export default class MessageBuilder {
   static queueMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>): MessageOptions {
     let embed;
     if (ballchasers.length == 0) {
-      embed = EmbedBuilder.queueEmbed("Queue is Empty", "Click the green button to join the queue!");
+      embed = EmbedBuilder.queueEmbed("Click the green button to join the queue!", "Queue is Empty");
     } else {
       const ballChaserList = ballchasers
         .map((ballChaser) => {
@@ -51,8 +43,8 @@ export default class MessageBuilder {
         .join("\n");
 
       embed = EmbedBuilder.queueEmbed(
-        `Current Queue: ${ballchasers.length}/6`,
-        "Click the green button to join the queue! \n\n" + ballChaserList
+        "Click the green button to join the queue! \n\n" + ballChaserList,
+        `Current Queue: ${ballchasers.length}/6`
       );
     }
 
@@ -127,10 +119,7 @@ export default class MessageBuilder {
     const playerChoices = new MessageSelectMenu();
 
     if (firstPick) {
-      playerChoices
-        .setCustomId(MenuCustomID.BlueSelect)
-        .setPlaceholder(captain + " choose a player")
-        .addOptions(availablePlayers);
+      playerChoices.setCustomId(MenuCustomID.BlueSelect).setPlaceholder(captain + " choose a player");
     } else {
       playerChoices
         .setCustomId(MenuCustomID.OrangeSelect)
@@ -138,6 +127,8 @@ export default class MessageBuilder {
         .setMinValues(2)
         .setMaxValues(2);
     }
+
+    playerChoices.addOptions(availablePlayers);
 
     const embed = EmbedBuilder.captainsChooseEmbed(embedColor, captain)
       .addField("🔷 Blue Team 🔷", blueTeam.join("\n"))
