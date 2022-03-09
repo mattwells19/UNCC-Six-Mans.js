@@ -51,7 +51,8 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
   switch (buttonInteraction.customId) {
     case ButtonCustomID.ReportBlue: {
       if (hasPlayerReported) {
-        reporter.team = Team.Blue;
+        reporter.reportedTeam = Team.Blue;
+        reportingTeam = reporter.team;
       } else {
         if (reportingTeam === reporter.team) {
           return;
