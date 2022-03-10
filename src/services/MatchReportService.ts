@@ -34,7 +34,36 @@ export async function calculateMMR(playerInMatchId: string): Promise<number> {
   return Math.round(mmr);
 }
 
-export async function isConfirm(playerInMatchId: string, reportedTeam: Team) {}
+export async function isConfirm(playerInMatchId: string, buttonInteraction: ButtonInteraction) {
+  let reportedTeam;
+  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
+  const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(playerInMatchId);
+  const hasPlayerReported = [...teams.blueTeam, ...teams.orangeTeam].some((p) => {
+    return p.reportedTeam !== null;
+  });
+
+  const reportedPlayer = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
+    return p.reportedTeam !== null;
+  });
+
+  switch (buttonInteraction.customId) {
+    case ButtonCustomID.ReportBlue: {
+      reportedTeam = Team.Blue;
+      break;
+    }
+    case ButtonCustomID.ReportOrange: {
+      reportedTeam = Team.Orange;
+      break;
+    }
+  }
+
+  if (!reporter) return;
+  if (!hasPlayerReported || reportedPlayer?.reportedTeam !== reportedTeam) {
+    reportMatch(buttonInteraction, playerInMatchId);
+  } else {
+    confirmMatch(buttonInteraction, playerInMatchId);
+  }
+}
 
 export async function reportMatch(buttonInteraction: ButtonInteraction, playerInMatchId: string) {
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
