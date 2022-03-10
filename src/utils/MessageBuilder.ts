@@ -255,8 +255,16 @@ export default class MessageBuilder {
       .setTitle("Teams are set!")
       .addField("🔷 Blue Team 🔷", blueTeam.join("\n"))
       .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"))
-      .addField("MMR Stake:\n", "Blue Team: " + mmrBlue.toString() + "\nOrange Team: " + mmrOrange.toString())
-      .addField("Probability Rating:\n", "Blue Team is predicted to have a " + probability + "% chance of winning.");
+      .addField(
+        "MMR Stake & Probability Rating:\n",
+        "Blue Team: **" +
+          mmrBlue.toString() +
+          "** MMR\nOrange Team: **" +
+          mmrOrange.toString() +
+          "** MMR\nBlue Team is predicted to have a **" +
+          probability +
+          "%** chance of winning."
+      );
 
     return {
       components: this.isDev

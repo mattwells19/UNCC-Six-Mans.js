@@ -109,7 +109,7 @@ export class ActiveMatchRepository {
   }
 
   #getPlayerInActiveMatchWithMmr(playerInMatch: ActiveMatch): Promise<PlayerInActiveMatch> {
-    return LeaderboardRepository.getPlayerStats(playerInMatch.id).then((stats) => {
+    return LeaderboardRepository.getPlayerStats(playerInMatch.playerId).then((stats) => {
       return {
         id: playerInMatch.playerId,
         matchId: playerInMatch.id,
