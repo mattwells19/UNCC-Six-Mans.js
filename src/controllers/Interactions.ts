@@ -4,7 +4,7 @@ import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
 import { createRandomMatch } from "../services/MatchService";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
-import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
+import { reportMatch } from "../services/MatchReportService";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<void> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
@@ -73,11 +73,31 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     }
 
     case ButtonCustomID.ReportBlue: {
+      /**
+       * if (isConfirm({ playerId: , reportedTeam: Team.Blue })) { <- determine if the report is a report or a confirm
+       *  confirmMatch(Team.Blue); <- remove the active match and update player stats
+       *  await message.delete();
+       * } else {
+       *  reportMatch(Team.Blue); <- update interacter's reportedTeam and reset any other reportedTeam
+       *  await message.edit(...);
+       * }
+       */
+      reportMatch(buttonInteraction, buttonInteraction.user.id);
       await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction));
       break;
     }
 
     case ButtonCustomID.ReportOrange: {
+      /**
+       * if (isConfirm(Team.Orange)) {
+       *  confirmMatch(Team.Orange);
+       *  await message.delete();
+       * } else {
+       *  reportMatch(Team.Orange);
+       *  await message.edit(...);
+       * }
+       */
+      reportMatch(buttonInteraction, buttonInteraction.user.id);
       await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction));
       break;
     }

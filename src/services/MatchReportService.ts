@@ -16,8 +16,8 @@ export async function calculateMMR(playerInMatchId: string): Promise<number> {
   blueTeam.forEach((ballChaser) => {
     blueTeamMMR += ballChaser.mmr;
   });
-  orangeTeam.forEach((ballChaer) => {
-    orangeTeamMMR += ballChaer.mmr;
+  orangeTeam.forEach((ballChaser) => {
+    orangeTeamMMR += ballChaser.mmr;
   });
 
   let difference = (orangeTeamMMR - blueTeamMMR) / 400;
@@ -69,7 +69,7 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
             if (playerStats) {
               const stats: UpdatePlayerStatsInput = {
                 id: player.id,
-                mmr: player.mmr + mmr,
+                mmr: playerStats.mmr + mmr,
                 wins: playerStats.wins + 1,
               };
               console.log("exist " + stats.mmr);
@@ -89,7 +89,7 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
             if (playerStats) {
               const stats: UpdatePlayerStatsInput = {
                 id: player.id,
-                mmr: player.mmr - mmr,
+                mmr: playerStats.mmr - mmr,
                 losses: playerStats.losses + 1,
               };
               console.log("exist " + stats.mmr);
@@ -129,7 +129,7 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
             if (playerStats) {
               const stats: UpdatePlayerStatsInput = {
                 id: player.id,
-                mmr: player.mmr + mmr,
+                mmr: playerStats.mmr + mmr,
                 wins: playerStats.wins + 1,
               };
               updateStats.push(stats);
@@ -147,7 +147,7 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
             if (playerStats) {
               const stats: UpdatePlayerStatsInput = {
                 id: player.id,
-                mmr: player.mmr - mmr,
+                mmr: playerStats.mmr - mmr,
                 losses: playerStats.losses + 1,
               };
               updateStats.push(stats);

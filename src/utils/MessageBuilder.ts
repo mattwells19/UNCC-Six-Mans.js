@@ -119,12 +119,10 @@ export default class MessageBuilder {
     switch (buttonInteraction.customId) {
       case ButtonCustomID.ReportBlue: {
         reportBlue.style = primaryStyle;
-        reportMatch(buttonInteraction, buttonInteraction.user.id);
         break;
       }
       case ButtonCustomID.ReportOrange: {
         reportOrange.style = primaryStyle;
-        reportMatch(buttonInteraction, buttonInteraction.user.id);
         break;
       }
     }
