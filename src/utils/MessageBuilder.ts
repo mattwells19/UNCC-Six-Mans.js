@@ -240,7 +240,8 @@ export default class MessageBuilder {
 
     const orangeTeam: Array<string> = [];
     const blueTeam: Array<string> = [];
-    const mmr = await calculateMMR(ballchasers[0].id);
+    const mmrBlue = await calculateMMR(ballchasers[0].id, Team.Blue);
+    const mmrOrange = await calculateMMR(ballchasers[0].id, Team.Orange);
 
     ballchasers.forEach((ballChaser) => {
       if (ballChaser.team === Team.Blue) {
@@ -254,7 +255,7 @@ export default class MessageBuilder {
       .setTitle("Teams are set!")
       .addField("🔷 Blue Team 🔷", blueTeam.join("\n"))
       .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"))
-      .addField("MMR Stake:\n", mmr.toString());
+      .addField("MMR Stake:\n", "Blue Team: " + mmrBlue.toString() + "\nOrange Team: " + mmrOrange.toString());
 
     return {
       components: this.isDev
