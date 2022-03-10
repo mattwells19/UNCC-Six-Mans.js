@@ -97,7 +97,7 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
        *  await message.edit(...);
        * }
        */
-      reportMatch(buttonInteraction, buttonInteraction.user.id);
+      //reportMatch(buttonInteraction, buttonInteraction.user.id);
       await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction));
       break;
     }

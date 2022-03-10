@@ -35,10 +35,10 @@ export async function calculateMMR(playerInMatchId: string): Promise<number> {
   return Math.round(mmr);
 }
 
-export async function isConfirm(playerInMatchId: string, buttonInteraction: ButtonInteraction) {
+export async function isConfirm(buttonInteraction: ButtonInteraction) {
   let reportedTeam;
-  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
-  const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(playerInMatchId);
+  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(buttonInteraction.user.id);
+  const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(buttonInteraction.user.id);
   const hasPlayerReported = [...teams.blueTeam, ...teams.orangeTeam].some((p) => {
     return p.reportedTeam !== null;
   });
@@ -59,10 +59,11 @@ export async function isConfirm(playerInMatchId: string, buttonInteraction: Butt
   }
 
   if (!reporter) return;
+  if (reportedPlayer?.team === reporter.team) return;
   if (!hasPlayerReported || reportedPlayer?.reportedTeam !== reportedTeam) {
     reportMatch(buttonInteraction, reporter, teams);
   } else {
-    confirmMatch(buttonInteraction, playerInMatchId);
+    confirmMatch(buttonInteraction);
   }
 }
 
@@ -206,4 +207,4 @@ export async function reportMatch(
   }
 }
 */
-export async function confirmMatch(buttonInteraction: ButtonInteraction, playerInMatchId: string) {}
+export async function confirmMatch(buttonInteraction: ButtonInteraction) {}
