@@ -50,7 +50,7 @@ export async function calculateProbability(mmr: number): Promise<number> {
   return probability;
 }
 
-export async function isConfirm(buttonInteraction: ButtonInteraction) {
+export async function isConfirm(buttonInteraction: ButtonInteraction): Promise<boolean> {
   let reportedTeam;
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(buttonInteraction.user.id);
   const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(buttonInteraction.user.id);
@@ -73,12 +73,14 @@ export async function isConfirm(buttonInteraction: ButtonInteraction) {
     }
   }
 
-  if (!reporter) return;
-  if (reportedPlayer?.team === reporter.team) return;
+  if (!reporter) return false;
+  if (reportedPlayer?.team === reporter.team) return false;
   if (!hasPlayerReported || reportedPlayer?.reportedTeam !== reportedTeam) {
     reportMatch(buttonInteraction, reporter, teams);
+    return false;
   } else {
     confirmMatch(buttonInteraction, teams);
+    return true;
   }
 }
 
