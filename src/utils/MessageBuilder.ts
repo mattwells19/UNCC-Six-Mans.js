@@ -257,11 +257,15 @@ export default class MessageBuilder {
       .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"))
       .addField(
         "MMR Stake & Probability Rating:\n",
-        "Blue Team: **" +
+        "🔷 Blue Team: +**" +
           mmrBlue.toString() +
-          "** MMR\nOrange Team: **" +
+          "** MMR | -**" +
           mmrOrange.toString() +
-          "** MMR\nBlue Team is predicted to have a **" +
+          "** MMR 🔷\n🔶 Orange Team: +**" +
+          mmrOrange.toString() +
+          "** MMR | -**" +
+          mmrBlue.toString() +
+          "** MMR🔶\nBlue Team is predicted to have a **" +
           probability +
           "%** chance of winning."
       );
