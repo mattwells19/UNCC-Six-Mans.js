@@ -6,6 +6,7 @@ import { getEnvVariable } from "./utils";
 import { handleDevInteraction } from "./controllers/DevInteractions";
 import { handleAdminInteraction, registerAdminSlashCommands } from "./controllers/AdminController";
 import { handleMenuInteraction } from "./controllers/MenuInteractions";
+import { startQueueTimer } from "./controllers/QueueController";
 
 const NormClient = new Client({ intents: "GUILDS" });
 
@@ -42,6 +43,12 @@ NormClient.on("ready", async (client) => {
     });
 
   await Promise.all([registerAdminCommandsPromise, updateLeaderboardPromise, postCurrentQueuePromise]);
+
+  if (queueEmbed) {
+    startQueueTimer(queueEmbed);
+  } else {
+    console.warn("Unable to start queue timers since queue embed is null.");
+  }
 });
 
 NormClient.on("interactionCreate", async (interaction) => {
