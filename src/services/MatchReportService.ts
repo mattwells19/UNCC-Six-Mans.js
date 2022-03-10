@@ -1,6 +1,8 @@
 import { ButtonInteraction } from "discord.js";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import { ActiveMatchTeams, PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
+import LeaderboardRepository from "../repositories/LeaderboardRepository";
+import { UpdatePlayerStatsInput } from "../repositories/LeaderboardRepository/types";
 import { Team } from "../types/common";
 import { ButtonCustomID } from "../utils/MessageBuilder";
 
@@ -76,7 +78,7 @@ export async function isConfirm(buttonInteraction: ButtonInteraction) {
   if (!hasPlayerReported || reportedPlayer?.reportedTeam !== reportedTeam) {
     reportMatch(buttonInteraction, reporter, teams);
   } else {
-    confirmMatch(buttonInteraction);
+    confirmMatch(buttonInteraction, teams);
   }
 }
 
@@ -108,116 +110,92 @@ export async function reportMatch(
     }
   }
 }
-/*
-        if (teamWhoReported === reporter.team) {
-          return;
-        } else {
-          const mmr = await calculateMMR(playerInMatchId);
-          let updateStats: Array<UpdatePlayerStatsInput> = [];
-          for (const player of teams.blueTeam) {
-            const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
-            if (playerStats) {
-              const stats: UpdatePlayerStatsInput = {
-                id: player.id,
-                mmr: playerStats.mmr + mmr,
-                wins: playerStats.wins + 1,
-              };
-              console.log("exist " + stats.mmr);
-              updateStats.push(stats);
-            } else {
-              const stats: UpdatePlayerStatsInput = {
-                id: player.id,
-                mmr: 100 + mmr,
-                wins: 1,
-              };
-              console.log("new " + stats.mmr);
-              updateStats.push(stats);
-            }
-          }
-          for (const player of teams.orangeTeam) {
-            const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
-            if (playerStats) {
-              const stats: UpdatePlayerStatsInput = {
-                id: player.id,
-                mmr: playerStats.mmr - mmr,
-                losses: playerStats.losses + 1,
-              };
-              console.log("exist " + stats.mmr);
-              updateStats.push(stats);
-            } else {
-              const stats: UpdatePlayerStatsInput = {
-                id: player.id,
-                mmr: 100 - mmr,
-                losses: 1,
-              };
-              console.log("new " + stats.mmr);
-              updateStats.push(stats);
-            }
-          }
-          LeaderboardRepository.updatePlayersStats(updateStats);
-          ActiveMatchRepository.removeAllPlayersInActiveMatch(playerInMatchId);
-          deleteActiveMatchEmbed(buttonInteraction);
-        }
-      }
-      break;
-    }
 
-    case ButtonCustomID.ReportOrange: {
-      if (!hasPlayerReported || reportedPlayer?.reportedTeam !== Team.Orange) {
-        await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
-          reportedTeam: Team.Orange,
-        });
-        return;
-      } else {
-        if (teamWhoReported === reporter.team) {
-          return;
+export async function confirmMatch(buttonInteraction: ButtonInteraction, teams: ActiveMatchTeams) {
+  switch (buttonInteraction.customId) {
+    case ButtonCustomID.ReportBlue: {
+      const mmr = await calculateMMR(buttonInteraction.user.id, Team.Blue);
+      let updateStats: Array<UpdatePlayerStatsInput> = [];
+      for (const player of teams.blueTeam) {
+        const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
+        if (playerStats) {
+          const stats: UpdatePlayerStatsInput = {
+            id: player.id,
+            mmr: playerStats.mmr + mmr,
+            wins: playerStats.wins + 1,
+          };
+          updateStats.push(stats);
         } else {
-          const mmr = await calculateMMR(playerInMatchId);
-          let updateStats: Array<UpdatePlayerStatsInput> = [];
-          for (const player of teams.orangeTeam) {
-            const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
-            if (playerStats) {
-              const stats: UpdatePlayerStatsInput = {
-                id: player.id,
-                mmr: playerStats.mmr + mmr,
-                wins: playerStats.wins + 1,
-              };
-              updateStats.push(stats);
-            } else {
-              const stats: UpdatePlayerStatsInput = {
-                id: player.id,
-                mmr: 100 + mmr,
-                wins: 1,
-              };
-              updateStats.push(stats);
-            }
-          }
-          for (const player of teams.blueTeam) {
-            const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
-            if (playerStats) {
-              const stats: UpdatePlayerStatsInput = {
-                id: player.id,
-                mmr: playerStats.mmr - mmr,
-                losses: playerStats.losses + 1,
-              };
-              updateStats.push(stats);
-            } else {
-              const stats: UpdatePlayerStatsInput = {
-                id: player.id,
-                mmr: 100 - mmr,
-                losses: 1,
-              };
-              updateStats.push(stats);
-            }
-          }
-          LeaderboardRepository.updatePlayersStats(updateStats);
-          ActiveMatchRepository.removeAllPlayersInActiveMatch(playerInMatchId);
-          deleteActiveMatchEmbed(buttonInteraction);
+          const stats: UpdatePlayerStatsInput = {
+            id: player.id,
+            mmr: 100 + mmr,
+            wins: 1,
+          };
+          updateStats.push(stats);
         }
       }
-      break;
+      for (const player of teams.orangeTeam) {
+        const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
+        if (playerStats) {
+          const stats: UpdatePlayerStatsInput = {
+            id: player.id,
+            mmr: playerStats.mmr - mmr,
+            losses: playerStats.losses + 1,
+          };
+          updateStats.push(stats);
+        } else {
+          const stats: UpdatePlayerStatsInput = {
+            id: player.id,
+            mmr: 100 - mmr,
+            losses: 1,
+          };
+          updateStats.push(stats);
+        }
+      }
+      LeaderboardRepository.updatePlayersStats(updateStats);
+      ActiveMatchRepository.removeAllPlayersInActiveMatch(buttonInteraction.user.id);
+    }
+    case ButtonCustomID.ReportOrange: {
+      const mmr = await calculateMMR(buttonInteraction.user.id, Team.Orange);
+      let updateStats: Array<UpdatePlayerStatsInput> = [];
+      for (const player of teams.orangeTeam) {
+        const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
+        if (playerStats) {
+          const stats: UpdatePlayerStatsInput = {
+            id: player.id,
+            mmr: playerStats.mmr + mmr,
+            wins: playerStats.wins + 1,
+          };
+          updateStats.push(stats);
+        } else {
+          const stats: UpdatePlayerStatsInput = {
+            id: player.id,
+            mmr: 100 + mmr,
+            wins: 1,
+          };
+          updateStats.push(stats);
+        }
+      }
+      for (const player of teams.blueTeam) {
+        const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
+        if (playerStats) {
+          const stats: UpdatePlayerStatsInput = {
+            id: player.id,
+            mmr: playerStats.mmr - mmr,
+            losses: playerStats.losses + 1,
+          };
+          updateStats.push(stats);
+        } else {
+          const stats: UpdatePlayerStatsInput = {
+            id: player.id,
+            mmr: 100 - mmr,
+            losses: 1,
+          };
+          updateStats.push(stats);
+        }
+      }
+      LeaderboardRepository.updatePlayersStats(updateStats);
+      ActiveMatchRepository.removeAllPlayersInActiveMatch(buttonInteraction.user.id);
     }
   }
 }
-*/
-export async function confirmMatch(buttonInteraction: ButtonInteraction) {}
