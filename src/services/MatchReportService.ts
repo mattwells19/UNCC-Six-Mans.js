@@ -34,6 +34,8 @@ export async function calculateMMR(playerInMatchId: string): Promise<number> {
   return Math.round(mmr);
 }
 
+export async function isConfirm(playerInMatchId: string, reportedTeam: Team) {}
+
 export async function reportMatch(buttonInteraction: ButtonInteraction, playerInMatchId: string) {
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
   let reporter = await ActiveMatchRepository.getPlayerInActiveMatch(playerInMatchId);
@@ -169,3 +171,5 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
     }
   }
 }
+
+export async function confirmMatch(buttonInteraction: ButtonInteraction, playerInMatchId: string) {}
