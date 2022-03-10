@@ -7,9 +7,11 @@ import { UpdatePlayerStatsInput } from "../repositories/LeaderboardRepository/ty
 import { Team } from "../types/common";
 import { ButtonCustomID } from "../utils/MessageBuilder";
 
-export async function calculateMMR(playerInMatchId: string): Promise<number> {
+export async function calculateMMR(playerInMatchId: string, reportedTeam: Team): Promise<number> {
   let blueTeamMMR = 0;
   let orangeTeamMMR = 0;
+  let reportedWinner = 0;
+  let reportedLoser = 0;
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
   let blueTeam = teams.blueTeam;
   let orangeTeam = teams.orangeTeam;
@@ -21,18 +23,32 @@ export async function calculateMMR(playerInMatchId: string): Promise<number> {
     orangeTeamMMR += ballChaser.mmr;
   });
 
-  let difference = (orangeTeamMMR - blueTeamMMR) / 400;
+  if (reportedTeam === Team.Blue) {
+    reportedWinner = blueTeamMMR;
+    reportedLoser = orangeTeamMMR;
+  } else {
+    reportedWinner = orangeTeamMMR;
+    reportedLoser = blueTeamMMR;
+  }
+
+  let difference = (reportedLoser - reportedWinner) / 400;
 
   let power = Math.pow(10, difference) + 1;
 
   let probability = 1 / power;
 
   let mmr = (1 - probability) * 20;
-
   mmr = Math.min(15, mmr);
   mmr = Math.max(5, mmr);
 
   return Math.round(mmr);
+}
+
+export async function calculateProbability(mmr: number): Promise<number> {
+  let x = mmr / 20;
+  let y = 1 - x;
+  let probability = y * 100;
+  return probability;
 }
 
 export async function isConfirm(buttonInteraction: ButtonInteraction) {
