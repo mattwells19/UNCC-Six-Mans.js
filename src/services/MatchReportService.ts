@@ -1,9 +1,6 @@
 import { ButtonInteraction } from "discord.js";
-import { deleteActiveMatchEmbed } from "../controllers/Interactions";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import { ActiveMatchTeams, PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
-import LeaderboardRepository from "../repositories/LeaderboardRepository";
-import { UpdatePlayerStatsInput } from "../repositories/LeaderboardRepository/types";
 import { Team } from "../types/common";
 import { ButtonCustomID } from "../utils/MessageBuilder";
 

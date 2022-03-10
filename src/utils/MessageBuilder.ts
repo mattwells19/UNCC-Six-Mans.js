@@ -3,8 +3,7 @@ import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types
 import { Team } from "../types/common";
 import getEnvVariable from "./getEnvVariable";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
-import { calculateMMR, reportMatch } from "../services/MatchReportService";
-import { deleteActiveMatchEmbed } from "../controllers/Interactions";
+import { calculateMMR, calculateProbability, reportMatch } from "../services/MatchReportService";
 
 export const enum ButtonCustomID {
   JoinQueue = "joinQueue",
@@ -242,6 +241,7 @@ export default class MessageBuilder {
     const blueTeam: Array<string> = [];
     const mmrBlue = await calculateMMR(ballchasers[0].id, Team.Blue);
     const mmrOrange = await calculateMMR(ballchasers[0].id, Team.Orange);
+    const probability = await calculateProbability(mmrBlue);
 
     ballchasers.forEach((ballChaser) => {
       if (ballChaser.team === Team.Blue) {
@@ -255,7 +255,8 @@ export default class MessageBuilder {
       .setTitle("Teams are set!")
       .addField("🔷 Blue Team 🔷", blueTeam.join("\n"))
       .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"))
-      .addField("MMR Stake:\n", "Blue Team: " + mmrBlue.toString() + "\nOrange Team: " + mmrOrange.toString());
+      .addField("MMR Stake:\n", "Blue Team: " + mmrBlue.toString() + "\nOrange Team: " + mmrOrange.toString())
+      .addField("Probability Rating:\n", "Blue Team is predicted to have a " + probability + "% chance of winning.");
 
     return {
       components: this.isDev

@@ -11,12 +11,6 @@ export async function postCurrentQueue(queueChannel: TextChannel): Promise<void>
   await queueChannel.send(MessageBuilder.queueMessage(ballchasers));
 }
 
-export async function deleteActiveMatchEmbed(buttonInteraction: ButtonInteraction): Promise<void> {
-  const message = buttonInteraction.message;
-  if (!(message instanceof Message)) return;
-  await message.delete();
-}
-
 export async function handleInteraction(buttonInteraction: ButtonInteraction): Promise<void> {
   const message = buttonInteraction.message;
   if (!(message instanceof Message)) return;
