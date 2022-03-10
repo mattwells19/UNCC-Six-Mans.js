@@ -1,6 +1,7 @@
 import { ButtonInteraction } from "discord.js";
 import { deleteActiveMatchEmbed } from "../controllers/Interactions";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
+import { ActiveMatchTeams, PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
 import LeaderboardRepository from "../repositories/LeaderboardRepository";
 import { UpdatePlayerStatsInput } from "../repositories/LeaderboardRepository/types";
 import { Team } from "../types/common";
@@ -59,37 +60,41 @@ export async function isConfirm(playerInMatchId: string, buttonInteraction: Butt
 
   if (!reporter) return;
   if (!hasPlayerReported || reportedPlayer?.reportedTeam !== reportedTeam) {
-    reportMatch(buttonInteraction, playerInMatchId);
+    reportMatch(buttonInteraction, reporter, teams);
   } else {
     confirmMatch(buttonInteraction, playerInMatchId);
   }
 }
 
-export async function reportMatch(buttonInteraction: ButtonInteraction, playerInMatchId: string) {
-  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
-  let reporter = await ActiveMatchRepository.getPlayerInActiveMatch(playerInMatchId);
-
-  const playerIsInMatch = await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id);
-  const hasPlayerReported = [...teams.blueTeam, ...teams.orangeTeam].some((p) => {
-    return p.reportedTeam !== null;
-  });
-  const reportedPlayer = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
-    return p.reportedTeam !== null;
-  });
-  const teamWhoReported = reportedPlayer?.team;
-
-  if (!playerIsInMatch || !reporter) {
-    return;
-  }
-
+export async function reportMatch(
+  buttonInteraction: ButtonInteraction,
+  reporter: PlayerInActiveMatch,
+  teams: ActiveMatchTeams
+) {
   switch (buttonInteraction.customId) {
     case ButtonCustomID.ReportBlue: {
-      if (!hasPlayerReported || reportedPlayer?.reportedTeam !== Team.Blue) {
-        await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
-          reportedTeam: Team.Blue,
+      for (const player of teams.blueTeam) {
+        await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
+          reportedTeam: undefined,
         });
-        return;
-      } else {
+      }
+      await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
+        reportedTeam: Team.Blue,
+      });
+    }
+    case ButtonCustomID.ReportOrange: {
+      for (const player of teams.orangeTeam) {
+        await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
+          reportedTeam: undefined,
+        });
+      }
+      await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
+        reportedTeam: Team.Orange,
+      });
+    }
+  }
+}
+/*
         if (teamWhoReported === reporter.team) {
           return;
         } else {
@@ -200,5 +205,5 @@ export async function reportMatch(buttonInteraction: ButtonInteraction, playerIn
     }
   }
 }
-
+*/
 export async function confirmMatch(buttonInteraction: ButtonInteraction, playerInMatchId: string) {}
