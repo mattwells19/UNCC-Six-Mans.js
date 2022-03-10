@@ -3,28 +3,26 @@ import QueueRepository from "../repositories/QueueRepository";
 import { checkQueueTimes } from "../services/QueueService";
 import MessageBuilder from "../utils/MessageBuilder";
 
-export function startQueueTimers(queueEmbed: Message) {
+export function startQueueTimer(queueEmbed: Message) {
   let minuteCounter = 0;
 
-  setInterval(() => {
+  setInterval(async () => {
     minuteCounter++;
 
+    const updatedList = await checkQueueTimes();
+
+    if (updatedList) {
+      await queueEmbed.edit(MessageBuilder.queueMessage(updatedList));
+    } else if (minuteCounter === 5) {
+      const allPlayers = await QueueRepository.getAllBallChasersInQueue();
+
+      if (allPlayers.length > 0) {
+        await queueEmbed.edit(MessageBuilder.queueMessage(allPlayers));
+      }
+    }
+
     if (minuteCounter === 5) {
-      QueueRepository.getAllBallChasersInQueue()
-        .then((updatedList) => {
-          if (updatedList.length > 0) {
-            return queueEmbed.edit(MessageBuilder.queueMessage(updatedList));
-          }
-        })
-        .finally(() => {
-          minuteCounter = 0;
-        });
-    } else {
-      checkQueueTimes().then((updatedList) => {
-        if (updatedList) {
-          queueEmbed.edit(MessageBuilder.queueMessage(updatedList));
-        }
-      });
+      minuteCounter = 0;
     }
     // every 1 minute
   }, 1 * 60 * 1000);
