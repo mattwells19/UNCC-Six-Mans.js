@@ -4,7 +4,7 @@ import { Team } from "../../types/common";
 import { getEnvVariable } from "../utils";
 import { PlayerInQueue } from "../../repositories/QueueRepository/types";
 import EmbedBuilder from "./EmbedBuilder";
-import ButtonBuilder from "./ButtonBuilder";
+import ButtonBuilder, { ButtonCustomID } from "./ButtonBuilder";
 
 export const enum MenuCustomID {
   BlueSelect = "blueSelect",
@@ -133,7 +133,7 @@ export default class MessageBuilder {
 
     const components = [new MessageActionRow({ components: [playerChoices] })];
     if (this.isDev) {
-      components.push(new MessageActionRow({ components: [ButtonBuilder.breakMatchButton()] }));
+      components.push(ButtonBuilder.breakMatchButtons());
     }
     return {
       components,

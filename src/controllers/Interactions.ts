@@ -4,8 +4,8 @@ import MessageBuilder from "../utils/MessageHelper/MessageBuilder";
 import { createRandomMatch } from "../services/MatchService";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import QueueRepository from "../repositories/QueueRepository";
-import { setCaptains } from "../services/TeamAssignmentService";
 import ButtonBuilder, { ButtonCustomID } from "../utils/MessageHelper/ButtonBuilder";
+import { setCaptains } from "../services/TeamAssignmentService";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<Message> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();

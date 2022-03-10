@@ -1,4 +1,10 @@
-import { ButtonInteraction, MessageActionRow, MessageButton, MessageOptions } from "discord.js";
+import {
+  ButtonInteraction,
+  InteractionButtonOptions,
+  MessageActionRow,
+  MessageButton,
+  MessageOptions,
+} from "discord.js";
 import { getEnvVariable } from "../utils";
 
 export const enum ButtonCustomID {
@@ -12,86 +18,93 @@ export const enum ButtonCustomID {
   BreakMatch = "breakMatch",
 }
 
+interface CustomButtonOptions extends Partial<Omit<InteractionButtonOptions, "customId">> {
+  customId: ButtonCustomID;
+}
+
+class CustomButton extends MessageButton {
+  constructor(customOptions: CustomButtonOptions) {
+    const options: InteractionButtonOptions = (() => {
+      switch (customOptions.customId) {
+        case ButtonCustomID.JoinQueue:
+          return {
+            label: "Join",
+            style: "SUCCESS",
+            ...customOptions,
+          };
+        case ButtonCustomID.LeaveQueue:
+          return {
+            label: "Leave",
+            style: "DANGER",
+            ...customOptions,
+          };
+        case ButtonCustomID.CreateRandomTeam:
+          return {
+            label: "Random",
+            style: "PRIMARY",
+            ...customOptions,
+          };
+        case ButtonCustomID.ChooseTeam:
+          return {
+            label: "Captains",
+            style: "PRIMARY",
+            ...customOptions,
+          };
+        case ButtonCustomID.FillTeam:
+          return {
+            label: "DEV: Fill Queue",
+            style: "DANGER",
+            ...customOptions,
+          };
+        case ButtonCustomID.ReportMatch:
+          return {
+            label: "Report Match",
+            style: "SUCCESS",
+            ...customOptions,
+          };
+        case ButtonCustomID.RemoveAll:
+          return {
+            label: "DEV: Remove All",
+            style: "DANGER",
+            ...customOptions,
+          };
+        case ButtonCustomID.BreakMatch:
+          return {
+            label: "DEV: Break Match",
+            style: "DANGER",
+            ...customOptions,
+          };
+      }
+    })();
+
+    super(options);
+  }
+}
+
+const joinButton = new CustomButton({ customId: ButtonCustomID.JoinQueue });
+const leaveButton = new CustomButton({ customId: ButtonCustomID.LeaveQueue });
+const fillTeamButton = new CustomButton({ customId: ButtonCustomID.FillTeam });
+const removeAllButton = new CustomButton({ customId: ButtonCustomID.RemoveAll });
+const randomTeamsButton = new CustomButton({ customId: ButtonCustomID.CreateRandomTeam });
+const chooseTeamsButton = new CustomButton({ customId: ButtonCustomID.ChooseTeam });
+const breakMatchButton = new CustomButton({ customId: ButtonCustomID.BreakMatch });
+const reportMatchButton = new CustomButton({ customId: ButtonCustomID.ReportMatch });
+
 export default class ButtonBuilder extends MessageButton {
   private static readonly isDev = getEnvVariable("ENVIRONMENT") === "dev";
-
-  static joinButton(disabled = false): MessageButton {
-    return new MessageButton({
-      customId: ButtonCustomID.JoinQueue,
-      disabled: disabled,
-      label: "Join",
-      style: "SUCCESS",
-    });
-  }
-
-  static leaveButton(disabled = false): MessageButton {
-    return new MessageButton({
-      customId: ButtonCustomID.LeaveQueue,
-      disabled: disabled,
-      label: "Leave",
-      style: "DANGER",
-    });
-  }
-
-  static fillTeamButton(disabled = false): MessageButton {
-    return new MessageButton({
-      customId: ButtonCustomID.FillTeam,
-      disabled: disabled,
-      label: "DEV: Fill Queue",
-      style: "DANGER",
-    });
-  }
-
-  static removeAllButton(disabled = false): MessageButton {
-    return new MessageButton({
-      customId: ButtonCustomID.RemoveAll,
-      disabled: disabled,
-      label: "DEV: Remove All",
-      style: "DANGER",
-    });
-  }
-
-  static randomTeamsButton(disabled = false): MessageButton {
-    return new MessageButton({
-      customId: ButtonCustomID.CreateRandomTeam,
-      disabled: disabled,
-      label: "Random",
-      style: "PRIMARY",
-    });
-  }
-
-  static reportMatchButton(disabled = false): MessageButton {
-    return new MessageButton({
-      customId: ButtonCustomID.ReportMatch,
-      disabled: disabled,
-      label: "Report Match",
-      style: "SUCCESS",
-    });
-  }
-
-  static breakMatchButton(disabled = false): MessageButton {
-    return new MessageButton({
-      customId: ButtonCustomID.BreakMatch,
-      disabled: disabled,
-      label: "DEV: Break Match",
-      style: "DANGER",
-    });
-  }
-
-  static pickCaptainsButton(disabled = false): MessageButton {
-    return new MessageButton({
-      customId: ButtonCustomID.ChooseTeam,
-      disabled: disabled,
-      label: "Captains",
-      style: "PRIMARY",
-    });
-  }
+  private static joinButton = new CustomButton({ customId: ButtonCustomID.JoinQueue });
+  private static leaveButton = new CustomButton({ customId: ButtonCustomID.LeaveQueue });
+  private static fillTeamButton = new CustomButton({ customId: ButtonCustomID.FillTeam });
+  private static removeAllButton = new CustomButton({ customId: ButtonCustomID.RemoveAll });
+  private static randomTeamsButton = new CustomButton({ customId: ButtonCustomID.CreateRandomTeam });
+  private static chooseTeamsButton = new CustomButton({ customId: ButtonCustomID.ChooseTeam });
+  private static breakMatchButton = new CustomButton({ customId: ButtonCustomID.BreakMatch });
+  private static reportMatchButton = new CustomButton({ customId: ButtonCustomID.ReportMatch });
 
   static disabledQueueButtons(buttonInteraction: ButtonInteraction): MessageOptions {
     const waitLabel = "Please wait...";
-
-    const joinButton = this.joinButton(true);
-    const leaveButton = this.leaveButton(true);
+    const joinButton = new CustomButton({ customId: ButtonCustomID.JoinQueue });
+    const leaveButton = new CustomButton({ customId: ButtonCustomID.LeaveQueue });
 
     switch (buttonInteraction.customId) {
       case ButtonCustomID.JoinQueue: {
@@ -109,37 +122,39 @@ export default class ButtonBuilder extends MessageButton {
   }
 
   static enabledQueueButtons(): MessageOptions {
+    const joinButton = new CustomButton({ customId: ButtonCustomID.JoinQueue });
+    const leaveButton = new CustomButton({ customId: ButtonCustomID.LeaveQueue });
     return {
-      components: [new MessageActionRow({ components: [this.joinButton(), this.leaveButton()] })],
+      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
     };
   }
 
   static queueButtons(): MessageActionRow {
-    const components = [ButtonBuilder.joinButton(), ButtonBuilder.leaveButton()];
+    const components = [joinButton, leaveButton];
     if (this.isDev) {
-      components.push(ButtonBuilder.fillTeamButton(), ButtonBuilder.removeAllButton());
+      components.push(fillTeamButton, removeAllButton);
     }
     return new MessageActionRow({ components: components });
   }
 
   static fullQueueButtons(): MessageActionRow {
-    const components = [
-      ButtonBuilder.pickCaptainsButton(),
-      ButtonBuilder.randomTeamsButton(),
-      ButtonBuilder.leaveButton(),
-    ];
+    const components = [chooseTeamsButton, randomTeamsButton, leaveButton];
 
     if (this.isDev) {
-      components.push(ButtonBuilder.removeAllButton());
+      components.push(removeAllButton);
     }
     return new MessageActionRow({ components: components });
   }
 
   static activeMatchButtons(): MessageActionRow {
-    const components = [ButtonBuilder.reportMatchButton()];
+    const components = [reportMatchButton];
     if (this.isDev) {
-      components.push(ButtonBuilder.breakMatchButton());
+      components.push(breakMatchButton);
     }
     return new MessageActionRow({ components: components });
+  }
+
+  static breakMatchButtons(): MessageActionRow {
+    return new MessageActionRow({ components: [breakMatchButton] });
   }
 }
