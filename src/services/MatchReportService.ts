@@ -43,23 +43,49 @@ export async function calculateMMR(playerInMatchId: string, reportedTeam: Team):
   return Math.round(mmr);
 }
 
-export async function calculateProbability(mmr: number): Promise<number> {
-  let x = mmr / 20;
-  let y = 1 - x;
-  let probability = y * 100;
-  return probability;
+export async function calculateProbability(playerInMatchId: string, reportedTeam: Team): Promise<number> {
+  let blueTeamMMR = 0;
+  let orangeTeamMMR = 0;
+  let reportedWinner = 0;
+  let reportedLoser = 0;
+  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
+  let blueTeam = teams.blueTeam;
+  let orangeTeam = teams.orangeTeam;
+
+  blueTeam.forEach((ballChaser) => {
+    blueTeamMMR += ballChaser.mmr;
+  });
+  orangeTeam.forEach((ballChaser) => {
+    orangeTeamMMR += ballChaser.mmr;
+  });
+
+  if (reportedTeam === Team.Blue) {
+    reportedWinner = blueTeamMMR;
+    reportedLoser = orangeTeamMMR;
+  } else {
+    reportedWinner = orangeTeamMMR;
+    reportedLoser = blueTeamMMR;
+  }
+
+  let difference = (reportedLoser - reportedWinner) / 400;
+  let power = Math.pow(10, difference) + 1;
+  let probabilityDecimal = 1 / power;
+  let probability = probabilityDecimal * 100;
+
+  return Math.round(probability);
 }
 
 export async function isConfirm(buttonInteraction: ButtonInteraction): Promise<boolean> {
   let reportedTeam;
+  const badTeamValues = [null, -1];
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(buttonInteraction.user.id);
   const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(buttonInteraction.user.id);
   const hasPlayerReported = [...teams.blueTeam, ...teams.orangeTeam].some((p) => {
-    return p.reportedTeam !== null;
+    return p.reportedTeam !== (badTeamValues[0] || badTeamValues[1]);
   });
 
   const reportedPlayer = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
-    return p.reportedTeam !== null;
+    return p.reportedTeam !== (badTeamValues[0] || badTeamValues[1]);
   });
 
   switch (buttonInteraction.customId) {
@@ -89,23 +115,24 @@ export async function reportMatch(
   reporter: PlayerInActiveMatch,
   teams: ActiveMatchTeams
 ) {
+  for (const player of teams.blueTeam) {
+    await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
+      reportedTeam: -1,
+    });
+  }
+  for (const player of teams.orangeTeam) {
+    await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
+      reportedTeam: -1,
+    });
+  }
+
   switch (buttonInteraction.customId) {
     case ButtonCustomID.ReportBlue: {
-      for (const player of teams.blueTeam) {
-        await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
-          reportedTeam: undefined,
-        });
-      }
       await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
         reportedTeam: Team.Blue,
       });
     }
     case ButtonCustomID.ReportOrange: {
-      for (const player of teams.orangeTeam) {
-        await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
-          reportedTeam: undefined,
-        });
-      }
       await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
         reportedTeam: Team.Orange,
       });

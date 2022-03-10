@@ -241,7 +241,15 @@ export default class MessageBuilder {
     const blueTeam: Array<string> = [];
     const mmrBlue = await calculateMMR(ballchasers[0].id, Team.Blue);
     const mmrOrange = await calculateMMR(ballchasers[0].id, Team.Orange);
-    const probability = await calculateProbability(mmrBlue);
+    let probability;
+    let winner;
+    if (mmrBlue < mmrOrange) {
+      probability = await calculateProbability(ballchasers[0].id, Team.Blue);
+      winner = "Blue Team";
+    } else {
+      probability = await calculateProbability(ballchasers[0].id, Team.Orange);
+      winner = "Orange Team";
+    }
 
     ballchasers.forEach((ballChaser) => {
       if (ballChaser.team === Team.Blue) {
@@ -257,15 +265,17 @@ export default class MessageBuilder {
       .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"))
       .addField(
         "MMR Stake & Probability Rating:\n",
-        "🔷 Blue Team: +**" +
+        "🔷 Blue Team: \u007F\u007F\u007F\u007F**+" +
           mmrBlue.toString() +
-          "** MMR | -**" +
+          "** MMR\u007F\u007F**-" +
           mmrOrange.toString() +
-          "** MMR 🔷\n🔶 Orange Team: +**" +
+          "** MMR 🔷\n🔶 Orange Team:\u007F\u007F**+" +
           mmrOrange.toString() +
-          "** MMR | -**" +
+          "** MMR\u007F\u007F**-" +
           mmrBlue.toString() +
-          "** MMR🔶\nBlue Team is predicted to have a **" +
+          "** MMR 🔶\n" +
+          winner +
+          " is predicted to have a **" +
           probability +
           "%** chance of winning."
       );
