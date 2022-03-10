@@ -13,15 +13,14 @@ export function startQueueTimer(queueEmbed: Message) {
 
     if (updatedList) {
       await queueEmbed.edit(MessageBuilder.queueMessage(updatedList));
-    } else if (minuteCounter === 5) {
+      minuteCounter = 0;
+    } else if (minuteCounter >= 5) {
       const allPlayers = await QueueRepository.getAllBallChasersInQueue();
 
       if (allPlayers.length > 0) {
         await queueEmbed.edit(MessageBuilder.queueMessage(allPlayers));
       }
-    }
 
-    if (minuteCounter === 5) {
       minuteCounter = 0;
     }
     // every 1 minute
