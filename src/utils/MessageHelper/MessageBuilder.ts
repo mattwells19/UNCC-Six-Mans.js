@@ -4,7 +4,7 @@ import { Team } from "../../types/common";
 import { getEnvVariable } from "../utils";
 import { PlayerInQueue } from "../../repositories/QueueRepository/types";
 import EmbedBuilder from "./EmbedBuilder";
-import ButtonBuilder, { ButtonCustomID } from "./ButtonBuilder";
+import ButtonBuilder from "./ButtonBuilder";
 
 export const enum MenuCustomID {
   BlueSelect = "blueSelect",

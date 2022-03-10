@@ -7,6 +7,8 @@ import {
 } from "discord.js";
 import { getEnvVariable } from "../utils";
 
+const isDev = getEnvVariable("ENVIRONMENT") === "dev";
+
 export const enum ButtonCustomID {
   JoinQueue = "joinQueue",
   LeaveQueue = "leaveQueue",
@@ -91,7 +93,6 @@ const breakMatchButton = new CustomButton({ customId: ButtonCustomID.BreakMatch 
 const reportMatchButton = new CustomButton({ customId: ButtonCustomID.ReportMatch });
 
 export default class ButtonBuilder extends MessageButton {
-  private static readonly isDev = getEnvVariable("ENVIRONMENT") === "dev";
   private static joinButton = new CustomButton({ customId: ButtonCustomID.JoinQueue });
   private static leaveButton = new CustomButton({ customId: ButtonCustomID.LeaveQueue });
   private static fillTeamButton = new CustomButton({ customId: ButtonCustomID.FillTeam });
@@ -131,7 +132,7 @@ export default class ButtonBuilder extends MessageButton {
 
   static queueButtons(): MessageActionRow {
     const components = [joinButton, leaveButton];
-    if (this.isDev) {
+    if (isDev) {
       components.push(fillTeamButton, removeAllButton);
     }
     return new MessageActionRow({ components: components });
@@ -140,7 +141,7 @@ export default class ButtonBuilder extends MessageButton {
   static fullQueueButtons(): MessageActionRow {
     const components = [chooseTeamsButton, randomTeamsButton, leaveButton];
 
-    if (this.isDev) {
+    if (isDev) {
       components.push(removeAllButton);
     }
     return new MessageActionRow({ components: components });
@@ -148,7 +149,7 @@ export default class ButtonBuilder extends MessageButton {
 
   static activeMatchButtons(): MessageActionRow {
     const components = [reportMatchButton];
-    if (this.isDev) {
+    if (isDev) {
       components.push(breakMatchButton);
     }
     return new MessageActionRow({ components: components });
