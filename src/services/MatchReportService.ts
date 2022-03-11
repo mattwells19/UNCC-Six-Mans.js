@@ -77,15 +77,16 @@ export async function calculateProbability(playerInMatchId: string, reportedTeam
 
 export async function isConfirm(buttonInteraction: ButtonInteraction): Promise<boolean> {
   let reportedTeam;
-  const badTeamValues = [null, -1];
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(buttonInteraction.user.id);
   const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(buttonInteraction.user.id);
   const hasPlayerReported = [...teams.blueTeam, ...teams.orangeTeam].some((p) => {
-    return p.reportedTeam !== (badTeamValues[0] || badTeamValues[1]);
+    return p.reportedTeam !== undefined;
   });
 
   const reportedPlayer = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
-    return p.reportedTeam !== (badTeamValues[0] || badTeamValues[1]);
+    if (p.reportedTeam !== undefined) {
+      return p;
+    }
   });
 
   switch (buttonInteraction.customId) {
@@ -101,6 +102,7 @@ export async function isConfirm(buttonInteraction: ButtonInteraction): Promise<b
 
   if (!reporter) return false;
   if (reportedPlayer?.team === reporter.team) return false;
+  // fix hasPlayerReported - returns opposite boolean expression we want
   if (!hasPlayerReported || reportedPlayer?.reportedTeam !== reportedTeam) {
     reportMatch(buttonInteraction, reporter, teams);
     return false;
@@ -117,12 +119,12 @@ export async function reportMatch(
 ) {
   for (const player of teams.blueTeam) {
     await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
-      reportedTeam: -1,
+      reportedTeam: undefined,
     });
   }
   for (const player of teams.orangeTeam) {
     await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
-      reportedTeam: -1,
+      reportedTeam: undefined,
     });
   }
 
