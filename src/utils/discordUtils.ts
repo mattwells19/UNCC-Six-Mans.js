@@ -1,4 +1,4 @@
-import { Client, TextChannel } from "discord.js";
+import { Client, Message, TextChannel } from "discord.js";
 
 export async function deleteAllMessagesInTextChannel(channel: TextChannel): Promise<void> {
   await channel.messages.fetch({ limit: 99 }).then((messages) => channel.bulkDelete(messages));
@@ -22,4 +22,12 @@ export async function getDiscordChannelById(
   }
 
   return null;
+}
+
+export function isQueueEmbed(msg: Message): boolean {
+  return msg.embeds[0].color === 5763719;
+}
+
+export function isActiveMatchEmbed(msg: Message): boolean {
+  return msg.embeds[0].color === 10038562;
 }

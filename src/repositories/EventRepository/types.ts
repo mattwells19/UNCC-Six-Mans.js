@@ -5,3 +5,8 @@ export interface Event {
   endDate: Date | null;
   mmrMult: number;
 }
+
+export interface UpdateEventInput {
+  name?: string;
+  mmrMult?: number;
+}

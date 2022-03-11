@@ -1,8 +1,8 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { Event } from "./types";
+import { Event, UpdateEventInput } from "./types";
 
 class EventRepository {
-  #Event: Prisma.EventDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
+  #Event: Prisma.EventDelegate<Prisma.RejectPerOperation>;
   #CurrentEventCache: Event | null;
 
   constructor() {
@@ -36,6 +36,20 @@ class EventRepository {
     this.#CurrentEventCache = currentEvent;
 
     return currentEvent;
+  }
+
+  async updateCurrentEvent(eventUpdates: UpdateEventInput): Promise<void> {
+    await this.getCurrentEvent().then((currEvent) => {
+      return this.#Event.update({
+        data: {
+          mmrMult: eventUpdates.mmrMult,
+          name: eventUpdates.name,
+        },
+        where: {
+          id: currEvent.id,
+        },
+      });
+    });
   }
 }
 

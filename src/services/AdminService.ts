@@ -1,3 +1,4 @@
+import EventRepository from "../repositories/EventRepository";
 import QueueRepository from "../repositories/QueueRepository";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { InvalidCommand } from "../utils/InvalidCommand";
@@ -12,4 +13,14 @@ export async function kickPlayerFromQueue(playerIdToRemove: string): Promise<Rea
   }
 
   return await leaveQueue(playerIdToRemove);
+}
+
+export async function updateMmrMultiplier(newMmrMult: number): Promise<void> {
+  if (newMmrMult < 0) {
+    throw new InvalidCommand("Cannot use a negative MMR multiplier.");
+  }
+
+  return await EventRepository.updateCurrentEvent({
+    mmrMult: newMmrMult,
+  });
 }
