@@ -46,7 +46,7 @@ export default class MessageBuilder {
     }
 
     return {
-      components: [ButtonBuilder.queueButtons()],
+      ...ButtonBuilder.queueButtons(),
       embeds: [embed],
     };
   }

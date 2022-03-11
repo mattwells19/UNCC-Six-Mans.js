@@ -18,7 +18,7 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
 
   switch (buttonInteraction.customId) {
     case ButtonCustomID.JoinQueue: {
-      await message.edit(ButtonBuilder.disabledQueueButtons(buttonInteraction));
+      await message.edit(ButtonBuilder.queueButtons({ buttonId: ButtonCustomID.JoinQueue, disabled: true }));
 
       const ballchasers = await joinQueue(buttonInteraction.user.id, buttonInteraction.user.username);
 
@@ -29,20 +29,20 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
           await message.edit(MessageBuilder.queueMessage(ballchasers));
         }
       } else {
-        await message.edit(ButtonBuilder.enabledQueueButtons());
+        await message.edit(ButtonBuilder.queueButtons());
       }
 
       break;
     }
 
     case ButtonCustomID.LeaveQueue: {
-      await message.edit(ButtonBuilder.disabledQueueButtons(buttonInteraction));
+      await message.edit(ButtonBuilder.queueButtons({ buttonId: ButtonCustomID.LeaveQueue, disabled: true }));
       const remainingMembers = await leaveQueue(buttonInteraction.user.id);
 
       if (remainingMembers) {
         await message.edit(MessageBuilder.queueMessage(remainingMembers));
       } else {
-        await message.edit(ButtonBuilder.enabledQueueButtons());
+        await message.edit(ButtonBuilder.queueButtons());
       }
       break;
     }

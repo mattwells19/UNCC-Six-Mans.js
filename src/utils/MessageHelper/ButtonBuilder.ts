@@ -1,10 +1,4 @@
-import {
-  ButtonInteraction,
-  InteractionButtonOptions,
-  MessageActionRow,
-  MessageButton,
-  MessageOptions,
-} from "discord.js";
+import { InteractionButtonOptions, MessageActionRow, MessageButton, MessageOptions } from "discord.js";
 import { getEnvVariable } from "../utils";
 
 const isDev = getEnvVariable("ENVIRONMENT") === "dev";
@@ -20,6 +14,20 @@ export const enum ButtonCustomID {
   BreakMatch = "breakMatch",
 }
 
+// 🐧 You can remove this comment before PRing
+//    This is a fancy little TS trick that allows us to enforce properties based on the existence of other properties
+//    in the same object. In this case, if 'disabled' is true we require you to provide the ButtonCustomID. If
+//    'disabled' is false, then we don't care about it so you don't need to provide it.
+type QueueButtonOptions =
+  | {
+      disabled: true;
+      buttonId: ButtonCustomID;
+    }
+  | {
+      disabled: false;
+    };
+
+// 🐧 CustomButton stuff probably deserves its own file
 interface CustomButtonOptions extends Partial<Omit<InteractionButtonOptions, "customId">> {
   customId: ButtonCustomID;
 }
@@ -83,7 +91,6 @@ class CustomButton extends MessageButton {
   }
 }
 
-const joinButton = new CustomButton({ customId: ButtonCustomID.JoinQueue });
 const leaveButton = new CustomButton({ customId: ButtonCustomID.LeaveQueue });
 const fillTeamButton = new CustomButton({ customId: ButtonCustomID.FillTeam });
 const removeAllButton = new CustomButton({ customId: ButtonCustomID.RemoveAll });
@@ -93,8 +100,7 @@ const breakMatchButton = new CustomButton({ customId: ButtonCustomID.BreakMatch 
 const reportMatchButton = new CustomButton({ customId: ButtonCustomID.ReportMatch });
 
 export default class ButtonBuilder extends MessageButton {
-  private static joinButton = new CustomButton({ customId: ButtonCustomID.JoinQueue });
-  private static leaveButton = new CustomButton({ customId: ButtonCustomID.LeaveQueue });
+  // 🐧 do we still need this static variables?
   private static fillTeamButton = new CustomButton({ customId: ButtonCustomID.FillTeam });
   private static removeAllButton = new CustomButton({ customId: ButtonCustomID.RemoveAll });
   private static randomTeamsButton = new CustomButton({ customId: ButtonCustomID.CreateRandomTeam });
@@ -102,40 +108,25 @@ export default class ButtonBuilder extends MessageButton {
   private static breakMatchButton = new CustomButton({ customId: ButtonCustomID.BreakMatch });
   private static reportMatchButton = new CustomButton({ customId: ButtonCustomID.ReportMatch });
 
-  static disabledQueueButtons(buttonInteraction: ButtonInteraction): MessageOptions {
-    const waitLabel = "Please wait...";
-    const joinButton = new CustomButton({ customId: ButtonCustomID.JoinQueue });
-    const leaveButton = new CustomButton({ customId: ButtonCustomID.LeaveQueue });
+  static queueButtons(options: QueueButtonOptions = { disabled: false }): MessageOptions {
+    const dynamicJoinButton = new CustomButton({
+      customId: ButtonCustomID.JoinQueue,
+      disabled: options.disabled,
+      label: options.disabled && options.buttonId === ButtonCustomID.JoinQueue ? "Please wait..." : undefined,
+    });
+    const dynamicLeaveButton = new CustomButton({
+      customId: ButtonCustomID.LeaveQueue,
+      disabled: options.disabled,
+      label: options.disabled && options.buttonId === ButtonCustomID.LeaveQueue ? "Please wait..." : undefined,
+    });
 
-    switch (buttonInteraction.customId) {
-      case ButtonCustomID.JoinQueue: {
-        joinButton.label = waitLabel;
-        break;
-      }
-      case ButtonCustomID.LeaveQueue: {
-        leaveButton.label = waitLabel;
-        break;
-      }
-    }
-    return {
-      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
-    };
-  }
-
-  static enabledQueueButtons(): MessageOptions {
-    const joinButton = new CustomButton({ customId: ButtonCustomID.JoinQueue });
-    const leaveButton = new CustomButton({ customId: ButtonCustomID.LeaveQueue });
-    return {
-      components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
-    };
-  }
-
-  static queueButtons(): MessageActionRow {
-    const components = [joinButton, leaveButton];
+    const components = [dynamicJoinButton, dynamicLeaveButton];
     if (isDev) {
       components.push(fillTeamButton, removeAllButton);
     }
-    return new MessageActionRow({ components: components });
+    return {
+      components: [new MessageActionRow({ components })],
+    };
   }
 
   static fullQueueButtons(): MessageActionRow {
