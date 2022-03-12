@@ -3,7 +3,7 @@ import QueueRepository from "../repositories/QueueRepository";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import MessageBuilder from "../utils/MessageHelper/MessageBuilder";
 import { fillTeams } from "../utils/devFillTeams";
-import { ButtonCustomID } from "../utils/MessageHelper/ButtonBuilder";
+import { ButtonCustomID } from "../utils/MessageHelper/CustomButtons";
 
 export async function handleDevInteraction(buttonInteraction: ButtonInteraction): Promise<void> {
   const message = buttonInteraction.message;

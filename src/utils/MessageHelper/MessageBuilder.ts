@@ -29,7 +29,7 @@ export default class MessageBuilder {
   static queueMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>): MessageOptions {
     let embed;
     if (ballchasers.length == 0) {
-      embed = EmbedBuilder.queueEmbed("Click the green button to join the queue!", "Queue is Empty");
+      embed = EmbedBuilder.queueEmbed("Queue is Empty", "Click the green button to join the queue!");
     } else {
       const ballChaserList = ballchasers
         .map((ballChaser) => {
@@ -46,7 +46,7 @@ export default class MessageBuilder {
     }
 
     return {
-      ...ButtonBuilder.queueButtons(),
+      components: [ButtonBuilder.queueButtons()],
       embeds: [embed],
     };
   }
@@ -95,7 +95,7 @@ export default class MessageBuilder {
     const orangeTeam: Array<string> = [];
     const blueTeam: Array<string> = [];
     let captain = "";
-    const embedColor = firstPick ? "BLUE" : "ORANGE";
+    const embedColor = firstPick ? Team.Blue : Team.Orange;
 
     ballChasers.forEach((player) => {
       if (player.team === Team.Blue) {

@@ -4,8 +4,8 @@ import MessageBuilder from "../utils/MessageHelper/MessageBuilder";
 import { createRandomMatch } from "../services/MatchService";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import QueueRepository from "../repositories/QueueRepository";
-import ButtonBuilder, { ButtonCustomID } from "../utils/MessageHelper/ButtonBuilder";
 import { setCaptains } from "../services/TeamAssignmentService";
+import { ButtonCustomID } from "../utils/MessageHelper/CustomButtons";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<Message> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
@@ -18,8 +18,6 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
 
   switch (buttonInteraction.customId) {
     case ButtonCustomID.JoinQueue: {
-      await message.edit(ButtonBuilder.queueButtons({ buttonId: ButtonCustomID.JoinQueue, disabled: true }));
-
       const ballchasers = await joinQueue(buttonInteraction.user.id, buttonInteraction.user.username);
 
       if (ballchasers) {
@@ -28,22 +26,18 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
         } else {
           await message.edit(MessageBuilder.queueMessage(ballchasers));
         }
-      } else {
-        await message.edit(ButtonBuilder.queueButtons());
       }
 
       break;
     }
 
     case ButtonCustomID.LeaveQueue: {
-      await message.edit(ButtonBuilder.queueButtons({ buttonId: ButtonCustomID.LeaveQueue, disabled: true }));
       const remainingMembers = await leaveQueue(buttonInteraction.user.id);
 
       if (remainingMembers) {
         await message.edit(MessageBuilder.queueMessage(remainingMembers));
-      } else {
-        await message.edit(ButtonBuilder.queueButtons());
       }
+
       break;
     }
 
