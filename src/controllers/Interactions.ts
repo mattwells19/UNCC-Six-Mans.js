@@ -1,13 +1,13 @@
 import { ButtonInteraction, Message, TextChannel } from "discord.js";
 import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
-import getDiscordChannelById from "../utils/getDiscordChannelById";
+import { getDiscordChannelById } from "../utils/discordUtils";
 import { createRandomMatch } from "../services/MatchService";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { isConfirm } from "../services/MatchReportService";
 import { updateLeaderboardChannel } from "./LeaderboardChannelController";
-import getEnvVariable from "../utils/getEnvVariable";
 import { getClient } from "..";
+import { getEnvVariable } from "../utils";
 import QueueRepository from "../repositories/QueueRepository";
 import { setCaptains } from "../services/TeamAssignmentService";
 
@@ -64,7 +64,7 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
 
         await Promise.all([
           //Create new reply to start a match
-          await message.channel.send(MessageBuilder.activeMatchMessage(currentMatch)),
+          await message.channel.send(await MessageBuilder.activeMatchMessage(currentMatch)),
 
           //Update the embed with an empty queue message
           await message.edit(MessageBuilder.queueMessage(emptyQueue)),
