@@ -79,12 +79,9 @@ export async function isConfirm(buttonInteraction: ButtonInteraction): Promise<b
   let reportedTeam;
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(buttonInteraction.user.id);
   const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(buttonInteraction.user.id);
-  const hasPlayerReported = [...teams.blueTeam, ...teams.orangeTeam].some((p) => {
-    return p.reportedTeam !== undefined;
-  });
 
   const reportedPlayer = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
-    if (p.reportedTeam !== undefined) {
+    if (p.reportedTeam !== null) {
       return p;
     }
   });
@@ -101,9 +98,10 @@ export async function isConfirm(buttonInteraction: ButtonInteraction): Promise<b
   }
 
   if (!reporter) return false;
-  if (reportedPlayer?.team === reporter.team) return false;
-  // fix hasPlayerReported - returns opposite boolean expression we want
-  if (!hasPlayerReported || reportedPlayer?.reportedTeam !== reportedTeam) {
+  if (reportedPlayer?.id !== reporter.id) {
+    if (reportedPlayer?.team === reporter.team) return false;
+  }
+  if (reportedPlayer?.reportedTeam !== reportedTeam) {
     reportMatch(buttonInteraction, reporter, teams);
     return false;
   } else {
@@ -133,11 +131,13 @@ export async function reportMatch(
       await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
         reportedTeam: Team.Blue,
       });
+      break;
     }
     case ButtonCustomID.ReportOrange: {
       await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
         reportedTeam: Team.Orange,
       });
+      break;
     }
   }
 }
@@ -185,6 +185,7 @@ export async function confirmMatch(buttonInteraction: ButtonInteraction, teams: 
       }
       LeaderboardRepository.updatePlayersStats(updateStats);
       ActiveMatchRepository.removeAllPlayersInActiveMatch(buttonInteraction.user.id);
+      break;
     }
     case ButtonCustomID.ReportOrange: {
       const mmr = await calculateMMR(buttonInteraction.user.id, Team.Orange);
@@ -227,6 +228,7 @@ export async function confirmMatch(buttonInteraction: ButtonInteraction, teams: 
       }
       LeaderboardRepository.updatePlayersStats(updateStats);
       ActiveMatchRepository.removeAllPlayersInActiveMatch(buttonInteraction.user.id);
+      break;
     }
   }
 }
