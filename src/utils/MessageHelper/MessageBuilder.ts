@@ -40,8 +40,8 @@ export default class MessageBuilder {
         .join("\n");
 
       embed = EmbedBuilder.queueEmbed(
-        "Click the green button to join the queue! \n\n" + ballChaserList,
-        `Current Queue: ${ballchasers.length}/6`
+        `Current Queue: ${ballchasers.length}/6`,
+        "Click the green button to join the queue! \n\n" + ballChaserList
       );
     }
 

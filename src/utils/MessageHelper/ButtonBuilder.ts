@@ -17,12 +17,12 @@ export default class ButtonBuilder extends MessageButton {
     const dynamicJoinButton = new CustomButton({
       customId: ButtonCustomID.JoinQueue,
       disabled: options.disabled,
-      label: options.disabled && options.buttonId === ButtonCustomID.JoinQueue ? "Please wait..." : undefined,
+      label: options.disabled && options.buttonId === ButtonCustomID.JoinQueue ? "Please wait..." : "Join",
     });
     const dynamicLeaveButton = new CustomButton({
       customId: ButtonCustomID.LeaveQueue,
       disabled: options.disabled,
-      label: options.disabled && options.buttonId === ButtonCustomID.LeaveQueue ? "Please wait..." : undefined,
+      label: options.disabled && options.buttonId === ButtonCustomID.LeaveQueue ? "Please wait..." : "Leave",
     });
 
     const components = [dynamicJoinButton, dynamicLeaveButton];

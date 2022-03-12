@@ -27,16 +27,16 @@ Object {
         Object {
           "inline": false,
           "name": "🔷 Blue Team 🔷",
-          "value": "<@47ed0559-a189-4e68-8ef9-0c122b4b2a4a>
-<@b82eb7f1-0383-4ac0-a422-eef35628e64b>
-<@64562348-b28d-46c9-896d-2bb63dd34f07>",
+          "value": "<@fdb80b67-731d-45cc-a857-bd541755c860>
+<@2f88af5d-39a4-4a06-afe9-da46834b6ece>
+<@e1b35958-7284-4c69-a6ba-43bd93138728>
+<@48ce16c6-4f21-420a-a61a-66770074eb93>",
         },
         Object {
           "inline": false,
           "name": "🔶 Orange Team 🔶",
-          "value": "<@82bc5768-531f-4376-b73f-c6251e816042>
-<@bb5d4f4f-b305-4c2e-b6a6-b2e2b973b1e3>
-<@a5f4946c-64fe-445e-bc30-ad34124a651a>",
+          "value": "<@b4f82275-ed57-4d59-bc51-596cdda5aead>
+<@ee099eb0-4783-4e61-8aba-0f215eade7fc>",
         },
       ],
       "footer": null,
@@ -67,7 +67,7 @@ Object {
           "max_values": undefined,
           "min_values": null,
           "options": Array [],
-          "placeholder": "innovative choose a player",
+          "placeholder": "UIC-Franc choose a player",
           "type": 3,
         },
       ],
@@ -78,21 +78,21 @@ Object {
     Object {
       "author": null,
       "color": 3447003,
-      "description": "🔷 innovative 🔷 chooses first",
+      "description": "🔷 UIC-Franc 🔷 chooses first",
       "fields": Array [
         Object {
           "inline": false,
           "name": "🔷 Blue Team 🔷",
-          "value": "<@47ed0559-a189-4e68-8ef9-0c122b4b2a4a>
-<@b82eb7f1-0383-4ac0-a422-eef35628e64b>
-<@64562348-b28d-46c9-896d-2bb63dd34f07>",
+          "value": "<@fdb80b67-731d-45cc-a857-bd541755c860>
+<@2f88af5d-39a4-4a06-afe9-da46834b6ece>
+<@e1b35958-7284-4c69-a6ba-43bd93138728>
+<@48ce16c6-4f21-420a-a61a-66770074eb93>",
         },
         Object {
           "inline": false,
           "name": "🔶 Orange Team 🔶",
-          "value": "<@82bc5768-531f-4376-b73f-c6251e816042>
-<@bb5d4f4f-b305-4c2e-b6a6-b2e2b973b1e3>
-<@a5f4946c-64fe-445e-bc30-ad34124a651a>",
+          "value": "<@b4f82275-ed57-4d59-bc51-596cdda5aead>
+<@ee099eb0-4783-4e61-8aba-0f215eade7fc>",
         },
       ],
       "footer": null,
@@ -154,12 +154,12 @@ Object {
       "color": 5763719,
       "description": "Click the Create Teams button to get started! 
 
-bi-directional (60 mins)
-Road (60 mins)
-Cheese (60 mins)
-Chicken (60 mins)
-innovative (60 mins)
-Gabon (60 mins)",
+Rupiah (60 mins)
+Shirt (60 mins)
+TCP (60 mins)
+UIC-Franc (60 mins)
+Hawaii (60 mins)
+Station (60 mins)",
       "fields": Array [],
       "footer": null,
       "image": null,
@@ -187,7 +187,7 @@ Object {
           "custom_id": "joinQueue",
           "disabled": false,
           "emoji": null,
-          "label": null,
+          "label": "Join",
           "style": 3,
           "type": 2,
           "url": null,
@@ -196,7 +196,7 @@ Object {
           "custom_id": "leaveQueue",
           "disabled": false,
           "emoji": null,
-          "label": null,
+          "label": "Leave",
           "style": 4,
           "type": 2,
           "url": null,
@@ -209,7 +209,14 @@ Object {
     Object {
       "author": null,
       "color": 5763719,
-      "description": "Current Queue: 6/6",
+      "description": "Click the green button to join the queue! 
+
+Rupiah (60 mins)
+Shirt (60 mins)
+TCP (60 mins)
+UIC-Franc (60 mins)
+Hawaii (60 mins)
+Station (60 mins)",
       "fields": Array [],
       "footer": null,
       "image": null,
@@ -220,14 +227,7 @@ Object {
         "width": undefined,
       },
       "timestamp": null,
-      "title": "Click the green button to join the queue! 
-
-bi-directional (60 mins)
-Road (60 mins)
-Cheese (60 mins)
-Chicken (60 mins)
-innovative (60 mins)
-Gabon (60 mins)",
+      "title": "Current Queue: 6/6",
       "type": "rich",
       "url": null,
     },
