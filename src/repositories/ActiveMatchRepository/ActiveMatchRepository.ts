@@ -1,9 +1,9 @@
 import { ActiveMatch, Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { Team } from "../../types/common";
-import generateRandomId from "../../utils/randomId";
 import { splitArray } from "../../utils/splitArrays";
 import LeaderboardRepository from "../LeaderboardRepository";
+import { generateRandomId } from "../../utils";
 import { ActiveMatchTeams, NewActiveMatchInput, PlayerInActiveMatch, UpdatePlayerInActiveMatchInput } from "./types";
 
 export class ActiveMatchRepository {

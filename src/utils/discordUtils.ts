@@ -1,6 +1,10 @@
-import type { Client, TextChannel } from "discord.js";
+import { Client, TextChannel } from "discord.js";
 
-export default async function getDiscordChannelById(
+export async function deleteAllMessagesInTextChannel(channel: TextChannel): Promise<void> {
+  await channel.messages.fetch({ limit: 99 }).then((messages) => channel.bulkDelete(messages));
+}
+
+export async function getDiscordChannelById(
   NormClient: Client,
   channelId: string | undefined
 ): Promise<TextChannel | null> {

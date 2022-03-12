@@ -1,5 +1,4 @@
 import { ButtonInteraction, Message, TextChannel } from "discord.js";
-import QueueRepository from "../repositories/QueueRepository";
 import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
 import getDiscordChannelById from "../utils/getDiscordChannelById";
@@ -9,10 +8,12 @@ import { isConfirm } from "../services/MatchReportService";
 import { updateLeaderboardChannel } from "./LeaderboardChannelController";
 import getEnvVariable from "../utils/getEnvVariable";
 import { getClient } from "..";
+import QueueRepository from "../repositories/QueueRepository";
+import { setCaptains } from "../services/TeamAssignmentService";
 
-export async function postCurrentQueue(queueChannel: TextChannel): Promise<void> {
+export async function postCurrentQueue(queueChannel: TextChannel): Promise<Message> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
-  await queueChannel.send(MessageBuilder.queueMessage(ballchasers));
+  return await queueChannel.send(MessageBuilder.queueMessage(ballchasers));
 }
 
 export async function handleInteraction(buttonInteraction: ButtonInteraction): Promise<void> {
@@ -40,29 +41,49 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
 
     case ButtonCustomID.LeaveQueue: {
       await message.edit(MessageBuilder.disabledQueueButtons(buttonInteraction));
-      const remainingMembers = await leaveQueue(buttonInteraction.user.id);
 
-      if (remainingMembers) {
-        await message.edit(MessageBuilder.queueMessage(remainingMembers));
-      } else {
-        await message.edit(MessageBuilder.enabledQueueButtons());
-      }
+      await leaveQueue(buttonInteraction.user.id)
+        .then((remainingMembers) => {
+          return message.edit(MessageBuilder.queueMessage(remainingMembers));
+        })
+        .catch(() => {
+          return message.edit(MessageBuilder.enabledQueueButtons());
+        });
+
       break;
     }
 
     case ButtonCustomID.CreateRandomTeam: {
-      const currentMatch = await createRandomMatch();
-      const emptyQueue: PlayerInQueue[] = [];
+      const playerInQueue = await QueueRepository.isPlayerInQueue(buttonInteraction.user.id);
 
-      await Promise.all([
-        //Create new reply to start a match
-        await message.channel.send(await MessageBuilder.activeMatchMessage(currentMatch)),
+      if (!playerInQueue) {
+        break;
+      } else {
+        const currentMatch = await createRandomMatch();
+        const emptyQueue: PlayerInQueue[] = [];
 
-        //Update the embed with an empty queue message
-        await message.edit(MessageBuilder.queueMessage(emptyQueue)),
-      ]);
+        await Promise.all([
+          //Create new reply to start a match
+          await message.channel.send(MessageBuilder.activeMatchMessage(currentMatch)),
 
-      break;
+          //Update the embed with an empty queue message
+          await message.edit(MessageBuilder.queueMessage(emptyQueue)),
+        ]);
+
+        break;
+      }
+    }
+
+    case ButtonCustomID.ChooseTeam: {
+      const playerInQueue = await QueueRepository.isPlayerInQueue(buttonInteraction.user.id);
+
+      if (playerInQueue) {
+        const ballChasers = await QueueRepository.getAllBallChasersInQueue();
+        const players = await setCaptains(ballChasers);
+
+        await message.edit(MessageBuilder.blueChooseMessage(players));
+        break;
+      }
     }
 
     case ButtonCustomID.ReportBlue: {

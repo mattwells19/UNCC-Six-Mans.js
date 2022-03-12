@@ -2,10 +2,13 @@ import { AddBallChaserToQueueInput, PlayerInQueue, QueueWithBallChaser, UpdateBa
 import { PrismaClient, Prisma } from "@prisma/client";
 import { DateTime } from "luxon";
 import LeaderboardRepository from "../LeaderboardRepository";
+import { waitForAllPromises } from "../../utils";
+import { Team } from "../../types/common";
+import { InvalidCommand, isRecordNotFoundError } from "../../utils/InvalidCommand";
 
 export class QueueRepository {
-  #Queue: Prisma.QueueDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
-  #BallChasers: Prisma.BallChaserDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
+  #Queue: Prisma.QueueDelegate<Prisma.RejectPerOperation>;
+  #BallChasers: Prisma.BallChaserDelegate<Prisma.RejectPerOperation>;
 
   constructor() {
     this.#Queue = new PrismaClient().queue;
@@ -56,14 +59,10 @@ export class QueueRepository {
       },
     });
 
-    const allPlayersPromises: Array<Promise<PlayerInQueue>> = [];
+    const allPlayersWithMmr = await waitForAllPromises(allPlayersInQueue, async (playerInQueue) => {
+      return await this.#getPlayerMmr(playerInQueue);
+    });
 
-    for (const playerInQueue of allPlayersInQueue) {
-      const queuePlayerPromise: Promise<PlayerInQueue> = this.#getPlayerMmr(playerInQueue);
-      allPlayersPromises.push(queuePlayerPromise);
-    }
-
-    const allPlayersWithMmr = await Promise.all(allPlayersPromises);
     // sort so that shorter queue times are first
     allPlayersWithMmr.sort((a, b) => a.queueTime.toMillis() - b.queueTime.toMillis());
     return allPlayersWithMmr;
@@ -74,7 +73,13 @@ export class QueueRepository {
    * @param id Discord ID of the BallChaser to remove from the queue
    */
   async removeBallChaserFromQueue(id: string): Promise<void> {
-    await this.#Queue.delete({ where: { playerId: id } });
+    await this.#Queue.delete({ where: { playerId: id } }).catch((err) => {
+      if (isRecordNotFoundError(err)) {
+        throw new InvalidCommand("Player not in queue.");
+      } else {
+        console.error(err);
+      }
+    });
   }
 
   /**
@@ -126,6 +131,27 @@ export class QueueRepository {
         id: ballChaserToAdd.id,
       },
     });
+  }
+
+  async isPlayerInQueue(ballChaserToCheck: string): Promise<boolean> {
+    const playerInMatch = await this.#Queue.count({
+      where: {
+        playerId: ballChaserToCheck,
+      },
+    });
+
+    return playerInMatch > 0;
+  }
+
+  async isTeamCaptain(ballChaserToCheck: string, teamToCheck: Team): Promise<boolean> {
+    const isCaptain = await this.#Queue.count({
+      where: {
+        playerId: ballChaserToCheck,
+        team: teamToCheck,
+      },
+    });
+
+    return isCaptain > 0;
   }
 }
 

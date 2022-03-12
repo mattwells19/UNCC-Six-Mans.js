@@ -1,7 +1,15 @@
-import { ButtonInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
+import {
+  ButtonInteraction,
+  MessageActionRow,
+  MessageButton,
+  MessageEmbed,
+  MessageOptions,
+  MessageSelectMenu,
+  MessageSelectOptionData,
+} from "discord.js";
 import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types";
 import { Team } from "../types/common";
-import getEnvVariable from "./getEnvVariable";
+import { getEnvVariable } from "./utils";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { calculateMMR, calculateProbability, reportMatch } from "../services/MatchReportService";
 
@@ -9,11 +17,17 @@ export const enum ButtonCustomID {
   JoinQueue = "joinQueue",
   LeaveQueue = "leaveQueue",
   CreateRandomTeam = "randomizeTeams",
+  ChooseTeam = "chooseTeam",
   FillTeam = "fillTeam",
   RemoveAll = "removeAll",
   BreakMatch = "breakMatch",
   ReportBlue = "reportBlue",
   ReportOrange = "reportOrange",
+}
+
+export const enum MenuCustomID {
+  BlueSelect = "blueSelect",
+  OrangeSelect = "orangeSelect",
 }
 
 export default class MessageBuilder {
@@ -168,9 +182,14 @@ export default class MessageBuilder {
       color: "GREEN",
       thumbnail: { url: this.normIconURL },
     });
-    const pickTeamsButton = new MessageButton({
+    const randomTeamsButton = new MessageButton({
       customId: ButtonCustomID.CreateRandomTeam,
       label: "Random",
+      style: "PRIMARY",
+    });
+    const pickCaptainsButton = new MessageButton({
+      customId: ButtonCustomID.ChooseTeam,
+      label: "Captains",
       style: "PRIMARY",
     });
     const leaveButton = new MessageButton({
@@ -198,8 +217,8 @@ export default class MessageBuilder {
 
     return {
       components: this.isDev
-        ? [new MessageActionRow({ components: [pickTeamsButton, leaveButton, removeAllButton] })]
-        : [new MessageActionRow({ components: [pickTeamsButton, leaveButton] })],
+        ? [new MessageActionRow({ components: [pickCaptainsButton, randomTeamsButton, leaveButton, removeAllButton] })]
+        : [new MessageActionRow({ components: [pickCaptainsButton, randomTeamsButton, leaveButton] })],
       embeds: [embed],
     };
   }
@@ -272,6 +291,106 @@ export default class MessageBuilder {
       components: this.isDev
         ? [new MessageActionRow({ components: [reportBlue, reportOrange, breakMatch] })]
         : [new MessageActionRow({ components: [reportBlue, reportOrange] })],
+      embeds: [embed],
+    };
+  }
+
+  static blueChooseMessage(ballChasers: ReadonlyArray<PlayerInQueue>): MessageOptions {
+    const embed = new MessageEmbed({
+      color: "BLUE",
+      thumbnail: { url: this.normIconURL },
+    });
+    const breakMatch = new MessageButton({
+      customId: ButtonCustomID.RemoveAll,
+      label: "DEV: Break Match",
+      style: "DANGER",
+    });
+
+    //Get Available Players and Map players
+    const availablePlayers: Array<MessageSelectOptionData> = [];
+    const orangeTeam: Array<string> = [];
+    const blueTeam: Array<string> = [];
+    let blueCaptain: string | null = null;
+
+    ballChasers.forEach((player) => {
+      if (player.team === Team.Blue) {
+        if (player.isCap) {
+          blueCaptain = player.name;
+        }
+        blueTeam.push("<@" + player.id + ">");
+      } else if (player.team === Team.Orange) {
+        orangeTeam.push("<@" + player.id + ">");
+      } else {
+        availablePlayers.push({ description: "MMR: " + player.mmr, label: player.name, value: player.id });
+      }
+    });
+
+    const playerChoices = new MessageSelectMenu()
+      .setCustomId(MenuCustomID.BlueSelect)
+      .setPlaceholder(blueCaptain + " choose a player")
+      .addOptions(availablePlayers);
+
+    embed
+      .setTitle("Captains pick your players")
+      .setDescription("🔷 " + blueCaptain + " 🔷 chooses first")
+      .addField("🔷 Blue Team 🔷", blueTeam.join("\n"))
+      .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"));
+
+    return {
+      components: this.isDev
+        ? [new MessageActionRow({ components: [playerChoices] }), new MessageActionRow({ components: [breakMatch] })]
+        : [new MessageActionRow({ components: [playerChoices] })],
+      embeds: [embed],
+    };
+  }
+
+  static orangeChooseMessage(ballChasers: ReadonlyArray<PlayerInQueue>): MessageOptions {
+    const embed = new MessageEmbed({
+      color: "ORANGE",
+      thumbnail: { url: this.normIconURL },
+    });
+    const breakMatch = new MessageButton({
+      customId: ButtonCustomID.RemoveAll,
+      label: "DEV: Break Match",
+      style: "DANGER",
+    });
+
+    //Get Available Players and Map players
+    const availablePlayers: Array<MessageSelectOptionData> = [];
+    const orangeTeam: Array<string> = [];
+    const blueTeam: Array<string> = [];
+    let orangeCaptain: string | null = null;
+
+    ballChasers.forEach((player) => {
+      if (player.team === Team.Blue) {
+        blueTeam.push("<@" + player.id + ">");
+      } else if (player.team === Team.Orange) {
+        if (player.isCap) {
+          orangeCaptain = player.name;
+        }
+        orangeTeam.push("<@" + player.id + ">");
+      } else {
+        availablePlayers.push({ description: "MMR: " + player.mmr, label: player.name, value: player.id });
+      }
+    });
+
+    const playerChoices = new MessageSelectMenu()
+      .setCustomId(MenuCustomID.OrangeSelect)
+      .setPlaceholder(orangeCaptain + " choose 2 players")
+      .setMinValues(2)
+      .setMaxValues(2)
+      .addOptions(availablePlayers);
+
+    embed
+      .setTitle("Captains pick your players")
+      .setDescription("🔶 " + orangeCaptain + " 🔶 choose 2 players")
+      .addField("🔷 Blue Team 🔷", blueTeam.join("\n"))
+      .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"));
+
+    return {
+      components: this.isDev
+        ? [new MessageActionRow({ components: [playerChoices] }), new MessageActionRow({ components: [breakMatch] })]
+        : [new MessageActionRow({ components: [playerChoices] })],
       embeds: [embed],
     };
   }

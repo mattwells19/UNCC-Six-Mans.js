@@ -4,7 +4,8 @@ import QueueRepository from "../QueueRepository";
 import { BallChaserQueueBuilder } from "../../../../.jest/Builder";
 import { PrismaClient } from "@prisma/client";
 import { DateTime } from "luxon";
-import getEnvVariable from "../../../utils/getEnvVariable";
+import { Team } from "../../../types/common";
+import { InvalidCommand } from "../../../utils/InvalidCommand";
 
 function verifyBallChasersAreEqual(expectedBallChaser: PlayerInQueue, actualBallChaser: PlayerInQueue): void {
   expect(actualBallChaser).not.toBeNull();
@@ -17,19 +18,24 @@ function verifyBallChasersAreEqual(expectedBallChaser: PlayerInQueue, actualBall
 }
 
 let prisma: PrismaClient;
-let seasonSemester: string;
-let seasonYear: string;
+let eventId: number = 1;
 
 beforeEach(async () => {
   jest.clearAllMocks();
 });
 
 beforeAll(async () => {
-  seasonSemester = getEnvVariable("season_semester");
-  seasonYear = getEnvVariable("season_year");
-
   prisma = new PrismaClient();
   await prisma.$connect();
+  await prisma.event.deleteMany();
+
+  await prisma.event.create({
+    data: {
+      id: 1,
+      name: "Test Event",
+    },
+  });
+
   await prisma.leaderboard.deleteMany();
   await prisma.activeMatch.deleteMany();
   await prisma.queue.deleteMany();
@@ -62,8 +68,7 @@ async function manuallyAddBallChaserToQueue(ballChaser: PlayerInQueue) {
       rank: {
         create: {
           mmr: ballChaser.mmr ?? 100,
-          seasonSemester,
-          seasonYear,
+          eventId,
         },
       },
     },
@@ -135,7 +140,7 @@ describe("Queue Repository tests", () => {
   });
 
   it("throws error when trying to remove BallChaser when not found in queue", async () => {
-    await expect(QueueRepository.removeBallChaserFromQueue(faker.datatype.uuid())).rejects.toThrowError();
+    await expect(QueueRepository.removeBallChaserFromQueue(faker.datatype.uuid())).rejects.toThrowError(InvalidCommand);
   });
 
   it("removes all BallChasers in queue", async () => {
@@ -207,5 +212,49 @@ describe("Queue Repository tests", () => {
     expect(playerInDb?.isCap).toEqual(false);
     expect(DateTime.fromJSDate(playerInDb?.queueTime!).toISO()).toEqual(mockBallChaser.queueTime.toISO());
     expect(playerInDb?.team).toBeNull();
+  });
+  describe("check if player is in queue", () => {
+    it("player is in queue", async () => {
+      const mockBallChaser = BallChaserQueueBuilder.single();
+      await manuallyAddBallChaserToQueue(mockBallChaser);
+
+      const playerInQueue = await QueueRepository.isPlayerInQueue(mockBallChaser.id);
+
+      expect(playerInQueue).toEqual(true);
+    });
+    it("player is not in queue", async () => {
+      const mockBallChaser = BallChaserQueueBuilder.single();
+      await manuallyAddBallChaserToQueue(mockBallChaser);
+
+      const playerNotInQueue = await QueueRepository.isPlayerInQueue(faker.datatype.uuid());
+
+      expect(playerNotInQueue).toEqual(false);
+    });
+  });
+  describe("check if player is team captain", () => {
+    it("player is team captain", async () => {
+      const mockBallChaser = BallChaserQueueBuilder.single({ team: Team.Blue, isCap: true });
+      await manuallyAddBallChaserToQueue(mockBallChaser);
+
+      const isCaptain = await QueueRepository.isTeamCaptain(mockBallChaser.id, Team.Blue);
+
+      expect(isCaptain).toEqual(true);
+    });
+    it("player is team captain but wrong team", async () => {
+      const mockBlueCaptain = BallChaserQueueBuilder.single({ team: Team.Blue, isCap: true });
+      await manuallyAddBallChaserToQueue(mockBlueCaptain);
+
+      const isCaptain = await QueueRepository.isTeamCaptain(mockBlueCaptain.id, Team.Orange);
+
+      expect(isCaptain).toEqual(false);
+    });
+    it("player is team member but not captain", async () => {
+      const mockBlueTeamMember = BallChaserQueueBuilder.single({ team: Team.Blue, isCap: false });
+      await manuallyAddBallChaserToQueue(mockBlueTeamMember);
+
+      const isCaptain = await QueueRepository.isTeamCaptain(faker.datatype.uuid(), Team.Blue);
+
+      expect(isCaptain).toEqual(false);
+    });
   });
 });

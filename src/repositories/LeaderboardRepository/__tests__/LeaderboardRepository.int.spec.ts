@@ -1,25 +1,30 @@
 import { BallChaser, PrismaClient } from "@prisma/client";
 import * as faker from "faker";
 import { LeaderboardBuilder } from "../../../../.jest/Builder";
-import getEnvVariable from "../../../utils/getEnvVariable";
+import { waitForAllPromises } from "../../../utils";
 import LeaderboardRepository from "../LeaderboardRepository";
 import { PlayerStats } from "../types";
 
 let prisma: PrismaClient;
-let seasonSemester: string;
-let seasonYear: string;
+let eventId: number = 1;
 
 beforeEach(async () => {
   jest.clearAllMocks();
 });
 
 beforeAll(async () => {
-  seasonSemester = getEnvVariable("season_semester");
-  seasonYear = getEnvVariable("season_year");
-
   prisma = new PrismaClient();
   await prisma.$connect();
   await prisma.leaderboard.deleteMany();
+  await prisma.event.deleteMany();
+
+  await prisma.event.create({
+    data: {
+      id: eventId,
+      name: "Spring 2022",
+    },
+  });
+
   await prisma.activeMatch.deleteMany();
   await prisma.queue.deleteMany();
   await prisma.ballChaser.deleteMany();
@@ -27,6 +32,15 @@ beforeAll(async () => {
 
 afterEach(async () => {
   await prisma.leaderboard.deleteMany();
+  await prisma.event.deleteMany();
+
+  await prisma.event.create({
+    data: {
+      id: eventId,
+      name: "Spring 2022",
+    },
+  });
+
   await prisma.activeMatch.deleteMany();
   await prisma.queue.deleteMany();
   await prisma.ballChaser.deleteMany();
@@ -50,28 +64,22 @@ const validatePlayerStats = (expected: PlayerStats, actual: PlayerStats | null) 
 async function manuallyAddPlayerStatsToLeaderboard(ballChaser: PlayerStats | Array<PlayerStats>) {
   const playersToAdd = Array.isArray(ballChaser) ? ballChaser : [ballChaser];
 
-  const promises = [];
-  for (const player of playersToAdd) {
-    promises.push(
-      await prisma.ballChaser.create({
-        data: {
-          id: player.id,
-          name: player.name,
-          rank: {
-            create: {
-              mmr: player.mmr,
-              losses: player.losses,
-              wins: player.wins,
-              seasonSemester,
-              seasonYear,
-            },
+  await waitForAllPromises(playersToAdd, async (player) => {
+    await prisma.ballChaser.create({
+      data: {
+        id: player.id,
+        name: player.name,
+        rank: {
+          create: {
+            mmr: player.mmr,
+            losses: player.losses,
+            wins: player.wins,
+            eventId,
           },
         },
-      })
-    );
-  }
-
-  await Promise.all(promises);
+      },
+    });
+  });
 }
 
 async function manuallyAddBallChaser(ballChaser: BallChaser) {
@@ -111,10 +119,9 @@ describe("LeaderboardRepository tests", () => {
         player: true,
       },
       where: {
-        seasonSemester_seasonYear_playerId: {
+        eventId_playerId: {
+          eventId,
           playerId: mockPlayerStats.id,
-          seasonSemester,
-          seasonYear,
         },
       },
     });
@@ -142,10 +149,9 @@ describe("LeaderboardRepository tests", () => {
         player: true,
       },
       where: {
-        seasonSemester_seasonYear_playerId: {
+        eventId_playerId: {
+          eventId,
           playerId: mockPlayerStats.id,
-          seasonSemester,
-          seasonYear,
         },
       },
     });
@@ -157,6 +163,35 @@ describe("LeaderboardRepository tests", () => {
     expect(actual?.mmr).toBe(mockPlayerStats.mmr);
     expect(actual?.wins).toBe(mockPlayerStats.wins);
     expect(actual?.losses).toBe(mockPlayerStats.losses);
+  });
+
+  it("adds player stats for the correct season", async () => {
+    await prisma.event.create({
+      data: {
+        id: 50,
+        name: "Fake season",
+        endDate: faker.date.past(),
+      },
+    });
+
+    const mockPlayerStats = LeaderboardBuilder.single();
+    await manuallyAddBallChaser(mockPlayerStats);
+
+    await LeaderboardRepository.updatePlayersStats([mockPlayerStats]);
+
+    const actual = await prisma.leaderboard.findUnique({
+      include: {
+        player: true,
+      },
+      where: {
+        eventId_playerId: {
+          eventId,
+          playerId: mockPlayerStats.id,
+        },
+      },
+    });
+
+    expect(actual).not.toBeNull();
   });
 
   it("gets top n player stats", async () => {
@@ -201,6 +236,21 @@ describe("LeaderboardRepository tests", () => {
 
 describe("Leaderboard schema tests", () => {
   it("can have the same player with different seasons", async () => {
+    await prisma.event.createMany({
+      data: [
+        {
+          id: 100,
+          name: "SUMMER 2021",
+          endDate: faker.date.past(),
+        },
+        {
+          id: 200,
+          name: "SPRING 2021",
+          endDate: faker.date.past(),
+        },
+      ],
+    });
+
     await expect(
       prisma.ballChaser.create({
         data: {
@@ -210,18 +260,15 @@ describe("Leaderboard schema tests", () => {
             createMany: {
               data: [
                 {
-                  seasonSemester: "SPRING",
-                  seasonYear: "2022",
+                  eventId,
                   mmr: faker.datatype.number(),
                 },
                 {
-                  seasonSemester: "SUMMER",
-                  seasonYear: "2022",
+                  eventId: 100,
                   mmr: faker.datatype.number(),
                 },
                 {
-                  seasonSemester: "SPRING",
-                  seasonYear: "2023",
+                  eventId: 200,
                   mmr: faker.datatype.number(),
                 },
               ],

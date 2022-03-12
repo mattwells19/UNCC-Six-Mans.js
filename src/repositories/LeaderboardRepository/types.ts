@@ -1,4 +1,5 @@
 import { BallChaser, Leaderboard } from "@prisma/client";
+
 export interface PlayerStats {
   id: string;
   mmr: number;

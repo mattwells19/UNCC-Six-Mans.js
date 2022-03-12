@@ -1,10 +1,9 @@
 import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types";
+import QueueRepository from "../repositories/QueueRepository";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { Team } from "../types/common";
 
-export async function createRandomTeams(
-  ballchasers: ReadonlyArray<PlayerInQueue>
-): Promise<Array<NewActiveMatchInput>> {
+export function createRandomTeams(ballchasers: ReadonlyArray<PlayerInQueue>): Array<NewActiveMatchInput> {
   const sortedBallChaser = ballchasers.slice().sort((o, b) => o.mmr - b.mmr);
 
   const activeMatch: NewActiveMatchInput[] = [];
@@ -42,4 +41,46 @@ export async function createRandomTeams(
   });
 
   return activeMatch;
+}
+
+export async function setCaptains(ballChasers: ReadonlyArray<PlayerInQueue>): Promise<ReadonlyArray<PlayerInQueue>> {
+  const sortedBallChaser = ballChasers.slice().sort((o, b) => o.mmr - b.mmr);
+
+  //We are going to set the Blue Captain (firt person to choose) as the second highest MMR.
+  //The thought is that this will even out the teams a little more.
+  await Promise.all([
+    await QueueRepository.updateBallChaserInQueue({
+      id: sortedBallChaser[0].id,
+      isCap: true,
+      team: Team.Orange,
+    }),
+    await QueueRepository.updateBallChaserInQueue({
+      id: sortedBallChaser[1].id,
+      isCap: true,
+      team: Team.Blue,
+    }),
+  ]);
+
+  const updatedBallChasers = await QueueRepository.getAllBallChasersInQueue();
+
+  return updatedBallChasers;
+}
+
+export async function bluePlayerChosen(chosenPlayer: string): Promise<ReadonlyArray<PlayerInQueue>> {
+  await QueueRepository.updateBallChaserInQueue({
+    id: chosenPlayer,
+    team: Team.Blue,
+  });
+
+  const ballPlayers = await QueueRepository.getAllBallChasersInQueue();
+  return ballPlayers;
+}
+
+export async function orangePlayerChosen(chosenPlayers: string[]): Promise<void> {
+  for (const p of chosenPlayers) {
+    await QueueRepository.updateBallChaserInQueue({
+      id: p,
+      team: Team.Orange,
+    });
+  }
 }
