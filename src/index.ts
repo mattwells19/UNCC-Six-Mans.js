@@ -36,4 +36,8 @@ NormClient.on("interactionCreate", async (interaction) => {
   handleDevInteraction(interaction);
 });
 
+export async function getClient(): Promise<Client<boolean>> {
+  return NormClient;
+}
+
 NormClient.login(discordToken);

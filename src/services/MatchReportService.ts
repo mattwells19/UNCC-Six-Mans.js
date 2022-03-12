@@ -162,8 +162,8 @@ export async function confirmMatch(buttonInteraction: ButtonInteraction, teams: 
           updateStats.push(stats);
         }
       }
-      LeaderboardRepository.updatePlayersStats(updateStats);
-      ActiveMatchRepository.removeAllPlayersInActiveMatch(buttonInteraction.user.id);
+      await LeaderboardRepository.updatePlayersStats(updateStats);
+      await ActiveMatchRepository.removeAllPlayersInActiveMatch(buttonInteraction.user.id);
       break;
     }
     case ButtonCustomID.ReportOrange: {
@@ -205,8 +205,8 @@ export async function confirmMatch(buttonInteraction: ButtonInteraction, teams: 
           updateStats.push(stats);
         }
       }
-      LeaderboardRepository.updatePlayersStats(updateStats);
-      ActiveMatchRepository.removeAllPlayersInActiveMatch(buttonInteraction.user.id);
+      await LeaderboardRepository.updatePlayersStats(updateStats);
+      await ActiveMatchRepository.removeAllPlayersInActiveMatch(buttonInteraction.user.id);
       break;
     }
   }

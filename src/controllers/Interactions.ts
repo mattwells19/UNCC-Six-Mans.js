@@ -2,9 +2,13 @@ import { ButtonInteraction, Message, TextChannel } from "discord.js";
 import QueueRepository from "../repositories/QueueRepository";
 import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
+import getDiscordChannelById from "../utils/getDiscordChannelById";
 import { createRandomMatch } from "../services/MatchService";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
-import { isConfirm, reportMatch } from "../services/MatchReportService";
+import { isConfirm } from "../services/MatchReportService";
+import { updateLeaderboardChannel } from "./LeaderboardChannelController";
+import getEnvVariable from "../utils/getEnvVariable";
+import { getClient } from "..";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<void> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
@@ -64,6 +68,12 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     case ButtonCustomID.ReportBlue: {
       if (await isConfirm(buttonInteraction)) {
         await message.delete();
+        const leaderboardChannelId = getEnvVariable("leaderboard_channel_id");
+        await getDiscordChannelById(await getClient(), leaderboardChannelId).then((leaderboardChannel) => {
+          if (leaderboardChannel) {
+            updateLeaderboardChannel(leaderboardChannel);
+          }
+        });
       } else {
         await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction));
       }
@@ -73,6 +83,12 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     case ButtonCustomID.ReportOrange: {
       if (await isConfirm(buttonInteraction)) {
         await message.delete();
+        const leaderboardChannelId = getEnvVariable("leaderboard_channel_id");
+        await getDiscordChannelById(await getClient(), leaderboardChannelId).then((leaderboardChannel) => {
+          if (leaderboardChannel) {
+            updateLeaderboardChannel(leaderboardChannel);
+          }
+        });
       } else {
         await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction));
       }
