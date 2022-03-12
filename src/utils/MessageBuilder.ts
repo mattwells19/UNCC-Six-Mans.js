@@ -11,7 +11,7 @@ import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types
 import { Team } from "../types/common";
 import { getEnvVariable } from "./utils";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
-import { calculateMMR, calculateProbability, reportMatch } from "../services/MatchReportService";
+import { calculateMMR, calculateProbability } from "../services/MatchReportService";
 
 export const enum ButtonCustomID {
   JoinQueue = "joinQueue",

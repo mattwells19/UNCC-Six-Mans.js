@@ -69,9 +69,8 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
           //Update the embed with an empty queue message
           await message.edit(MessageBuilder.queueMessage(emptyQueue)),
         ]);
-
-        break;
       }
+      break;
     }
 
     case ButtonCustomID.ChooseTeam: {
@@ -82,8 +81,8 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
         const players = await setCaptains(ballChasers);
 
         await message.edit(MessageBuilder.blueChooseMessage(players));
-        break;
       }
+      break;
     }
 
     case ButtonCustomID.ReportBlue: {

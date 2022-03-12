@@ -12,8 +12,8 @@ async function calculateNumbers(playerInMatchId: string, reportedTeam: Team): Pr
   let reportedWinner = 0;
   let reportedLoser = 0;
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
-  let blueTeam = teams.blueTeam;
-  let orangeTeam = teams.orangeTeam;
+  const blueTeam = teams.blueTeam;
+  const orangeTeam = teams.orangeTeam;
 
   blueTeam.forEach((ballChaser) => {
     blueTeamMMR += ballChaser.mmr;
@@ -30,15 +30,15 @@ async function calculateNumbers(playerInMatchId: string, reportedTeam: Team): Pr
     reportedLoser = blueTeamMMR;
   }
 
-  let difference = (reportedLoser - reportedWinner) / 400;
-  let power = Math.pow(10, difference) + 1;
-  let probabilityDecimal = 1 / power;
+  const difference = (reportedLoser - reportedWinner) / 400;
+  const power = Math.pow(10, difference) + 1;
+  const probabilityDecimal = 1 / power;
 
   return probabilityDecimal;
 }
 
 export async function calculateMMR(playerInMatchId: string, reportedTeam: Team): Promise<number> {
-  let probabilityDecimal = await calculateNumbers(playerInMatchId, reportedTeam);
+  const probabilityDecimal = await calculateNumbers(playerInMatchId, reportedTeam);
 
   let mmr = (1 - probabilityDecimal) * 20;
   mmr = Math.min(15, mmr);
@@ -48,8 +48,8 @@ export async function calculateMMR(playerInMatchId: string, reportedTeam: Team):
 }
 
 export async function calculateProbability(playerInMatchId: string, reportedTeam: Team): Promise<number> {
-  let probabilityDecimal = await calculateNumbers(playerInMatchId, reportedTeam);
-  let probability = probabilityDecimal * 100;
+  const probabilityDecimal = await calculateNumbers(playerInMatchId, reportedTeam);
+  const probability = probabilityDecimal * 100;
 
   return Math.round(probability);
 }
@@ -125,7 +125,7 @@ export async function confirmMatch(buttonInteraction: ButtonInteraction, teams: 
   switch (buttonInteraction.customId) {
     case ButtonCustomID.ReportBlue: {
       const mmr = await calculateMMR(buttonInteraction.user.id, Team.Blue);
-      let updateStats: Array<UpdatePlayerStatsInput> = [];
+      const updateStats: Array<UpdatePlayerStatsInput> = [];
       for (const player of teams.blueTeam) {
         const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
         if (playerStats) {
@@ -149,15 +149,15 @@ export async function confirmMatch(buttonInteraction: ButtonInteraction, teams: 
         if (playerStats) {
           const stats: UpdatePlayerStatsInput = {
             id: player.id,
-            mmr: playerStats.mmr - mmr,
             losses: playerStats.losses + 1,
+            mmr: playerStats.mmr - mmr,
           };
           updateStats.push(stats);
         } else {
           const stats: UpdatePlayerStatsInput = {
             id: player.id,
-            mmr: 100 - mmr,
             losses: 1,
+            mmr: 100 - mmr,
           };
           updateStats.push(stats);
         }
@@ -168,7 +168,7 @@ export async function confirmMatch(buttonInteraction: ButtonInteraction, teams: 
     }
     case ButtonCustomID.ReportOrange: {
       const mmr = await calculateMMR(buttonInteraction.user.id, Team.Orange);
-      let updateStats: Array<UpdatePlayerStatsInput> = [];
+      const updateStats: Array<UpdatePlayerStatsInput> = [];
       for (const player of teams.orangeTeam) {
         const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
         if (playerStats) {
@@ -192,15 +192,15 @@ export async function confirmMatch(buttonInteraction: ButtonInteraction, teams: 
         if (playerStats) {
           const stats: UpdatePlayerStatsInput = {
             id: player.id,
-            mmr: playerStats.mmr - mmr,
             losses: playerStats.losses + 1,
+            mmr: playerStats.mmr - mmr,
           };
           updateStats.push(stats);
         } else {
           const stats: UpdatePlayerStatsInput = {
             id: player.id,
-            mmr: 100 - mmr,
             losses: 1,
+            mmr: 100 - mmr,
           };
           updateStats.push(stats);
         }
