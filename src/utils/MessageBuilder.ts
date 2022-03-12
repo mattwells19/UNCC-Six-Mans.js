@@ -10,7 +10,6 @@ export const enum ButtonCustomID {
   LeaveQueue = "leaveQueue",
   CreateRandomTeam = "randomizeTeams",
   FillTeam = "fillTeam",
-  ReportMatch = "reportMatch",
   RemoveAll = "removeAll",
   BreakMatch = "breakMatch",
   ReportBlue = "reportBlue",
@@ -83,22 +82,6 @@ export default class MessageBuilder {
     });
     return {
       components: [new MessageActionRow({ components: [joinButton, leaveButton] })],
-    };
-  }
-
-  static reportMatchButtons(): MessageOptions {
-    const reportBlue = new MessageButton({
-      customId: ButtonCustomID.ReportBlue,
-      label: "🔷 Blue Team Won 🔷",
-      style: "SECONDARY",
-    });
-    const reportOrange = new MessageButton({
-      customId: ButtonCustomID.ReportOrange,
-      label: "🔶 Orange Team Won 🔶",
-      style: "SECONDARY",
-    });
-    return {
-      components: [new MessageActionRow({ components: [reportBlue, reportOrange] })],
     };
   }
 
@@ -226,10 +209,15 @@ export default class MessageBuilder {
       color: "DARK_RED",
       thumbnail: { url: this.normIconURL },
     });
-    const reportMatch = new MessageButton({
-      customId: ButtonCustomID.ReportMatch,
-      label: "Report Match",
-      style: "SUCCESS",
+    const reportBlue = new MessageButton({
+      customId: ButtonCustomID.ReportBlue,
+      label: "🔷 Blue Team Won 🔷",
+      style: "SECONDARY",
+    });
+    const reportOrange = new MessageButton({
+      customId: ButtonCustomID.ReportOrange,
+      label: "🔶 Orange Team Won 🔶",
+      style: "SECONDARY",
     });
     const breakMatch = new MessageButton({
       customId: ButtonCustomID.BreakMatch,
@@ -282,8 +270,8 @@ export default class MessageBuilder {
 
     return {
       components: this.isDev
-        ? [new MessageActionRow({ components: [reportMatch, breakMatch] })]
-        : [new MessageActionRow({ components: [reportMatch] })],
+        ? [new MessageActionRow({ components: [reportBlue, reportOrange, breakMatch] })]
+        : [new MessageActionRow({ components: [reportBlue, reportOrange] })],
       embeds: [embed],
     };
   }

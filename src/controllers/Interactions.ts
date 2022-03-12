@@ -61,11 +61,6 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
       break;
     }
 
-    case ButtonCustomID.ReportMatch: {
-      await message.edit(MessageBuilder.reportMatchButtons());
-      break;
-    }
-
     case ButtonCustomID.ReportBlue: {
       if (await isConfirm(buttonInteraction)) {
         await message.delete();
