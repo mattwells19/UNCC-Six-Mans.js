@@ -6,44 +6,7 @@ import { UpdatePlayerStatsInput } from "../repositories/LeaderboardRepository/ty
 import { Team } from "../types/common";
 import { ButtonCustomID } from "../utils/MessageBuilder";
 
-export async function calculateMMR(playerInMatchId: string, reportedTeam: Team): Promise<number> {
-  let blueTeamMMR = 0;
-  let orangeTeamMMR = 0;
-  let reportedWinner = 0;
-  let reportedLoser = 0;
-  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
-  let blueTeam = teams.blueTeam;
-  let orangeTeam = teams.orangeTeam;
-
-  blueTeam.forEach((ballChaser) => {
-    blueTeamMMR += ballChaser.mmr;
-  });
-  orangeTeam.forEach((ballChaser) => {
-    orangeTeamMMR += ballChaser.mmr;
-  });
-
-  if (reportedTeam === Team.Blue) {
-    reportedWinner = blueTeamMMR;
-    reportedLoser = orangeTeamMMR;
-  } else {
-    reportedWinner = orangeTeamMMR;
-    reportedLoser = blueTeamMMR;
-  }
-
-  let difference = (reportedLoser - reportedWinner) / 400;
-
-  let power = Math.pow(10, difference) + 1;
-
-  let probability = 1 / power;
-
-  let mmr = (1 - probability) * 20;
-  mmr = Math.min(15, mmr);
-  mmr = Math.max(5, mmr);
-
-  return Math.round(mmr);
-}
-
-export async function calculateProbability(playerInMatchId: string, reportedTeam: Team): Promise<number> {
+async function calculateNumbers(playerInMatchId: string, reportedTeam: Team): Promise<number> {
   let blueTeamMMR = 0;
   let orangeTeamMMR = 0;
   let reportedWinner = 0;
@@ -70,6 +33,22 @@ export async function calculateProbability(playerInMatchId: string, reportedTeam
   let difference = (reportedLoser - reportedWinner) / 400;
   let power = Math.pow(10, difference) + 1;
   let probabilityDecimal = 1 / power;
+
+  return probabilityDecimal;
+}
+
+export async function calculateMMR(playerInMatchId: string, reportedTeam: Team): Promise<number> {
+  let probabilityDecimal = await calculateNumbers(playerInMatchId, reportedTeam);
+
+  let mmr = (1 - probabilityDecimal) * 20;
+  mmr = Math.min(15, mmr);
+  mmr = Math.max(5, mmr);
+
+  return Math.round(mmr);
+}
+
+export async function calculateProbability(playerInMatchId: string, reportedTeam: Team): Promise<number> {
+  let probabilityDecimal = await calculateNumbers(playerInMatchId, reportedTeam);
   let probability = probabilityDecimal * 100;
 
   return Math.round(probability);
