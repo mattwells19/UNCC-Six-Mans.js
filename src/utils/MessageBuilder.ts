@@ -120,18 +120,24 @@ export default class MessageBuilder {
     switch (buttonInteraction.customId) {
       case ButtonCustomID.ReportBlue: {
         reportBlue.style = primaryStyle;
-        reportedTeam = "**Blue Team**.";
+        reportedTeam = "**Blue Team**";
         break;
       }
       case ButtonCustomID.ReportOrange: {
         reportOrange.style = primaryStyle;
-        reportedTeam = "**Orange Team**.";
+        reportedTeam = "**Orange Team**";
         break;
       }
     }
     const newField: EmbedField = {
       name: "Reporting",
-      value: "<@" + buttonInteraction.user + "> reported " + reportedTeam,
+      value:
+        "<@" +
+        buttonInteraction.user +
+        "> reported " +
+        reportedTeam +
+        " as the winner.\n" +
+        "If this is incorrect, click the button to report the opposite team.",
       inline: false,
     };
     const embed = new MessageEmbed(activeMatchEmbed);
