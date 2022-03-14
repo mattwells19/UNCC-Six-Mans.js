@@ -10,6 +10,7 @@ import { getClient } from "..";
 import { getEnvVariable } from "../utils";
 import QueueRepository from "../repositories/QueueRepository";
 import { setCaptains } from "../services/TeamAssignmentService";
+import { Team } from "../types/common";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<Message> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
@@ -86,7 +87,7 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     }
 
     case ButtonCustomID.ReportBlue: {
-      if (await isConfirm(buttonInteraction)) {
+      if (await isConfirm(Team.Blue, buttonInteraction.user.id)) {
         await message.delete();
         const leaderboardChannelId = getEnvVariable("leaderboard_channel_id");
         await getDiscordChannelById(await getClient(), leaderboardChannelId).then((leaderboardChannel) => {
@@ -101,7 +102,7 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     }
 
     case ButtonCustomID.ReportOrange: {
-      if (await isConfirm(buttonInteraction)) {
+      if (await isConfirm(Team.Orange, buttonInteraction.user.id)) {
         await message.delete();
         const leaderboardChannelId = getEnvVariable("leaderboard_channel_id");
         await getDiscordChannelById(await getClient(), leaderboardChannelId).then((leaderboardChannel) => {

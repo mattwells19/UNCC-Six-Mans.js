@@ -1,10 +1,8 @@
-import { ButtonInteraction } from "discord.js";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import { ActiveMatchTeams, PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
 import LeaderboardRepository from "../repositories/LeaderboardRepository";
 import { UpdatePlayerStatsInput } from "../repositories/LeaderboardRepository/types";
 import { Team } from "../types/common";
-import { ButtonCustomID } from "../utils/MessageBuilder";
 
 async function calculateNumbers(playerInMatchId: string, reportedTeam: Team): Promise<number> {
   let blueTeamMMR = 0;
@@ -54,10 +52,10 @@ export async function calculateProbability(playerInMatchId: string, reportedTeam
   return Math.round(probability);
 }
 
-export async function isConfirm(buttonInteraction: ButtonInteraction): Promise<boolean> {
+export async function isConfirm(team: Team, playerInMatchId: string): Promise<boolean> {
   let reportedTeam;
-  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(buttonInteraction.user.id);
-  const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(buttonInteraction.user.id);
+  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
+  const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(playerInMatchId);
 
   const reportedPlayer = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
     if (p.reportedTeam !== null) {
@@ -65,54 +63,49 @@ export async function isConfirm(buttonInteraction: ButtonInteraction): Promise<b
     }
   });
 
-  switch (buttonInteraction.customId) {
-    case ButtonCustomID.ReportBlue: {
+  switch (team) {
+    case Team.Blue: {
       reportedTeam = Team.Blue;
       break;
     }
-    case ButtonCustomID.ReportOrange: {
+    case Team.Orange: {
       reportedTeam = Team.Orange;
       break;
     }
   }
 
   if (!reporter) return false;
-  if (reportedPlayer?.id !== reporter.id) {
-    if (reportedPlayer?.team === reporter.team) return false;
-  }
-  if (reportedPlayer?.reportedTeam !== reportedTeam) {
-    reportMatch(buttonInteraction, reporter, teams);
+  if (reportedPlayer?.team === reporter.team && reportedPlayer.reportedTeam === reportedTeam) {
+    return false;
+  } else if (reportedPlayer?.reportedTeam !== reportedTeam || reportedPlayer?.id === reporter.id) {
+    reportMatch(team, reporter, teams);
     return false;
   } else {
-    confirmMatch(buttonInteraction, teams);
+    confirmMatch(team, teams, playerInMatchId);
     return true;
   }
 }
 
-export async function reportMatch(
-  buttonInteraction: ButtonInteraction,
-  reporter: PlayerInActiveMatch,
-  teams: ActiveMatchTeams
-) {
+export async function reportMatch(team: Team, reporter: PlayerInActiveMatch, teams: ActiveMatchTeams) {
   for (const player of teams.blueTeam) {
     await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
-      reportedTeam: undefined,
+      reportedTeam: null,
     });
   }
   for (const player of teams.orangeTeam) {
     await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
-      reportedTeam: undefined,
+      reportedTeam: null,
     });
   }
 
-  switch (buttonInteraction.customId) {
-    case ButtonCustomID.ReportBlue: {
+  switch (team) {
+    case Team.Blue: {
       await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
         reportedTeam: Team.Blue,
       });
       break;
     }
-    case ButtonCustomID.ReportOrange: {
+    case Team.Orange: {
       await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
         reportedTeam: Team.Orange,
       });
@@ -121,10 +114,10 @@ export async function reportMatch(
   }
 }
 
-export async function confirmMatch(buttonInteraction: ButtonInteraction, teams: ActiveMatchTeams) {
-  switch (buttonInteraction.customId) {
-    case ButtonCustomID.ReportBlue: {
-      const mmr = await calculateMMR(buttonInteraction.user.id, Team.Blue);
+export async function confirmMatch(team: Team, teams: ActiveMatchTeams, playerInMatchId: string) {
+  switch (team) {
+    case Team.Blue: {
+      const mmr = await calculateMMR(playerInMatchId, Team.Blue);
       const updateStats: Array<UpdatePlayerStatsInput> = [];
       for (const player of teams.blueTeam) {
         const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
@@ -163,11 +156,11 @@ export async function confirmMatch(buttonInteraction: ButtonInteraction, teams: 
         }
       }
       await LeaderboardRepository.updatePlayersStats(updateStats);
-      await ActiveMatchRepository.removeAllPlayersInActiveMatch(buttonInteraction.user.id);
+      await ActiveMatchRepository.removeAllPlayersInActiveMatch(playerInMatchId);
       break;
     }
-    case ButtonCustomID.ReportOrange: {
-      const mmr = await calculateMMR(buttonInteraction.user.id, Team.Orange);
+    case Team.Orange: {
+      const mmr = await calculateMMR(playerInMatchId, Team.Orange);
       const updateStats: Array<UpdatePlayerStatsInput> = [];
       for (const player of teams.orangeTeam) {
         const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
@@ -206,7 +199,7 @@ export async function confirmMatch(buttonInteraction: ButtonInteraction, teams: 
         }
       }
       await LeaderboardRepository.updatePlayersStats(updateStats);
-      await ActiveMatchRepository.removeAllPlayersInActiveMatch(buttonInteraction.user.id);
+      await ActiveMatchRepository.removeAllPlayersInActiveMatch(playerInMatchId);
       break;
     }
   }

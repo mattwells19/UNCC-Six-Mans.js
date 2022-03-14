@@ -14,7 +14,7 @@ export interface ActiveMatchTeams {
 }
 
 export interface UpdatePlayerInActiveMatchInput {
-  reportedTeam?: Team;
+  reportedTeam?: Team | null;
   brokenQueue?: boolean;
 }
 

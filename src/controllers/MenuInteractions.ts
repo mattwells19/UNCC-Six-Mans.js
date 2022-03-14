@@ -33,7 +33,7 @@ export async function handleMenuInteraction(menuInteraction: SelectMenuInteracti
 
         const match = await createMatchFromChosenTeams();
 
-        await message.edit(MessageBuilder.activeMatchMessage(match));
+        await message.edit(await MessageBuilder.activeMatchMessage(match));
         break;
       }
 
