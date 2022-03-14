@@ -11,6 +11,7 @@ import { getEnvVariable } from "../utils";
 import QueueRepository from "../repositories/QueueRepository";
 import { setCaptains } from "../services/TeamAssignmentService";
 import { Team } from "../types/common";
+import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<Message> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
@@ -95,8 +96,9 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
             updateLeaderboardChannel(leaderboardChannel);
           }
         });
-      } else {
-        await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction));
+      } else if (await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id)) {
+        const previousEmbed = message.embeds[0];
+        await message.edit(await MessageBuilder.reportedTeamButtons(buttonInteraction, previousEmbed));
       }
       break;
     }
@@ -110,8 +112,9 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
             updateLeaderboardChannel(leaderboardChannel);
           }
         });
-      } else {
-        await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction));
+      } else if (await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id)) {
+        const previousEmbed = message.embeds[0];
+        await message.edit(await MessageBuilder.reportedTeamButtons(buttonInteraction, previousEmbed));
       }
       break;
     }

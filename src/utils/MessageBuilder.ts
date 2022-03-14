@@ -1,5 +1,6 @@
 import {
   ButtonInteraction,
+  EmbedField,
   MessageActionRow,
   MessageButton,
   MessageEmbed,
@@ -99,7 +100,10 @@ export default class MessageBuilder {
     };
   }
 
-  static reportedTeamButtons(buttonInteraction: ButtonInteraction): MessageOptions {
+  static async reportedTeamButtons(
+    buttonInteraction: ButtonInteraction,
+    activeMatchEmbed: MessageEmbed
+  ): Promise<MessageOptions> {
     const primaryStyle = "PRIMARY";
     const reportBlue = new MessageButton({
       customId: ButtonCustomID.ReportBlue,
@@ -112,18 +116,30 @@ export default class MessageBuilder {
       style: "SECONDARY",
     });
 
+    let reportedTeam: string = "";
     switch (buttonInteraction.customId) {
       case ButtonCustomID.ReportBlue: {
         reportBlue.style = primaryStyle;
+        reportedTeam = "**Blue Team**.";
         break;
       }
       case ButtonCustomID.ReportOrange: {
         reportOrange.style = primaryStyle;
+        reportedTeam = "**Orange Team**.";
         break;
       }
     }
+    const newField: EmbedField = {
+      name: "Reporting",
+      value: "<@" + buttonInteraction.user + "> reported " + reportedTeam,
+      inline: false,
+    };
+    const embed = new MessageEmbed(activeMatchEmbed);
+    embed.fields[3] = newField;
+
     return {
       components: [new MessageActionRow({ components: [reportBlue, reportOrange] })],
+      embeds: [embed],
     };
   }
 
@@ -285,7 +301,8 @@ export default class MessageBuilder {
           " is predicted to have a **" +
           probability +
           "%** chance of winning."
-      );
+      )
+      .addField("Reporting", "Use the buttons to report which team won the match.");
 
     return {
       components: this.isDev
