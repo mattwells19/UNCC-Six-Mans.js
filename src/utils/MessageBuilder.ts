@@ -116,7 +116,7 @@ export default class MessageBuilder {
       style: "SECONDARY",
     });
 
-    let reportedTeam: string = "";
+    let reportedTeam;
     switch (buttonInteraction.customId) {
       case ButtonCustomID.ReportBlue: {
         reportBlue.style = primaryStyle;
@@ -130,6 +130,7 @@ export default class MessageBuilder {
       }
     }
     const newField: EmbedField = {
+      inline: false,
       name: "Reporting",
       value:
         "<@" +
@@ -138,7 +139,6 @@ export default class MessageBuilder {
         reportedTeam +
         " as the winner.\n" +
         "If this is incorrect, click the button to report the opposite team.",
-      inline: false,
     };
     const embed = new MessageEmbed(activeMatchEmbed);
     embed.fields[3] = newField;
@@ -274,10 +274,13 @@ export default class MessageBuilder {
     let winner;
     if (mmrBlue < mmrOrange) {
       probability = await calculateProbability(ballchasers[0].id, Team.Blue);
-      winner = "Blue Team";
-    } else {
+      winner = "Blue Team is";
+    } else if (mmrOrange < mmrBlue) {
       probability = await calculateProbability(ballchasers[0].id, Team.Orange);
-      winner = "Orange Team";
+      winner = "Orange Team is";
+    } else {
+      probability = "50";
+      winner = "Both teams are";
     }
 
     ballchasers.forEach((ballChaser) => {
@@ -294,17 +297,17 @@ export default class MessageBuilder {
       .addField("🔶 Orange Team 🔶", orangeTeam.join("\n"))
       .addField(
         "MMR Stake & Probability Rating:\n",
-        "🔷 Blue Team: \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0**+" +
+        "🔷 Blue Team: \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0**(+" +
           mmrBlue.toString() +
-          "** MMR\u00A0\u00A0**-" +
+          ")**\u00A0\u00A0**(-" +
           mmrOrange.toString() +
-          "** MMR 🔷\n🔶 Orange Team:\u00A0\u00A0**+" +
+          ")** 🔷\n🔶 Orange Team:\u00A0\u00A0**(+" +
           mmrOrange.toString() +
-          "** MMR\u00A0\u00A0**-" +
+          ")**\u00A0\u00A0**(-" +
           mmrBlue.toString() +
-          "** MMR 🔶\n" +
+          ")** 🔶\n" +
           winner +
-          " is predicted to have a **" +
+          " predicted to have a **" +
           probability +
           "%** chance of winning."
       )
