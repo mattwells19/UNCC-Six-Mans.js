@@ -123,7 +123,14 @@ describe("ActiveMatchRepository Tests", () => {
       const oneOfThePlayers = faker.random.arrayElement(mockPlayers);
       const allPlayersInActiveMatch = await ActiveMatchRepository.getAllPlayersInActiveMatch(oneOfThePlayers.id);
 
-      allPlayersInActiveMatch.forEach((player) => {
+      allPlayersInActiveMatch.blueTeam.forEach((player) => {
+        const expectedPlayer = mockPlayers.find((p) => p.id === player.id);
+        expect(expectedPlayer).not.toBeNull();
+        expect(player.matchId).toBe(mockMatchId);
+        expect(player.reportedTeam).toBe(expectedPlayer?.reportedTeam);
+        expect(player.team).toBe(expectedPlayer?.team);
+      });
+      allPlayersInActiveMatch.orangeTeam.forEach((player) => {
         const expectedPlayer = mockPlayers.find((p) => p.id === player.id);
         expect(expectedPlayer).not.toBeNull();
         expect(player.matchId).toBe(mockMatchId);
@@ -134,7 +141,7 @@ describe("ActiveMatchRepository Tests", () => {
 
     it("returns an empty array when trying to retreive a player not in an active match", async () => {
       const allPlayers = await ActiveMatchRepository.getAllPlayersInActiveMatch(BallChaserQueueBuilder.single().id);
-      expect(allPlayers).toHaveLength(0);
+      expect(allPlayers).toEqual({ blueTeam: [], orangeTeam: [] });
     });
 
     it("updates player in active match correctly", async () => {
