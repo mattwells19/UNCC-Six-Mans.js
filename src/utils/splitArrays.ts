@@ -1,3 +1,5 @@
+// 🐧 - Can we move this to `utils.ts`
+
 /**
  * Helper function that splits an array of items into two different arrays based on some condition.
  * @param arr The array of values to split

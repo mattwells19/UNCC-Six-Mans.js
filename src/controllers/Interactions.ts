@@ -88,6 +88,10 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     }
 
     case ButtonCustomID.ReportBlue: {
+      // 🐧 It looks like isConfirm is doing everything. When we talked last time I recommended using isConfirm
+      // as a way to just check whether the player reporting put us in the report or confirm state and then calling
+      // reportMatch or confirmMatch from here in the controller. This way isn't wrong. I would just give the function
+      // a different name since I can't tell that it's calling reportMatch/confirMatch just from the name.
       if (await isConfirm(Team.Blue, buttonInteraction.user.id)) {
         await message.delete();
         const leaderboardChannelId = getEnvVariable("leaderboard_channel_id");
@@ -104,7 +108,13 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     }
 
     case ButtonCustomID.ReportOrange: {
+      // 🐧 I think it'd be a bit cleaner to assign await calls to variables then put the variable in the if. So:
+      // const matchConfirmed = await isConfirm(...);
+      // if (matchConfirmed) {...}
+      // Just makes it a bit easier to read.
       if (await isConfirm(Team.Orange, buttonInteraction.user.id)) {
+        // 🐧 From here down it looks like this is the exact same code as ReportBlue. Can this be a single function for
+        // both cases instead of duplicating it?
         await message.delete();
         const leaderboardChannelId = getEnvVariable("leaderboard_channel_id");
         await getDiscordChannelById(await getClient(), leaderboardChannelId).then((leaderboardChannel) => {

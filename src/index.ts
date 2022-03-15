@@ -69,6 +69,9 @@ NormClient.on("interactionCreate", async (interaction) => {
   }
 });
 
+// 🐧 First thing, this function isn't async and doesn't return a promise.
+// Second, instead of calling this function from somewhere else, just pass NormClient to the handleInteraction function
+// above.
 export async function getClient(): Promise<Client<boolean>> {
   return NormClient;
 }

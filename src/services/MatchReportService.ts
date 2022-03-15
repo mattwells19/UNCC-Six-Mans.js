@@ -4,6 +4,7 @@ import LeaderboardRepository from "../repositories/LeaderboardRepository";
 import { UpdatePlayerStatsInput } from "../repositories/LeaderboardRepository/types";
 import { Team } from "../types/common";
 
+// 🐧 Can we rename this function to something more appropriate? calculateNumbers is pretty vague
 async function calculateNumbers(playerInMatchId: string, reportedTeam: Team): Promise<number> {
   let blueTeamMMR = 0;
   let orangeTeamMMR = 0;
@@ -13,6 +14,7 @@ async function calculateNumbers(playerInMatchId: string, reportedTeam: Team): Pr
   const blueTeam = teams.blueTeam;
   const orangeTeam = teams.orangeTeam;
 
+  // 🐧 You can use `.reduce` instead for both of these and not need to use lets
   blueTeam.forEach((ballChaser) => {
     blueTeamMMR += ballChaser.mmr;
   });
@@ -55,14 +57,18 @@ export async function calculateProbability(playerInMatchId: string, reportedTeam
 export async function isConfirm(team: Team, playerInMatchId: string): Promise<boolean> {
   let reportedTeam;
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
+  // 🐧 Can we just look up the player from `teams`? We expect the reporter to be in there, right? That way we avoid
+  // a network call.
   const reporter = await ActiveMatchRepository.getPlayerInActiveMatch(playerInMatchId);
 
   const reportedPlayer = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
+    // 🐧 You should return a boolean. You can just return `p.reportedTeam !== null` in this case
     if (p.reportedTeam !== null) {
       return p;
     }
   });
 
+  // 🐧 Why not just use `team` instead of using reportedTeam at all?
   switch (team) {
     case Team.Blue: {
       reportedTeam = Team.Blue;
@@ -78,15 +84,18 @@ export async function isConfirm(team: Team, playerInMatchId: string): Promise<bo
   if (reportedPlayer?.team === reporter.team && reportedPlayer.reportedTeam === reportedTeam) {
     return false;
   } else if (reportedPlayer?.reportedTeam !== reportedTeam || reportedPlayer?.id === reporter.id) {
+    // 🐧 Should this be awaited?
     reportMatch(team, reporter, teams);
     return false;
   } else {
+    // 🐧 Should this be awaited?
     confirmMatch(team, teams, playerInMatchId);
     return true;
   }
 }
 
 export async function reportMatch(team: Team, reporter: PlayerInActiveMatch, teams: ActiveMatchTeams) {
+  // 🐧 Can we leverage the `waitForAllPromises` util for this?
   for (const player of teams.blueTeam) {
     await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
       reportedTeam: null,
@@ -98,6 +107,7 @@ export async function reportMatch(team: Team, reporter: PlayerInActiveMatch, tea
     });
   }
 
+  // 🐧 Do we need a switch here? Can we just set `reportedTeam: team`?
   switch (team) {
     case Team.Blue: {
       await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
@@ -119,6 +129,7 @@ export async function confirmMatch(team: Team, teams: ActiveMatchTeams, playerIn
     case Team.Blue: {
       const mmr = await calculateMMR(playerInMatchId, Team.Blue);
       const updateStats: Array<UpdatePlayerStatsInput> = [];
+      // 🐧 Can we leverage the `waitForAllPromises` util for this?
       for (const player of teams.blueTeam) {
         const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
         if (playerStats) {
@@ -137,6 +148,7 @@ export async function confirmMatch(team: Team, teams: ActiveMatchTeams, playerIn
           updateStats.push(stats);
         }
       }
+      // 🐧 Can we leverage the `waitForAllPromises` util for this?
       for (const player of teams.orangeTeam) {
         const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
         if (playerStats) {
@@ -155,11 +167,13 @@ export async function confirmMatch(team: Team, teams: ActiveMatchTeams, playerIn
           updateStats.push(stats);
         }
       }
+      // 🐧 Can this parallelizes with Promise.all?
       await LeaderboardRepository.updatePlayersStats(updateStats);
       await ActiveMatchRepository.removeAllPlayersInActiveMatch(playerInMatchId);
       break;
     }
     case Team.Orange: {
+      // 🐧 Comments from above apply to this case block as well
       const mmr = await calculateMMR(playerInMatchId, Team.Orange);
       const updateStats: Array<UpdatePlayerStatsInput> = [];
       for (const player of teams.orangeTeam) {

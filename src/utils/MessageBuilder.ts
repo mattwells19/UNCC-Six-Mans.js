@@ -100,6 +100,7 @@ export default class MessageBuilder {
     };
   }
 
+  // 🐧 Does this need to be async?
   static async reportedTeamButtons(
     buttonInteraction: ButtonInteraction,
     activeMatchEmbed: MessageEmbed
