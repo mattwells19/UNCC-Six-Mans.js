@@ -54,7 +54,7 @@ export async function calculateProbability(playerInMatchId: string, reportedTeam
   return Math.round(probability);
 }
 
-export async function isConfirm(team: Team, playerInMatchId: string): Promise<boolean> {
+export async function checkReport(team: Team, playerInMatchId: string): Promise<boolean> {
   let reportedTeam;
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
   // 🐧 Can we just look up the player from `teams`? We expect the reporter to be in there, right? That way we avoid
