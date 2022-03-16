@@ -1,5 +1,6 @@
 import QueueRepository from "../../repositories/QueueRepository";
-import { kickPlayerFromQueue } from "../AdminService";
+import EventRepository from "../../repositories/EventRepository";
+import { kickPlayerFromQueue, updateMmrMultiplier } from "../AdminService";
 import * as faker from "faker";
 import { InvalidCommand } from "../../utils/InvalidCommand";
 import { leaveQueue } from "../QueueService";
@@ -7,6 +8,7 @@ import { BallChaserQueueBuilder } from "../../../.jest/Builder";
 
 jest.mock("../QueueService");
 jest.mock("../../repositories/QueueRepository");
+jest.mock("../../repositories/EventRepository");
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -40,6 +42,28 @@ describe("AdminService tests", () => {
       await kickPlayerFromQueue(mockBallChaser.id);
 
       expect(leaveQueueMock).toHaveBeenCalledWith(mockBallChaser.id);
+    });
+  });
+
+  describe("Update MMR tests", () => {
+    it("throws if MMR is less than 0", async () => {
+      const mockUpdateEvent = jest.mocked(EventRepository.updateCurrentEvent);
+      const newMmr = faker.datatype.number({ max: -0.1 });
+
+      await expect(updateMmrMultiplier(newMmr)).rejects.toThrowError(InvalidCommand);
+
+      expect(mockUpdateEvent).not.toHaveBeenCalled();
+    });
+
+    it("calls update current event", async () => {
+      const mockUpdateEvent = jest.mocked(EventRepository.updateCurrentEvent);
+      const newMmr = faker.datatype.number({ min: 0, max: 10, precision: 2 });
+
+      await updateMmrMultiplier(newMmr);
+
+      expect(mockUpdateEvent).toBeCalledWith({
+        mmrMult: newMmr,
+      });
     });
   });
 });

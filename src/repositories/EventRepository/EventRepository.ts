@@ -10,6 +10,15 @@ class EventRepository {
     this.#CurrentEventCache = null;
   }
 
+  /**
+   * @deprecated
+   * FOR TESTING PURPOSES ONLY
+   * DO NOT USE
+   */
+  resetCache(): void {
+    this.#CurrentEventCache = null;
+  }
+
   async getCurrentEvent(): Promise<Event> {
     if (this.#CurrentEventCache) {
       return this.#CurrentEventCache;
