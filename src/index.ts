@@ -71,4 +71,11 @@ NormClient.on("messageCreate", (msg) => {
   queueMessages.push(msg);
 });
 
+NormClient.on("messageDelete", (msg) => {
+  const msgIndex = queueMessages.findIndex((qMsg) => qMsg.id === msg.id);
+  if (msgIndex > -1) {
+    queueMessages.splice(msgIndex);
+  }
+});
+
 NormClient.login(discordToken);
