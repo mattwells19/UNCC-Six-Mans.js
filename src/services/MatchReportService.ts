@@ -70,118 +70,50 @@ export async function checkReport(team: Team, playerInMatchId: string): Promise<
 }
 
 export async function reportMatch(team: Team, reporter: PlayerInActiveMatch, teams: ActiveMatchTeams) {
-  await waitForAllPromises(teams.blueTeam, async (player) => {
+  await waitForAllPromises([...teams.blueTeam, ...teams.orangeTeam], async (player) => {
     await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
-      reportedTeam: null,
+      reportedTeam: player.id === reporter.id ? team : null,
     });
-  });
-
-  await waitForAllPromises(teams.orangeTeam, async (player) => {
-    await ActiveMatchRepository.updatePlayerInActiveMatch(player.id, {
-      reportedTeam: null,
-    });
-  });
-
-  await ActiveMatchRepository.updatePlayerInActiveMatch(reporter.id, {
-    reportedTeam: team,
   });
 }
 
-export async function confirmMatch(team: Team, teams: ActiveMatchTeams, playerInMatchId: string) {
-  switch (team) {
-    case Team.Blue: {
-      const mmr = await calculateMMR(playerInMatchId, Team.Blue);
-      const updateStats: Array<UpdatePlayerStatsInput> = [];
-      await waitForAllPromises(teams.blueTeam, async (player) => {
-        const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
-        if (playerStats) {
-          const stats: UpdatePlayerStatsInput = {
+export async function confirmMatch(winner: Team, teams: ActiveMatchTeams, playerInMatchId: string) {
+  const mmr = await calculateMMR(playerInMatchId, winner);
+  const updateStats: Array<UpdatePlayerStatsInput> = [];
+  await waitForAllPromises([...teams.blueTeam, ...teams.orangeTeam], async (player) => {
+    const isPlayerOnWinningTeam = player.team === winner;
+    const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
+    if (playerStats) {
+      const stats: UpdatePlayerStatsInput = isPlayerOnWinningTeam
+        ? {
             id: player.id,
             mmr: playerStats.mmr + mmr,
             wins: playerStats.wins + 1,
+          }
+        : {
+            id: player.id,
+            mmr: playerStats.mmr - mmr,
+            losses: playerStats.losses + 1,
           };
-          updateStats.push(stats);
-        } else {
-          const stats: UpdatePlayerStatsInput = {
+      updateStats.push(stats);
+    } else {
+      const stats: UpdatePlayerStatsInput = isPlayerOnWinningTeam
+        ? {
             id: player.id,
             mmr: 100 + mmr,
             wins: 1,
-          };
-          updateStats.push(stats);
-        }
-      });
-      await waitForAllPromises(teams.orangeTeam, async (player) => {
-        const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
-        if (playerStats) {
-          const stats: UpdatePlayerStatsInput = {
+          }
+        : {
             id: player.id,
-            losses: playerStats.losses + 1,
-            mmr: playerStats.mmr - mmr,
-          };
-          updateStats.push(stats);
-        } else {
-          const stats: UpdatePlayerStatsInput = {
-            id: player.id,
-            losses: 1,
             mmr: 100 - mmr,
-          };
-          updateStats.push(stats);
-        }
-      });
-
-      Promise.all([
-        await LeaderboardRepository.updatePlayersStats(updateStats),
-        await ActiveMatchRepository.removeAllPlayersInActiveMatch(playerInMatchId),
-      ]);
-
-      break;
-    }
-    case Team.Orange: {
-      const mmr = await calculateMMR(playerInMatchId, Team.Orange);
-      const updateStats: Array<UpdatePlayerStatsInput> = [];
-      await waitForAllPromises(teams.orangeTeam, async (player) => {
-        const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
-        if (playerStats) {
-          const stats: UpdatePlayerStatsInput = {
-            id: player.id,
-            mmr: playerStats.mmr + mmr,
-            wins: playerStats.wins + 1,
-          };
-          updateStats.push(stats);
-        } else {
-          const stats: UpdatePlayerStatsInput = {
-            id: player.id,
-            mmr: 100 + mmr,
-            wins: 1,
-          };
-          updateStats.push(stats);
-        }
-      });
-      await waitForAllPromises(teams.blueTeam, async (player) => {
-        const playerStats = await LeaderboardRepository.getPlayerStats(player.id);
-        if (playerStats) {
-          const stats: UpdatePlayerStatsInput = {
-            id: player.id,
-            losses: playerStats.losses + 1,
-            mmr: playerStats.mmr - mmr,
-          };
-          updateStats.push(stats);
-        } else {
-          const stats: UpdatePlayerStatsInput = {
-            id: player.id,
             losses: 1,
-            mmr: 100 - mmr,
           };
-          updateStats.push(stats);
-        }
-      });
-
-      Promise.all([
-        await LeaderboardRepository.updatePlayersStats(updateStats),
-        await ActiveMatchRepository.removeAllPlayersInActiveMatch(playerInMatchId),
-      ]);
-
-      break;
+      updateStats.push(stats);
     }
-  }
+  });
+
+  await Promise.all([
+    await LeaderboardRepository.updatePlayersStats(updateStats),
+    await ActiveMatchRepository.removeAllPlayersInActiveMatch(playerInMatchId),
+  ]);
 }
