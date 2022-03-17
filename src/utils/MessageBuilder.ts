@@ -134,8 +134,8 @@ export default class MessageBuilder {
         buttonInteraction.user +
         "> reported " +
         reportedTeam +
-        " as the winner.\n" +
-        "If this is incorrect, click the button to report the opposite team.",
+        " as the winner.\nAwaiting confirmation from the other team...\n" +
+        "If this is incorrect, click the button of the correct team.",
     };
     const embed = new MessageEmbed(activeMatchEmbed);
     const updatedFields = embed.fields.map((field) => {
