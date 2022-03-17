@@ -92,8 +92,8 @@ export async function confirmMatch(winner: Team, teams: ActiveMatchTeams, player
           }
         : {
             id: player.id,
-            mmr: playerStats.mmr - mmr,
             losses: playerStats.losses + 1,
+            mmr: playerStats.mmr - mmr,
           };
       updateStats.push(stats);
     } else {
@@ -105,8 +105,8 @@ export async function confirmMatch(winner: Team, teams: ActiveMatchTeams, player
           }
         : {
             id: player.id,
-            mmr: 100 - mmr,
             losses: 1,
+            mmr: 100 - mmr,
           };
       updateStats.push(stats);
     }
