@@ -55,7 +55,7 @@ NormClient.on("interactionCreate", async (interaction) => {
   if (interaction.isButton()) {
     await interaction.deferUpdate();
 
-    await handleInteraction(interaction);
+    await handleInteraction(interaction, NormClient);
     await handleDevInteraction(interaction);
   } else if (interaction.isSelectMenu()) {
     await interaction.deferUpdate();
@@ -68,12 +68,5 @@ NormClient.on("interactionCreate", async (interaction) => {
     await handleAdminInteraction(interaction, queueEmbed);
   }
 });
-
-// 🐧 First thing, this function isn't async and doesn't return a promise.
-// Second, instead of calling this function from somewhere else, just pass NormClient to the handleInteraction function
-// above.
-export async function getClient(): Promise<Client<boolean>> {
-  return NormClient;
-}
 
 NormClient.login(discordToken);

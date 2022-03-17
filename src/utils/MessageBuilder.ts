@@ -100,11 +100,7 @@ export default class MessageBuilder {
     };
   }
 
-  // 🐧 Does this need to be async?
-  static async reportedTeamButtons(
-    buttonInteraction: ButtonInteraction,
-    activeMatchEmbed: MessageEmbed
-  ): Promise<MessageOptions> {
+  static reportedTeamButtons(buttonInteraction: ButtonInteraction, activeMatchEmbed: MessageEmbed): MessageOptions {
     const primaryStyle = "PRIMARY";
     const reportBlue = new MessageButton({
       customId: ButtonCustomID.ReportBlue,
@@ -142,7 +138,14 @@ export default class MessageBuilder {
         "If this is incorrect, click the button to report the opposite team.",
     };
     const embed = new MessageEmbed(activeMatchEmbed);
-    embed.fields[3] = newField;
+    const updatedFields = embed.fields.map((field) => {
+      if (field.name === "Reporting") {
+        return newField;
+      } else {
+        return field;
+      }
+    });
+    embed.setFields(updatedFields);
 
     return {
       components: [new MessageActionRow({ components: [reportBlue, reportOrange] })],

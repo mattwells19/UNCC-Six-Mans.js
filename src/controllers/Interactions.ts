@@ -1,4 +1,4 @@
-import { ButtonInteraction, Message, TextChannel } from "discord.js";
+import { ButtonInteraction, Client, Message, TextChannel } from "discord.js";
 import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
 import { getDiscordChannelById } from "../utils/discordUtils";
@@ -6,7 +6,6 @@ import { createRandomMatch } from "../services/MatchService";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { checkReport } from "../services/MatchReportService";
 import { updateLeaderboardChannel } from "./LeaderboardChannelController";
-import { getClient } from "..";
 import { getEnvVariable } from "../utils";
 import QueueRepository from "../repositories/QueueRepository";
 import { setCaptains } from "../services/TeamAssignmentService";
@@ -18,7 +17,10 @@ export async function postCurrentQueue(queueChannel: TextChannel): Promise<Messa
   return await queueChannel.send(MessageBuilder.queueMessage(ballchasers));
 }
 
-export async function handleInteraction(buttonInteraction: ButtonInteraction): Promise<void> {
+export async function handleInteraction(
+  buttonInteraction: ButtonInteraction,
+  NormClient: Client<boolean>
+): Promise<void> {
   const message = buttonInteraction.message;
   if (!(message instanceof Message)) return;
 
@@ -88,25 +90,30 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
     }
 
     case ButtonCustomID.ReportBlue: {
-      await report(buttonInteraction, Team.Blue, message);
+      await report(buttonInteraction, Team.Blue, message, NormClient);
       break;
     }
 
     case ButtonCustomID.ReportOrange: {
-      await report(buttonInteraction, Team.Orange, message);
+      await report(buttonInteraction, Team.Orange, message, NormClient);
       break;
     }
   }
 }
 
-async function report(buttonInteraction: ButtonInteraction, team: Team, message: Message<boolean>) {
+async function report(
+  buttonInteraction: ButtonInteraction,
+  team: Team,
+  message: Message<boolean>,
+  NormClient: Client<boolean>
+) {
   const confirmReport = await checkReport(team, buttonInteraction.user.id);
   const sendReport = await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id);
 
   if (confirmReport) {
     await message.delete();
     const leaderboardChannelId = getEnvVariable("leaderboard_channel_id");
-    await getDiscordChannelById(await getClient(), leaderboardChannelId).then((leaderboardChannel) => {
+    await getDiscordChannelById(NormClient, leaderboardChannelId).then((leaderboardChannel) => {
       if (leaderboardChannel) {
         updateLeaderboardChannel(leaderboardChannel);
       }
