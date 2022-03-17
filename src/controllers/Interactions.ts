@@ -120,6 +120,6 @@ async function report(
     });
   } else if (sendReport) {
     const previousEmbed = message.embeds[0];
-    await message.edit(await MessageBuilder.reportedTeamButtons(buttonInteraction, previousEmbed));
+    await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction, previousEmbed));
   }
 }
