@@ -47,24 +47,24 @@ export async function calculateProbability(playerInMatchId: string, reportedTeam
   return Math.round(probability);
 }
 
-export async function checkReport(team: Team, playerInMatchId: string): Promise<boolean> {
+export async function checkReport(reportedTeam: Team, playerInMatchId: string): Promise<boolean> {
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
   const reporter = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
     return p.id === playerInMatchId;
   });
 
-  const reportedPlayer = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
+  const previousReporter = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
     return p.reportedTeam !== null;
   });
 
   if (!reporter) return false;
-  if (reportedPlayer?.team === reporter.team && reportedPlayer.reportedTeam === team) {
+  if (previousReporter?.team === reporter.team && previousReporter?.reportedTeam === reportedTeam) {
     return false;
-  } else if (reportedPlayer?.reportedTeam !== team || reportedPlayer?.id === reporter.id) {
-    await reportMatch(team, reporter, teams);
+  } else if (previousReporter?.reportedTeam !== reportedTeam || previousReporter?.id === reporter.id) {
+    await reportMatch(reportedTeam, reporter, teams);
     return false;
   } else {
-    await confirmMatch(team, teams, playerInMatchId);
+    await confirmMatch(reportedTeam, teams, playerInMatchId);
     return true;
   }
 }

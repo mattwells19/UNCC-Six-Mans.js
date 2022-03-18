@@ -2,7 +2,7 @@ import { ActiveMatch, Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { Team } from "../../types/common";
 import LeaderboardRepository from "../LeaderboardRepository";
-import { generateRandomId, splitArray } from "../../utils";
+import { generateRandomId, splitArray, waitForAllPromises } from "../../utils";
 import { ActiveMatchTeams, NewActiveMatchInput, PlayerInActiveMatch, UpdatePlayerInActiveMatchInput } from "./types";
 
 export class ActiveMatchRepository {
@@ -94,9 +94,10 @@ export class ActiveMatchRepository {
       });
 
     const promises: Array<Promise<PlayerInActiveMatch>> = [];
-    for (const playerInMatch of allPlayersInMatch) {
+    await waitForAllPromises(allPlayersInMatch, async (playerInMatch) => {
       promises.push(this.#getPlayerInActiveMatchWithMmr(playerInMatch));
-    }
+    });
+
     const allPlayersInActiveMatch = await Promise.all(promises);
 
     const [blueTeam, orangeTeam] = splitArray(allPlayersInActiveMatch, (p) => p.team === Team.Blue);
@@ -107,16 +108,15 @@ export class ActiveMatchRepository {
     };
   }
 
-  #getPlayerInActiveMatchWithMmr(playerInMatch: ActiveMatch): Promise<PlayerInActiveMatch> {
-    return LeaderboardRepository.getPlayerStats(playerInMatch.playerId).then((stats) => {
-      return {
-        id: playerInMatch.playerId,
-        matchId: playerInMatch.id,
-        mmr: stats ? stats.mmr : 100,
-        reportedTeam: playerInMatch.reportedTeam,
-        team: playerInMatch.team,
-      };
-    });
+  async #getPlayerInActiveMatchWithMmr(playerInMatch: ActiveMatch): Promise<PlayerInActiveMatch> {
+    const stats = await LeaderboardRepository.getPlayerStats(playerInMatch.playerId);
+    return {
+      id: playerInMatch.playerId,
+      matchId: playerInMatch.id,
+      mmr: stats ? stats.mmr : 100,
+      reportedTeam: playerInMatch.reportedTeam,
+      team: playerInMatch.team,
+    };
   }
 
   async isPlayerInActiveMatch(playerInMatchId: string): Promise<boolean> {
@@ -130,20 +130,11 @@ export class ActiveMatchRepository {
   }
 
   async getPlayerInActiveMatch(playerInMatchId: string): Promise<PlayerInActiveMatch | null> {
-    const playerInMatch = await this.#ActiveMatch
-      .findUnique({
-        where: {
-          playerId: playerInMatchId,
-        },
-      })
-      .then((player) => {
-        if (!player) return null;
-        return this.#ActiveMatch.findUnique({
-          where: {
-            playerId: player.playerId,
-          },
-        });
-      });
+    const playerInMatch = await this.#ActiveMatch.findUnique({
+      where: {
+        playerId: playerInMatchId,
+      },
+    });
 
     if (playerInMatch) {
       const player = this.#getPlayerInActiveMatchWithMmr(playerInMatch);
