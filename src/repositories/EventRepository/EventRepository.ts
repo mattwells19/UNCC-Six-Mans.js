@@ -1,12 +1,22 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { Event } from "./types";
+import { DateTime } from "luxon";
+import { Event, UpdateEventInput } from "./types";
 
 class EventRepository {
-  #Event: Prisma.EventDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
+  #Event: Prisma.EventDelegate<Prisma.RejectPerOperation>;
   #CurrentEventCache: Event | null;
 
   constructor() {
     this.#Event = new PrismaClient().event;
+    this.#CurrentEventCache = null;
+  }
+
+  /**
+   * @deprecated
+   * FOR TESTING PURPOSES ONLY
+   * DO NOT USE
+   */
+  resetCache(): void {
     this.#CurrentEventCache = null;
   }
 
@@ -26,16 +36,32 @@ class EventRepository {
     }
 
     const currentEvent: Event = {
-      endDate: currentEventResult.endDate,
+      endDate: currentEventResult.endDate ? DateTime.fromJSDate(currentEventResult.endDate) : null,
       id: currentEventResult.id,
       mmrMult: currentEventResult.mmrMult.toNumber(),
       name: currentEventResult.name,
-      startDate: currentEventResult.startDate,
+      startDate: DateTime.fromJSDate(currentEventResult.startDate),
     };
 
     this.#CurrentEventCache = currentEvent;
 
     return currentEvent;
+  }
+
+  async updateCurrentEvent(eventUpdates: UpdateEventInput): Promise<void> {
+    await this.getCurrentEvent().then((currEvent) => {
+      return this.#Event.update({
+        data: {
+          endDate: eventUpdates.endDate?.toISO(),
+          mmrMult: eventUpdates.mmrMult,
+          name: eventUpdates.name,
+          startDate: eventUpdates.startDate?.toISO(),
+        },
+        where: {
+          id: currEvent.id,
+        },
+      });
+    });
   }
 }
 

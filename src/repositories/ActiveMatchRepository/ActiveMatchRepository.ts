@@ -1,10 +1,11 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { generateRandomId } from "../../utils";
+import { InvalidCommand } from "../../utils/InvalidCommand";
 import { NewActiveMatchInput, PlayerInActiveMatch, UpdatePlayerInActiveMatchInput } from "./types";
 
 export class ActiveMatchRepository {
-  #ActiveMatch: Prisma.ActiveMatchDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
+  #ActiveMatch: Prisma.ActiveMatchDelegate<Prisma.RejectPerOperation>;
 
   constructor() {
     this.#ActiveMatch = new PrismaClient().activeMatch;
@@ -48,6 +49,7 @@ export class ActiveMatchRepository {
   async removeAllPlayersInActiveMatch(playerInMatchId: string): Promise<void> {
     await this.#ActiveMatch
       .findUnique({
+        rejectOnNotFound: true,
         select: {
           id: true,
         },
@@ -56,15 +58,14 @@ export class ActiveMatchRepository {
         },
       })
       .then((match) => {
-        if (!match) {
-          throw new Error(`Player with ID: ${playerInMatchId} is not in an active match.`);
-        }
-
         return this.#ActiveMatch.deleteMany({
           where: {
             id: match.id,
           },
         });
+      })
+      .catch((err) => {
+        throw new InvalidCommand(`Player with ID: ${playerInMatchId} is not in an active match.\nError: ${err}`);
       });
   }
 

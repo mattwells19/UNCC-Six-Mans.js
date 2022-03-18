@@ -5,6 +5,7 @@ import { PlayerInActiveMatch } from "../types";
 import { Team } from "../../../types/common";
 import { ActiveMatch, BallChaser, PrismaClient } from "@prisma/client";
 import { waitForAllPromises } from "../../../utils";
+import { InvalidCommand } from "../../../utils/InvalidCommand";
 
 let prisma: PrismaClient;
 
@@ -185,6 +186,12 @@ describe("ActiveMatchRepository Tests", () => {
       await expect(
         ActiveMatchRepository.updatePlayerInActiveMatch(BallChaserQueueBuilder.single().id, { reportedTeam: Team.Blue })
       ).rejects.toThrowError();
+    });
+
+    it("throws when trying to remove someone that doesn't exist", async () => {
+      await expect(
+        ActiveMatchRepository.removeAllPlayersInActiveMatch(BallChaserQueueBuilder.single().id)
+      ).rejects.toThrowError(InvalidCommand);
     });
   });
 });

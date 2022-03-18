@@ -2,11 +2,14 @@ import { PrismaClient } from "@prisma/client";
 import { Event } from "../types";
 import * as faker from "faker";
 import EventRepository from "../EventRepository";
+import assert from "assert";
+import { DateTime } from "luxon";
 
 let prisma: PrismaClient;
 
-beforeEach(async () => {
+beforeEach(() => {
   jest.clearAllMocks();
+  EventRepository.resetCache();
 });
 
 beforeAll(async () => {
@@ -24,7 +27,6 @@ afterAll(async () => {
 });
 
 describe("EventRepository tests", () => {
-  // run first to avoid cache
   it("throws if there's no current event", async () => {
     await prisma.event.create({
       data: {
@@ -56,7 +58,41 @@ describe("EventRepository tests", () => {
       name: "Actual Current Season",
       endDate: null,
       mmrMult: 1.0,
-      startDate: expect.any(Date),
+      startDate: expect.any(DateTime),
     });
+  });
+
+  it("updates the current event", async () => {
+    const addedEvent = await prisma.event.create({
+      data: {
+        name: "Current Season",
+        endDate: null,
+      },
+    });
+    expect(addedEvent.mmrMult.equals(1.0)).toBeTruthy();
+
+    const newName = faker.random.word();
+    const newMmrMult = faker.datatype.number({ min: 0, max: 10, precision: 2 });
+
+    await EventRepository.updateCurrentEvent({
+      name: newName,
+      mmrMult: newMmrMult,
+    });
+
+    const actualUpdatedEvent = await prisma.event.findUnique({
+      where: {
+        id: addedEvent.id,
+      },
+    });
+
+    assert(actualUpdatedEvent);
+
+    // expect to change
+    expect(actualUpdatedEvent.name).toBe(newName);
+    expect(actualUpdatedEvent.mmrMult.equals(newMmrMult)).toBeTruthy();
+
+    // expect to stay the same
+    expect(actualUpdatedEvent.endDate).toEqual(addedEvent.endDate);
+    expect(actualUpdatedEvent.startDate).toEqual(addedEvent.startDate);
   });
 });
