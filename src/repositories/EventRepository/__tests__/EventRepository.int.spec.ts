@@ -3,6 +3,7 @@ import { Event } from "../types";
 import * as faker from "faker";
 import EventRepository from "../EventRepository";
 import assert from "assert";
+import { DateTime } from "luxon";
 
 let prisma: PrismaClient;
 
@@ -57,7 +58,7 @@ describe("EventRepository tests", () => {
       name: "Actual Current Season",
       endDate: null,
       mmrMult: 1.0,
-      startDate: expect.any(Date),
+      startDate: expect.any(DateTime),
     });
   });
 

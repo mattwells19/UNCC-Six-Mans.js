@@ -1,4 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
+import { DateTime } from "luxon";
 import { Event, UpdateEventInput } from "./types";
 
 class EventRepository {
@@ -35,11 +36,11 @@ class EventRepository {
     }
 
     const currentEvent: Event = {
-      endDate: currentEventResult.endDate,
+      endDate: currentEventResult.endDate ? DateTime.fromJSDate(currentEventResult.endDate) : null,
       id: currentEventResult.id,
       mmrMult: currentEventResult.mmrMult.toNumber(),
       name: currentEventResult.name,
-      startDate: currentEventResult.startDate,
+      startDate: DateTime.fromJSDate(currentEventResult.startDate),
     };
 
     this.#CurrentEventCache = currentEvent;
@@ -51,8 +52,10 @@ class EventRepository {
     await this.getCurrentEvent().then((currEvent) => {
       return this.#Event.update({
         data: {
+          endDate: eventUpdates.endDate?.toISO(),
           mmrMult: eventUpdates.mmrMult,
           name: eventUpdates.name,
+          startDate: eventUpdates.startDate?.toISO(),
         },
         where: {
           id: currEvent.id,
