@@ -101,7 +101,6 @@ export default class MessageBuilder {
   }
 
   static reportedTeamButtons(buttonInteraction: ButtonInteraction, activeMatchEmbed: MessageEmbed): MessageOptions {
-    const primaryStyle = "PRIMARY";
     const reportBlue = new MessageButton({
       customId: ButtonCustomID.ReportBlue,
       label: "🔷 Blue Team Won 🔷",
@@ -116,12 +115,12 @@ export default class MessageBuilder {
     let reportedTeam;
     switch (buttonInteraction.customId) {
       case ButtonCustomID.ReportBlue: {
-        reportBlue.style = primaryStyle;
+        reportBlue.setStyle("PRIMARY");
         reportedTeam = "**Blue Team**";
         break;
       }
       case ButtonCustomID.ReportOrange: {
-        reportOrange.style = primaryStyle;
+        reportOrange.setStyle("PRIMARY");
         reportedTeam = "**Orange Team**";
         break;
       }

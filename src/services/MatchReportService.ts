@@ -12,8 +12,8 @@ async function calculateProbabilityDecimal(playerInMatchId: string, reportedTeam
   const blueTeam = teams.blueTeam;
   const orangeTeam = teams.orangeTeam;
 
-  const blueTeamMMR = blueTeam.reduce((ballchaser1, ballchaser2) => ballchaser1 + ballchaser2.mmr, 0);
-  const orangeTeamMMR = orangeTeam.reduce((ballchaser1, ballchaser2) => ballchaser1 + ballchaser2.mmr, 0);
+  const blueTeamMMR = blueTeam.reduce((totalMMR, ballChaser) => totalMMR + ballChaser.mmr, 0);
+  const orangeTeamMMR = orangeTeam.reduce((totalMMR, ballChaser) => totalMMR + ballChaser.mmr, 0);
 
   if (reportedTeam === Team.Blue) {
     reportedWinner = blueTeamMMR;

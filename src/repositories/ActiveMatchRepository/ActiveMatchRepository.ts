@@ -93,12 +93,9 @@ export class ActiveMatchRepository {
         });
       });
 
-    const promises: Array<Promise<PlayerInActiveMatch>> = [];
-    await waitForAllPromises(allPlayersInMatch, async (playerInMatch) => {
-      promises.push(this.#getPlayerInActiveMatchWithMmr(playerInMatch));
+    const allPlayersInActiveMatch = await waitForAllPromises(allPlayersInMatch, async (playerInMatch) => {
+      return await this.#getPlayerInActiveMatchWithMmr(playerInMatch);
     });
-
-    const allPlayersInActiveMatch = await Promise.all(promises);
 
     const [blueTeam, orangeTeam] = splitArray(allPlayersInActiveMatch, (p) => p.team === Team.Blue);
 

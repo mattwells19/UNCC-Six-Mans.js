@@ -35,8 +35,10 @@ export async function handleMenuInteraction(menuInteraction: SelectMenuInteracti
 
         const match = await createMatchFromChosenTeams();
 
-        await message.channel.send(await MessageBuilder.activeMatchMessage(match));
-        await message.edit(MessageBuilder.queueMessage(emptyQueue));
+        Promise.all([
+          await message.channel.send(await MessageBuilder.activeMatchMessage(match)),
+          await message.edit(MessageBuilder.queueMessage(emptyQueue)),
+        ]);
         break;
       }
 
