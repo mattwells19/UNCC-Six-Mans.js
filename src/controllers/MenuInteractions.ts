@@ -33,10 +33,10 @@ export async function handleMenuInteraction(menuInteraction: SelectMenuInteracti
       if (isCaptain || isDev) {
         await orangePlayerChosen(menuInteraction.values);
 
-        const match = await createMatchFromChosenTeams();
+        const newActiveMatch = await createMatchFromChosenTeams();
 
         Promise.all([
-          await message.channel.send(await MessageBuilder.activeMatchMessage(match)),
+          await message.channel.send(MessageBuilder.activeMatchMessage(newActiveMatch)),
           await message.edit(MessageBuilder.queueMessage(emptyQueue)),
         ]);
         break;

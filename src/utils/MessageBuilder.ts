@@ -8,11 +8,10 @@ import {
   MessageSelectMenu,
   MessageSelectOptionData,
 } from "discord.js";
-import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types";
 import { Team } from "../types/common";
 import { getEnvVariable } from "./utils";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
-import { calculateMMR, calculateProbability } from "../services/MatchReportService";
+import { ActiveMatchCreated } from "../services/MatchService";
 
 export const enum ButtonCustomID {
   JoinQueue = "joinQueue",
@@ -248,7 +247,7 @@ export default class MessageBuilder {
     };
   }
 
-  static async activeMatchMessage(ballchasers: Array<NewActiveMatchInput>): Promise<MessageOptions> {
+  static activeMatchMessage({ blue, orange }: ActiveMatchCreated): MessageOptions {
     const embed = new MessageEmbed({
       color: "DARK_RED",
       thumbnail: { url: this.normIconURL },
@@ -269,30 +268,21 @@ export default class MessageBuilder {
       style: "DANGER",
     });
 
-    const orangeTeam: Array<string> = [];
-    const blueTeam: Array<string> = [];
-    const mmrBlue = await calculateMMR(ballchasers[0].id, Team.Blue);
-    const mmrOrange = await calculateMMR(ballchasers[0].id, Team.Orange);
     let probability;
     let winner;
-    if (mmrBlue < mmrOrange) {
-      probability = await calculateProbability(ballchasers[0].id, Team.Blue);
+    if (blue.winProbability > orange.winProbability) {
+      probability = blue.winProbability;
       winner = "Blue Team is";
-    } else if (mmrOrange < mmrBlue) {
-      probability = await calculateProbability(ballchasers[0].id, Team.Orange);
+    } else if (blue.winProbability < orange.winProbability) {
+      probability = orange.winProbability;
       winner = "Orange Team is";
     } else {
       probability = "50";
       winner = "Both teams are";
     }
 
-    ballchasers.forEach((ballChaser) => {
-      if (ballChaser.team === Team.Blue) {
-        blueTeam.push("<@" + ballChaser.id + ">");
-      } else {
-        orangeTeam.push("<@" + ballChaser.id + ">");
-      }
-    });
+    const blueTeam: Array<string> = blue.players.map((player) => "<@" + player.id + ">");
+    const orangeTeam: Array<string> = orange.players.map((player) => "<@" + player.id + ">");
 
     embed
       .setTitle("Teams are set!")
@@ -301,13 +291,13 @@ export default class MessageBuilder {
       .addField(
         "MMR Stake & Probability Rating:\n",
         "🔷 Blue Team: \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0**(+" +
-          mmrBlue.toString() +
+          blue.mmrStake.toString() +
           ")**\u00A0\u00A0**(-" +
-          mmrOrange.toString() +
+          orange.mmrStake.toString() +
           ")** 🔷\n🔶 Orange Team:\u00A0\u00A0**(+" +
-          mmrOrange.toString() +
+          orange.mmrStake.toString() +
           ")**\u00A0\u00A0**(-" +
-          mmrBlue.toString() +
+          blue.mmrStake.toString() +
           ")** 🔶\n" +
           winner +
           " predicted to have a **" +

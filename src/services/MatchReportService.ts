@@ -5,50 +5,44 @@ import { UpdatePlayerStatsInput } from "../repositories/LeaderboardRepository/ty
 import { Team } from "../types/common";
 import { waitForAllPromises } from "../utils";
 
-async function calculateProbabilityDecimal(playerInMatchId: string, reportedTeam: Team): Promise<number> {
-  let reportedWinner = 0;
-  let reportedLoser = 0;
-  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
-  const blueTeam = teams.blueTeam;
-  const orangeTeam = teams.orangeTeam;
-
-  const blueTeamMMR = blueTeam.reduce((totalMMR, ballChaser) => totalMMR + ballChaser.mmr, 0);
-  const orangeTeamMMR = orangeTeam.reduce((totalMMR, ballChaser) => totalMMR + ballChaser.mmr, 0);
-
-  if (reportedTeam === Team.Blue) {
-    reportedWinner = blueTeamMMR;
-    reportedLoser = orangeTeamMMR;
-  } else {
-    reportedWinner = orangeTeamMMR;
-    reportedLoser = blueTeamMMR;
-  }
-
-  const difference = (reportedLoser - reportedWinner) / 400;
-  const power = Math.pow(10, difference) + 1;
-  const probabilityDecimal = 1 / power;
-
-  return probabilityDecimal;
+interface TeamProbabilityDecimalResult {
+  blueProbabilityDecimal: number;
+  orangeProbabilityDecimal: number;
 }
 
-export async function calculateMMR(playerInMatchId: string, reportedTeam: Team): Promise<number> {
-  const probabilityDecimal = await calculateProbabilityDecimal(playerInMatchId, reportedTeam);
+export function calculateProbabilityDecimal(teams: ActiveMatchTeams): TeamProbabilityDecimalResult {
+  const blueTeamMMR = teams.blueTeam.reduce((totalMMR, ballChaser) => totalMMR + ballChaser.mmr, 0);
+  const orangeTeamMMR = teams.orangeTeam.reduce((totalMMR, ballChaser) => totalMMR + ballChaser.mmr, 0);
 
-  let mmr = (1 - probabilityDecimal) * 20;
+  const calcTeamProbabilityDecimal = (winnerMMR: number, loserMMR: number): number => {
+    const difference = (loserMMR - winnerMMR) / 400;
+    const power = Math.pow(10, difference) + 1;
+    const probabilityDecimal = 1 / power;
+    return probabilityDecimal;
+  };
+
+  return {
+    blueProbabilityDecimal: calcTeamProbabilityDecimal(blueTeamMMR, orangeTeamMMR),
+    orangeProbabilityDecimal: calcTeamProbabilityDecimal(orangeTeamMMR, blueTeamMMR),
+  };
+}
+
+export function calculateMMR(calculatedProbabilityDecimal: number): number {
+  let mmr = (1 - calculatedProbabilityDecimal) * 20;
   mmr = Math.min(15, mmr);
   mmr = Math.max(5, mmr);
 
   return Math.round(mmr);
 }
 
-export async function calculateProbability(playerInMatchId: string, reportedTeam: Team): Promise<number> {
-  const probabilityDecimal = await calculateProbabilityDecimal(playerInMatchId, reportedTeam);
-  const probability = probabilityDecimal * 100;
-
+export function calculateProbability(calculatedProbabilityDecimal: number): number {
+  const probability = calculatedProbabilityDecimal * 100;
   return Math.round(probability);
 }
 
 export async function checkReport(reportedTeam: Team, playerInMatchId: string): Promise<boolean> {
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
+
   const reporter = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
     return p.id === playerInMatchId;
   });
@@ -57,8 +51,9 @@ export async function checkReport(reportedTeam: Team, playerInMatchId: string): 
     return p.reportedTeam !== null;
   });
 
-  if (!reporter) return false;
-  if (previousReporter?.team === reporter.team && previousReporter?.reportedTeam === reportedTeam) {
+  if (!reporter) {
+    return false;
+  } else if (previousReporter?.team === reporter.team && previousReporter?.reportedTeam === reportedTeam) {
     return false;
   } else if (previousReporter?.reportedTeam !== reportedTeam || previousReporter?.id === reporter.id) {
     await reportMatch(reportedTeam, reporter, teams);
@@ -78,7 +73,9 @@ export async function reportMatch(team: Team, reporter: PlayerInActiveMatch, tea
 }
 
 export async function confirmMatch(winner: Team, teams: ActiveMatchTeams, playerInMatchId: string) {
-  const mmr = await calculateMMR(playerInMatchId, winner);
+  const { blueProbabilityDecimal, orangeProbabilityDecimal } = calculateProbabilityDecimal(teams);
+  const mmr = calculateMMR(winner === Team.Blue ? blueProbabilityDecimal : orangeProbabilityDecimal);
+
   const updateStats: Array<UpdatePlayerStatsInput> = [];
   await waitForAllPromises([...teams.blueTeam, ...teams.orangeTeam], async (player) => {
     const isPlayerOnWinningTeam = player.team === winner;

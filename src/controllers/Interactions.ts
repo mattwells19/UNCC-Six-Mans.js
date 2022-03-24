@@ -101,14 +101,11 @@ export async function handleInteraction(
   }
 }
 
-async function report(
-  buttonInteraction: ButtonInteraction,
-  team: Team,
-  message: Message<boolean>,
-  NormClient: Client<boolean>
-) {
+async function report(buttonInteraction: ButtonInteraction, team: Team, message: Message, NormClient: Client) {
+  const playerInMatch = await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id);
+  if (!playerInMatch) return;
+
   const confirmReport = await checkReport(team, buttonInteraction.user.id);
-  const sendReport = await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id);
 
   if (confirmReport) {
     await message.delete();
@@ -118,7 +115,7 @@ async function report(
         updateLeaderboardChannel(leaderboardChannel);
       }
     });
-  } else if (sendReport) {
+  } else {
     const previousEmbed = message.embeds[0];
     await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction, previousEmbed));
   }

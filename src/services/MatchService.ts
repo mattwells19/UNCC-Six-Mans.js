@@ -1,10 +1,40 @@
 import { createRandomTeams } from "../services/TeamAssignmentService";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import QueueRepository from "../repositories/QueueRepository";
-import { NewActiveMatchInput } from "../repositories/ActiveMatchRepository/types";
+import { NewActiveMatchInput, PlayerInActiveMatch } from "../repositories/ActiveMatchRepository/types";
 import { Team } from "../types/common";
+import { calculateMMR, calculateProbability, calculateProbabilityDecimal } from "./MatchReportService";
 
-export async function createRandomMatch(): Promise<Array<NewActiveMatchInput>> {
+interface ActiveMatchTeamDetails {
+  players: ReadonlyArray<PlayerInActiveMatch>;
+  mmrStake: number;
+  winProbability: number;
+}
+
+export interface ActiveMatchCreated {
+  orange: ActiveMatchTeamDetails;
+  blue: ActiveMatchTeamDetails;
+}
+
+async function buildNewMatchDetails(playerInMatchId: string): Promise<ActiveMatchCreated> {
+  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
+  const { blueProbabilityDecimal, orangeProbabilityDecimal } = calculateProbabilityDecimal(teams);
+
+  return {
+    blue: {
+      players: teams.blueTeam,
+      mmrStake: calculateMMR(blueProbabilityDecimal),
+      winProbability: calculateProbability(blueProbabilityDecimal),
+    },
+    orange: {
+      players: teams.orangeTeam,
+      mmrStake: calculateMMR(orangeProbabilityDecimal),
+      winProbability: calculateProbability(orangeProbabilityDecimal),
+    },
+  };
+}
+
+export async function createRandomMatch(): Promise<ActiveMatchCreated> {
   const ballChasers = await QueueRepository.getAllBallChasersInQueue();
   //Assign teams based on MMR and
   const createdTeams = createRandomTeams(ballChasers);
@@ -16,10 +46,10 @@ export async function createRandomMatch(): Promise<Array<NewActiveMatchInput>> {
     await QueueRepository.removeAllBallChasersFromQueue(),
   ]);
 
-  return createdTeams;
+  return await buildNewMatchDetails(createdTeams[0].id);
 }
 
-export async function createMatchFromChosenTeams(): Promise<Array<NewActiveMatchInput>> {
+export async function createMatchFromChosenTeams(): Promise<ActiveMatchCreated> {
   const createdTeams: NewActiveMatchInput[] = [];
 
   //Sort the ballchasers so those without a team go at the end of the array for ActiveMatch embed visual fix
@@ -42,5 +72,5 @@ export async function createMatchFromChosenTeams(): Promise<Array<NewActiveMatch
     await QueueRepository.removeAllBallChasersFromQueue(),
   ]);
 
-  return createdTeams;
+  return await buildNewMatchDetails(createdTeams[0].id);
 }
