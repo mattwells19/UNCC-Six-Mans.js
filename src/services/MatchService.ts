@@ -16,8 +16,15 @@ export interface ActiveMatchCreated {
   blue: ActiveMatchTeamDetails;
 }
 
-async function buildNewMatchDetails(playerInMatchId: string): Promise<ActiveMatchCreated> {
-  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
+async function startMatch(createdTeams: Array<NewActiveMatchInput>): Promise<ActiveMatchCreated> {
+  await Promise.all([
+    //Create Match
+    await ActiveMatchRepository.addActiveMatch(createdTeams),
+    //Match is created, reset the queue.
+    await QueueRepository.removeAllBallChasersFromQueue(),
+  ]);
+
+  const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(createdTeams[0].id);
   const { blueProbabilityDecimal, orangeProbabilityDecimal } = calculateProbabilityDecimal(teams);
 
   return {
@@ -39,14 +46,7 @@ export async function createRandomMatch(): Promise<ActiveMatchCreated> {
   //Assign teams based on MMR and
   const createdTeams = createRandomTeams(ballChasers);
 
-  await Promise.all([
-    //Create Match
-    await ActiveMatchRepository.addActiveMatch(createdTeams),
-    //Match is created, reset the queue.
-    await QueueRepository.removeAllBallChasersFromQueue(),
-  ]);
-
-  return await buildNewMatchDetails(createdTeams[0].id);
+  return await startMatch(createdTeams);
 }
 
 export async function createMatchFromChosenTeams(): Promise<ActiveMatchCreated> {
@@ -65,12 +65,5 @@ export async function createMatchFromChosenTeams(): Promise<ActiveMatchCreated> 
     }
   }
 
-  await Promise.all([
-    //Create Match
-    await ActiveMatchRepository.addActiveMatch(createdTeams),
-    //Match is created, reset the queue.
-    await QueueRepository.removeAllBallChasersFromQueue(),
-  ]);
-
-  return await buildNewMatchDetails(createdTeams[0].id);
+  return await startMatch(createdTeams);
 }
