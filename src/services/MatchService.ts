@@ -6,8 +6,8 @@ import { Team } from "../types/common";
 import { calculateMMR, calculateProbability, calculateProbabilityDecimal } from "./MatchReportService";
 
 interface ActiveMatchTeamDetails {
-  players: ReadonlyArray<PlayerInActiveMatch>;
   mmrStake: number;
+  players: ReadonlyArray<PlayerInActiveMatch>;
   winProbability: number;
 }
 
@@ -22,13 +22,13 @@ async function buildNewMatchDetails(playerInMatchId: string): Promise<ActiveMatc
 
   return {
     blue: {
-      players: teams.blueTeam,
       mmrStake: calculateMMR(blueProbabilityDecimal),
+      players: teams.blueTeam,
       winProbability: calculateProbability(blueProbabilityDecimal),
     },
     orange: {
-      players: teams.orangeTeam,
       mmrStake: calculateMMR(orangeProbabilityDecimal),
+      players: teams.orangeTeam,
       winProbability: calculateProbability(orangeProbabilityDecimal),
     },
   };
