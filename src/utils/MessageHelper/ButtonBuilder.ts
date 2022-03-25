@@ -1,4 +1,4 @@
-import { MessageActionRow, MessageButton, MessageOptions } from "discord.js";
+import { MessageActionRow, MessageButton } from "discord.js";
 import { getEnvVariable } from "../utils";
 import CustomButton, { ButtonCustomID, QueueButtonOptions } from "./CustomButtons";
 
@@ -11,6 +11,8 @@ const randomTeamsButton = new CustomButton({ customId: ButtonCustomID.CreateRand
 const chooseTeamsButton = new CustomButton({ customId: ButtonCustomID.ChooseTeam });
 const breakMatchButton = new CustomButton({ customId: ButtonCustomID.BreakMatch });
 const reportMatchButton = new CustomButton({ customId: ButtonCustomID.ReportMatch });
+const confirmNewSeasonButton = new CustomButton({ customId: ButtonCustomID.ConfirmNewEvent });
+const cancelNewSeasonButton = new CustomButton({ customId: ButtonCustomID.CancelNewEvent });
 
 export default class ButtonBuilder extends MessageButton {
   static queueButtons(options: QueueButtonOptions = { disabled: false }): MessageActionRow {
@@ -51,5 +53,9 @@ export default class ButtonBuilder extends MessageButton {
 
   static breakMatchButtons(): MessageActionRow {
     return new MessageActionRow({ components: [breakMatchButton] });
+  }
+
+  static newSeasonButtons(): MessageActionRow {
+    return new MessageActionRow({ components: [confirmNewSeasonButton, cancelNewSeasonButton] });
   }
 }

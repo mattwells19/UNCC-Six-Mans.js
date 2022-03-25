@@ -1,4 +1,10 @@
-import { MessageActionRow, MessageOptions, MessageSelectMenu, MessageSelectOptionData } from "discord.js";
+import {
+  InteractionUpdateOptions,
+  MessageActionRow,
+  MessageOptions,
+  MessageSelectMenu,
+  MessageSelectOptionData,
+} from "discord.js";
 import { NewActiveMatchInput } from "../../repositories/ActiveMatchRepository/types";
 import { Team } from "../../types/common";
 import { getEnvVariable } from "../utils";
@@ -137,6 +143,30 @@ export default class MessageBuilder {
     }
     return {
       components,
+      embeds: [embed],
+    };
+  }
+
+  static confirmSeasonMessage(seasonName: string): MessageOptions {
+    const embed = EmbedBuilder.newSeasonEmbed(seasonName).addField("⚠️ CAUTION ⚠️", "THIS CANNOT BE UNDONE", true);
+    return {
+      components: [ButtonBuilder.newSeasonButtons()],
+      embeds: [embed],
+    };
+  }
+
+  static seasonConfirmedMessage(seasonName: string): InteractionUpdateOptions {
+    const embed = EmbedBuilder.newSeasonConfirmedEmbed(seasonName);
+    return {
+      components: [],
+      embeds: [embed],
+    };
+  }
+
+  static newSeasonCancelMessage(): InteractionUpdateOptions {
+    const embed = EmbedBuilder.newSeasonCancellationEmbed();
+    return {
+      components: [],
       embeds: [embed],
     };
   }

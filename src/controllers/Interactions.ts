@@ -6,6 +6,7 @@ import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import QueueRepository from "../repositories/QueueRepository";
 import { setCaptains } from "../services/TeamAssignmentService";
 import { ButtonCustomID } from "../utils/MessageHelper/CustomButtons";
+import EventRepository from "../repositories/EventRepository";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<Message> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
@@ -70,8 +71,23 @@ export async function handleInteraction(buttonInteraction: ButtonInteraction): P
         const players = await setCaptains(ballChasers);
 
         await message.edit(MessageBuilder.captainChooseMessage(true, players));
-        break;
       }
+      break;
+    }
+
+    case ButtonCustomID.ConfirmNewEvent: {
+      console.log("Message: " + message);
+      console.log("Button Interaction:" + buttonInteraction);
+      // await Promise.all([
+      //   await buttonInteraction.update(MessageBuilder.seasonConfirmedMessage(me))
+      // ]);
+
+      break;
+    }
+
+    case ButtonCustomID.CancelNewEvent: {
+      await buttonInteraction.update(MessageBuilder.newSeasonCancelMessage());
+      break;
     }
   }
 }

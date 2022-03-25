@@ -10,10 +10,12 @@ import MessageBuilder from "../utils/MessageHelper/MessageBuilder";
 const enum AdminCommandOptions {
   Kick = "kick",
   Clear = "clear",
+  NewSeason = "newseason",
 }
 
 export async function handleAdminInteraction(slashCommandInteraction: CommandInteraction, queueEmbed: Message) {
   const memberRoles = slashCommandInteraction.member?.roles;
+  const newSeasonName = slashCommandInteraction.options.getString("new_season_name");
   if (
     !memberRoles ||
     (memberRoles instanceof GuildMemberRoleManager && memberRoles.cache.every((role) => role.name !== "Bot Admin")) ||
@@ -56,6 +58,11 @@ export async function handleAdminInteraction(slashCommandInteraction: CommandInt
         slashCommandInteraction.editReply("Queue has been cleared."),
       ]);
       break;
+    case AdminCommandOptions.NewSeason:
+      if (newSeasonName) {
+        slashCommandInteraction.editReply(MessageBuilder.confirmSeasonMessage(newSeasonName));
+      }
+      break;
   }
 }
 
@@ -75,8 +82,16 @@ export async function registerAdminSlashCommands(clientId: string, guildId: stri
     .setDescription("Clears the queue.")
     .toJSON();
 
+  const newSeasonCommand = new SlashCommandBuilder()
+    .setName(AdminCommandOptions.NewSeason)
+    .setDescription("Creats a new season.")
+    .addStringOption((option) =>
+      option.setName("new_season_name").setDescription("The name of the new season to be created.").setRequired(true)
+    )
+    .toJSON();
+
   try {
-    const commands: Array<RESTPostAPIApplicationCommandsJSONBody> = [kickCommand, clearCommand];
+    const commands: Array<RESTPostAPIApplicationCommandsJSONBody> = [kickCommand, clearCommand, newSeasonCommand];
 
     await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
   } catch (error) {

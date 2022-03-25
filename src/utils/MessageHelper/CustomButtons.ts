@@ -9,6 +9,8 @@ export const enum ButtonCustomID {
   ReportMatch = "reportMatch",
   RemoveAll = "removeAll",
   BreakMatch = "breakMatch",
+  ConfirmNewEvent = "confirmNewEvent",
+  CancelNewEvent = "cancelNewEvent",
 }
 
 export type QueueButtonOptions =
@@ -73,6 +75,18 @@ export default class CustomButton extends MessageButton {
         case ButtonCustomID.BreakMatch:
           return {
             label: "DEV: Break Match",
+            style: "DANGER",
+            ...customOptions,
+          };
+        case ButtonCustomID.ConfirmNewEvent:
+          return {
+            label: "Confirm",
+            style: "PRIMARY",
+            ...customOptions,
+          };
+        case ButtonCustomID.CancelNewEvent:
+          return {
+            label: "Cancel",
             style: "DANGER",
             ...customOptions,
           };

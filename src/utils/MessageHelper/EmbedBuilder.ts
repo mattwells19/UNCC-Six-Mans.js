@@ -1,4 +1,4 @@
-import { MessageEmbed, MessageEmbedOptions } from "discord.js";
+import { MessageEmbed, MessageEmbedOptions, NewsChannel } from "discord.js";
 import { Team } from "../../types/common";
 
 class BaseEmbed extends MessageEmbed {
@@ -35,5 +35,29 @@ export default class EmbedBuilder {
       case Team.Orange:
         return new BaseEmbed({ color: "ORANGE", description: "🔶 " + captain + " 🔶 choose 2 players" });
     }
+  }
+
+  static newSeasonEmbed(newSeason: string): BaseEmbed {
+    return new BaseEmbed({
+      color: "DARK_RED",
+      description: "You are about to create a new season. This will end the current season.",
+      title: "Start " + newSeason + " season?",
+    });
+  }
+
+  static newSeasonConfirmedEmbed(newSeason: string): BaseEmbed {
+    return new BaseEmbed({
+      color: "GREEN",
+      description: "The previous season has ended and the " + newSeason + " season has begun.",
+      title: "New Season Started",
+    });
+  }
+
+  static newSeasonCancellationEmbed(): BaseEmbed {
+    return new BaseEmbed({
+      color: "DARK_RED",
+      description: "No changes were made and the current season is still active.",
+      title: "New Season Cancelled",
+    });
   }
 }
