@@ -1,4 +1,4 @@
-import { MessageActionRow, MessageButton, MessageOptions } from "discord.js";
+import { MessageActionRow, MessageButton } from "discord.js";
 import { getEnvVariable } from "../utils";
 import CustomButton, { ButtonCustomID, QueueButtonOptions } from "./CustomButtons";
 
@@ -10,7 +10,8 @@ const removeAllButton = new CustomButton({ customId: ButtonCustomID.RemoveAll })
 const randomTeamsButton = new CustomButton({ customId: ButtonCustomID.CreateRandomTeam });
 const chooseTeamsButton = new CustomButton({ customId: ButtonCustomID.ChooseTeam });
 const breakMatchButton = new CustomButton({ customId: ButtonCustomID.BreakMatch });
-const reportMatchButton = new CustomButton({ customId: ButtonCustomID.ReportMatch });
+const reportBlueWonButton = new CustomButton({ customId: ButtonCustomID.ReportBlue });
+const reportOrangeWonButton = new CustomButton({ customId: ButtonCustomID.ReportOrange });
 
 export default class ButtonBuilder extends MessageButton {
   static queueButtons(options: QueueButtonOptions = { disabled: false }): MessageActionRow {
@@ -42,7 +43,7 @@ export default class ButtonBuilder extends MessageButton {
   }
 
   static activeMatchButtons(): MessageActionRow {
-    const components = [reportMatchButton];
+    const components = [reportBlueWonButton, reportOrangeWonButton];
     if (isDev) {
       components.push(breakMatchButton);
     }

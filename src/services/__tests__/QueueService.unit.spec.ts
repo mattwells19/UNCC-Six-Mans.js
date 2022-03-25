@@ -1,5 +1,4 @@
-import { joinQueue } from "../QueueService";
-import { leaveQueue } from "../QueueService";
+import { checkQueueTimes, joinQueue, leaveQueue } from "../QueueService";
 import { BallChaserQueueBuilder } from "../../../.jest/Builder";
 import { DateTime } from "luxon";
 import ActiveMatchRepository from "../../repositories/ActiveMatchRepository";
@@ -86,6 +85,64 @@ describe("QueueService tests", () => {
 
       expect(removeMock).toHaveBeenCalledWith(mockBallChaser.id);
       expect(getAllMock).toHaveBeenCalled();
+    });
+  });
+
+  describe("Queue timers", () => {
+    it("removes stale players from an unpopped queue", async () => {
+      const mockBallChasersToRemove = BallChaserQueueBuilder.many(3, {
+        isCap: false,
+        queueTime: DateTime.now().minus({ minutes: 1 }),
+      });
+      const mockBallChasersToStay = BallChaserQueueBuilder.many(2, {
+        isCap: false,
+        queueTime: DateTime.now().plus({ minutes: 1 }),
+      });
+
+      jest
+        .mocked(QueueRepository.getAllBallChasersInQueue)
+        .mockResolvedValue([...mockBallChasersToRemove, ...mockBallChasersToStay]);
+      const removeMock = jest.mocked(QueueRepository.removeBallChaserFromQueue);
+
+      await checkQueueTimes();
+
+      expect(removeMock).toHaveBeenCalledTimes(mockBallChasersToRemove.length);
+      mockBallChasersToRemove.forEach((ballChaser) => {
+        expect(removeMock).toHaveBeenCalledWith(ballChaser.id);
+      });
+    });
+
+    it("does not remove any players from a popped queue", async () => {
+      const mockBallChasers = BallChaserQueueBuilder.many(4, {
+        isCap: false,
+        queueTime: DateTime.now().minus({ minutes: 1 }),
+      });
+      const mockCaptains = BallChaserQueueBuilder.many(2, {
+        isCap: true,
+        queueTime: DateTime.now().minus({ minutes: 1 }),
+      });
+
+      jest.mocked(QueueRepository.getAllBallChasersInQueue).mockResolvedValue([...mockBallChasers, ...mockCaptains]);
+      const removeMock = jest.mocked(QueueRepository.removeBallChaserFromQueue);
+
+      await checkQueueTimes();
+
+      expect(removeMock).not.toHaveBeenCalled();
+    });
+
+    it("returns null if there are no players to remove", async () => {
+      const mockBallChasers = BallChaserQueueBuilder.many(4, {
+        isCap: false,
+        queueTime: DateTime.now().plus({ minutes: 1 }),
+      });
+
+      jest.mocked(QueueRepository.getAllBallChasersInQueue).mockResolvedValue(mockBallChasers);
+      const removeMock = jest.mocked(QueueRepository.removeBallChaserFromQueue);
+
+      const result = await checkQueueTimes();
+
+      expect(result).toBeNull();
+      expect(removeMock).not.toHaveBeenCalled();
     });
   });
 });

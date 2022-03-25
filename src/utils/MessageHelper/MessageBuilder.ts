@@ -1,10 +1,19 @@
-import { MessageActionRow, MessageOptions, MessageSelectMenu, MessageSelectOptionData } from "discord.js";
-import { NewActiveMatchInput } from "../../repositories/ActiveMatchRepository/types";
+import {
+  ButtonInteraction,
+  EmbedField,
+  MessageActionRow,
+  MessageEmbed,
+  MessageOptions,
+  MessageSelectMenu,
+  MessageSelectOptionData,
+} from "discord.js";
+import { ActiveMatchCreated } from "../../services/MatchService";
 import { Team } from "../../types/common";
 import { getEnvVariable } from "../utils";
 import { PlayerInQueue } from "../../repositories/QueueRepository/types";
 import EmbedBuilder from "./EmbedBuilder";
 import ButtonBuilder from "./ButtonBuilder";
+import CustomButton, { ButtonCustomID } from "./CustomButtons";
 
 export const enum MenuCustomID {
   BlueSelect = "blueSelect",
@@ -68,20 +77,8 @@ export default class MessageBuilder {
     };
   }
 
-  static activeMatchMessage(ballchasers: Array<NewActiveMatchInput>): MessageOptions {
-    const orangeTeam: Array<string> = [];
-    const blueTeam: Array<string> = [];
-
-    ballchasers.forEach((ballChaser) => {
-      if (ballChaser.team === Team.Blue) {
-        blueTeam.push("<@" + ballChaser.id + ">");
-      } else {
-        orangeTeam.push("<@" + ballChaser.id + ">");
-      }
-    });
-
-    const embed = EmbedBuilder.activeMatchEmbed();
-    embed.addField("🔷 Blue Team 🔷", blueTeam.join("\n")).addField("🔶 Orange Team 🔶", orangeTeam.join("\n"));
+  static activeMatchMessage({ blue, orange }: ActiveMatchCreated): MessageOptions {
+    const embed = EmbedBuilder.activeMatchEmbed({ blue, orange });
 
     return {
       components: [ButtonBuilder.activeMatchButtons()],
@@ -137,6 +134,50 @@ export default class MessageBuilder {
     }
     return {
       components,
+      embeds: [embed],
+    };
+  }
+
+  static reportedTeamButtons(buttonInteraction: ButtonInteraction, activeMatchEmbed: MessageEmbed): MessageOptions {
+    let reportedTeam;
+    const reportBlue = new CustomButton({ customId: ButtonCustomID.ReportBlue });
+    const reportOrange = new CustomButton({ customId: ButtonCustomID.ReportOrange });
+
+    switch (buttonInteraction.customId) {
+      case ButtonCustomID.ReportBlue: {
+        reportBlue.setStyle("PRIMARY");
+        reportedTeam = "**Blue Team**";
+        break;
+      }
+      case ButtonCustomID.ReportOrange: {
+        reportOrange.setStyle("PRIMARY");
+        reportedTeam = "**Orange Team**";
+        break;
+      }
+    }
+    const newField: EmbedField = {
+      inline: false,
+      name: "Reporting",
+      value:
+        "<@" +
+        buttonInteraction.user +
+        "> reported " +
+        reportedTeam +
+        " as the winner.\nAwaiting confirmation from the other team...\n" +
+        "If this is incorrect, click the button of the correct team.",
+    };
+    const embed = new MessageEmbed(activeMatchEmbed);
+    const updatedFields = embed.fields.map((field) => {
+      if (field.name === "Reporting") {
+        return newField;
+      } else {
+        return field;
+      }
+    });
+    embed.setFields(updatedFields);
+
+    return {
+      components: [new MessageActionRow({ components: [reportBlue, reportOrange] })],
       embeds: [embed],
     };
   }

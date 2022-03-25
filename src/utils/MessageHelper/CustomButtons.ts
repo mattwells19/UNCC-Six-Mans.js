@@ -6,9 +6,10 @@ export const enum ButtonCustomID {
   CreateRandomTeam = "randomizeTeams",
   ChooseTeam = "chooseTeam",
   FillTeam = "fillTeam",
-  ReportMatch = "reportMatch",
   RemoveAll = "removeAll",
   BreakMatch = "breakMatch",
+  ReportBlue = "reportBlue",
+  ReportOrange = "reportOrange",
 }
 
 export type QueueButtonOptions =
@@ -58,12 +59,6 @@ export default class CustomButton extends MessageButton {
             style: "DANGER",
             ...customOptions,
           };
-        case ButtonCustomID.ReportMatch:
-          return {
-            label: "Report Match",
-            style: "SUCCESS",
-            ...customOptions,
-          };
         case ButtonCustomID.RemoveAll:
           return {
             label: "DEV: Remove All",
@@ -74,6 +69,18 @@ export default class CustomButton extends MessageButton {
           return {
             label: "DEV: Break Match",
             style: "DANGER",
+            ...customOptions,
+          };
+        case ButtonCustomID.ReportBlue:
+          return {
+            label: "🔷 Blue Team Won 🔷",
+            style: "SECONDARY",
+            ...customOptions,
+          };
+        case ButtonCustomID.ReportOrange:
+          return {
+            label: "🔶 Orange Team Won 🔶",
+            style: "SECONDARY",
             ...customOptions,
           };
       }

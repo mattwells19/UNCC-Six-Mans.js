@@ -1,5 +1,6 @@
 import { Message, SelectMenuInteraction } from "discord.js";
 import QueueRepository from "../repositories/QueueRepository";
+import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { createMatchFromChosenTeams } from "../services/MatchService";
 import { bluePlayerChosen, orangePlayerChosen } from "../services/TeamAssignmentService";
 import { Team } from "../types/common";
@@ -28,12 +29,16 @@ export async function handleMenuInteraction(menuInteraction: SelectMenuInteracti
     case MenuCustomID.OrangeSelect: {
       // If user is not the captain and not in dev
       const isCaptain = await QueueRepository.isTeamCaptain(menuInteraction.user.id, Team.Orange);
+      const emptyQueue: PlayerInQueue[] = [];
       if (isCaptain || isDev) {
         await orangePlayerChosen(menuInteraction.values);
 
-        const match = await createMatchFromChosenTeams();
+        const newActiveMatch = await createMatchFromChosenTeams();
 
-        await message.edit(MessageBuilder.activeMatchMessage(match));
+        Promise.all([
+          await message.channel.send(MessageBuilder.activeMatchMessage(newActiveMatch)),
+          await message.edit(MessageBuilder.queueMessage(emptyQueue)),
+        ]);
         break;
       }
 
