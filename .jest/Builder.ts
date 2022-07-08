@@ -65,6 +65,7 @@ class ActiveMatchBuilderClass extends Builder<PlayerInActiveMatch> {
     const mockBallChaser = BallChaserQueueBuilder.single();
     return {
       id: mockBallChaser.id,
+      mmr: mockBallChaser.mmr,
       matchId: faker.datatype.uuid(),
       reportedTeam: null,
       team: mockBallChaser.team!,
