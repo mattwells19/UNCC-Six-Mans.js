@@ -94,7 +94,7 @@ describe("Match Report Service tests", () => {
   });
 
   describe.each([Team.Blue, Team.Orange])("Report team button was pressed", (team) => {
-    it("Does not report if the player is not in an active match", async () => {
+    it.todo("Does not report if the player is not in an active match", async () => {
       const mockBallChaser = BallChaserQueueBuilder.single();
       await manuallyAddBallChaserToQueue(mockBallChaser);
       await manuallyAddActiveMatchForBlue(mockBallChaser);
@@ -111,7 +111,7 @@ describe("Match Report Service tests", () => {
       expect(match?.reportedTeam).not.toEqual(team);
     });
 
-    it("Reports the team won if the player is in an active match", async () => {
+    it.todo("Reports the team won if the player is in an active match", async () => {
       const mockBallChaser1 = BallChaserQueueBuilder.single();
       const mockBallChaser2 = BallChaserQueueBuilder.single();
       await manuallyAddBallChaserToQueue(mockBallChaser1);
@@ -126,11 +126,11 @@ describe("Match Report Service tests", () => {
       });
 
       expect(report).toBeFalsy;
+      expect(match).not.toBeNull;
       expect(match?.reportedTeam).toEqual(team);
     });
-
-    it("Only reports the match if the same team was reported once by both teams", async () => {});
-    it("Does not change the report if another player on the same team reports the same team", async () => {});
-    it("Confirms the blue team won if this is the second report by opposite team", async () => {});
+    it.todo("Does not change the report if another player on the same team reports the same team", async () => {});
+    it.todo("Switches the reported team if the opposite team is reported", async () => {});
+    it.todo("Confirms the team won if this is the second report by opposite team", async () => {});
   });
 });
