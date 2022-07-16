@@ -247,8 +247,11 @@ export default class MessageBuilder {
     };
   }
 
-  // eslint-disable-next-line max-len
-  static voteCaptainsOrRandomMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>, captainsVotes: number, randomVotes: number): MessageOptions {
+  static voteCaptainsOrRandomMessage(
+    ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>, 
+    captainsVotes: number, randomVotes: number): 
+    MessageOptions {
+      
     const captainsCounterLabel = captainsVotes;
     const randomCounterLabel = randomVotes;
     const embed = new MessageEmbed({
