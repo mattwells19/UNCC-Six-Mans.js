@@ -248,10 +248,10 @@ export default class MessageBuilder {
   }
 
   static voteCaptainsOrRandomMessage(
-    ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>, 
-    captainsVotes: number, randomVotes: number): 
-    MessageOptions {
-      
+    ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>,
+    captainsVotes: number,
+    randomVotes: number
+  ): MessageOptions {
     const captainsCounterLabel = captainsVotes;
     const randomCounterLabel = randomVotes;
     const embed = new MessageEmbed({

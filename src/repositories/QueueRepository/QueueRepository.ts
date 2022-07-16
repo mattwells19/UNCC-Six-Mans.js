@@ -46,7 +46,7 @@ export class QueueRepository {
         randomCounter += 1;
       }
     }
-    return{
+    return {
       captains: captainsCounter,
       random: randomCounter,
     };

@@ -91,7 +91,6 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
     const players = await setCaptains(ballChasers);
 
     await message.edit(MessageBuilder.blueChooseMessage(players));
-
   } else if ((await vote).random >= 4) {
     const currentMatch = await createRandomMatch();
     const emptyQueue: PlayerInQueue[] = [];
@@ -103,7 +102,6 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
       //Update the embed with an empty queue message
       await message.edit(MessageBuilder.queueMessage(emptyQueue)),
     ]);
-
   } else {
     const captainsVotes = (await vote).captains;
     const randomVotes = (await vote).random;
