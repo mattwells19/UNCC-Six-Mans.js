@@ -208,12 +208,12 @@ export default class MessageBuilder {
     });
     const randomTeamsButton = new MessageButton({
       customId: ButtonCustomID.CreateRandomTeam,
-      label: "Random",
+      label: "Random (0)",
       style: "PRIMARY",
     });
     const pickCaptainsButton = new MessageButton({
       customId: ButtonCustomID.ChooseTeam,
-      label: "Captains",
+      label: "Captains (0)",
       style: "PRIMARY",
     });
     const leaveButton = new MessageButton({
@@ -237,7 +237,56 @@ export default class MessageBuilder {
 
     embed
       .setTitle("Queue is Full")
-      .setDescription("Click the Create Teams button to get started! \n\n" + ballChaserList);
+      .setDescription("Vote for Captains or Random teams to get started! \n\n" + ballChaserList);
+
+    return {
+      components: this.isDev
+        ? [new MessageActionRow({ components: [pickCaptainsButton, randomTeamsButton, leaveButton, removeAllButton] })]
+        : [new MessageActionRow({ components: [pickCaptainsButton, randomTeamsButton, leaveButton] })],
+      embeds: [embed],
+    };
+  }
+
+  // eslint-disable-next-line max-len
+  static voteCaptainsOrRandomMessage(ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>, captainsVotes: number, randomVotes: number): MessageOptions {
+    const captainsCounterLabel = captainsVotes;
+    const randomCounterLabel = randomVotes;
+    const embed = new MessageEmbed({
+      color: "GREEN",
+      thumbnail: { url: this.normIconURL },
+    });
+    const randomTeamsButton = new MessageButton({
+      customId: ButtonCustomID.CreateRandomTeam,
+      label: "Random (" + randomCounterLabel.toString() + ")",
+      style: "PRIMARY",
+    });
+    const pickCaptainsButton = new MessageButton({
+      customId: ButtonCustomID.ChooseTeam,
+      label: "Captains (" + captainsCounterLabel.toString() + ")",
+      style: "PRIMARY",
+    });
+    const leaveButton = new MessageButton({
+      customId: ButtonCustomID.LeaveQueue,
+      label: "Leave",
+      style: "DANGER",
+    });
+    const removeAllButton = new MessageButton({
+      customId: ButtonCustomID.RemoveAll,
+      label: "DEV: Remove All",
+      style: "DANGER",
+    });
+
+    const ballChaserList = ballchasers
+      .map((ballChaser) => {
+        // + 1 since it seems that joining the queue calculates to 59 instead of 60
+        const queueTime = ballChaser.queueTime?.diffNow().as("minutes") ?? 0;
+        return `${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
+      })
+      .join("\n");
+
+    embed
+      .setTitle("Queue is Full")
+      .setDescription("Vote for Captains or Random teams to get started! \n\n" + ballChaserList);
 
     return {
       components: this.isDev

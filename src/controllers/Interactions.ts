@@ -58,34 +58,12 @@ export async function handleInteraction(
     }
 
     case ButtonCustomID.CreateRandomTeam: {
-      const playerInQueue = await QueueRepository.isPlayerInQueue(buttonInteraction.user.id);
-
-      if (!playerInQueue) {
-        break;
-      } else {
-        const currentMatch = await createRandomMatch();
-        const emptyQueue: PlayerInQueue[] = [];
-
-        await Promise.all([
-          //Create new reply to start a match
-          await message.channel.send(await MessageBuilder.activeMatchMessage(currentMatch)),
-
-          //Update the embed with an empty queue message
-          await message.edit(MessageBuilder.queueMessage(emptyQueue)),
-        ]);
-      }
+      await captainsRandomVote(buttonInteraction, message);
       break;
     }
 
     case ButtonCustomID.ChooseTeam: {
-      const playerInQueue = await QueueRepository.isPlayerInQueue(buttonInteraction.user.id);
-
-      if (playerInQueue) {
-        const ballChasers = await QueueRepository.getAllBallChasersInQueue();
-        const players = await setCaptains(ballChasers);
-
-        await message.edit(MessageBuilder.blueChooseMessage(players));
-      }
+      await captainsRandomVote(buttonInteraction, message);
       break;
     }
 
@@ -98,6 +76,38 @@ export async function handleInteraction(
       await report(buttonInteraction, Team.Orange, message, NormClient);
       break;
     }
+  }
+}
+
+async function captainsRandomVote(buttonInteraction: ButtonInteraction, message: Message) {
+  const playerInQueue = await QueueRepository.isPlayerInQueue(buttonInteraction.user.id);
+  if (!playerInQueue) return;
+  const ballChasers = await QueueRepository.getAllBallChasersInQueue();
+
+  const vote = QueueRepository.countCaptainsRandomVote(buttonInteraction);
+
+  if ((await vote).captains >= 4) {
+    const ballChasers = await QueueRepository.getAllBallChasersInQueue();
+    const players = await setCaptains(ballChasers);
+
+    await message.edit(MessageBuilder.blueChooseMessage(players));
+
+  } else if ((await vote).random >= 4) {
+    const currentMatch = await createRandomMatch();
+    const emptyQueue: PlayerInQueue[] = [];
+
+    await Promise.all([
+      //Create new reply to start a match
+      await message.channel.send(MessageBuilder.activeMatchMessage(currentMatch)),
+
+      //Update the embed with an empty queue message
+      await message.edit(MessageBuilder.queueMessage(emptyQueue)),
+    ]);
+
+  } else {
+    const captainsVotes = (await vote).captains;
+    const randomVotes = (await vote).random;
+    await message.edit(MessageBuilder.voteCaptainsOrRandomMessage(ballChasers, captainsVotes, randomVotes));
   }
 }
 

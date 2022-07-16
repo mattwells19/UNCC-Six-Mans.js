@@ -5,6 +5,14 @@ import LeaderboardRepository from "../LeaderboardRepository";
 import { waitForAllPromises } from "../../utils";
 import { Team } from "../../types/common";
 import { InvalidCommand, isRecordNotFoundError } from "../../utils/InvalidCommand";
+import { ButtonInteraction } from "discord.js";
+import { ButtonCustomID } from "../../utils/MessageBuilder";
+
+const playersMap = new Map<string, string>();
+interface CaptainsRandomVotes {
+  captains: number;
+  random: number;
+}
 
 export class QueueRepository {
   #Queue: Prisma.QueueDelegate<Prisma.RejectPerOperation>;
@@ -24,6 +32,23 @@ export class QueueRepository {
       name: playerInQueue.player.name,
       queueTime: DateTime.fromJSDate(playerInQueue.queueTime),
       team: playerInQueue.team,
+    };
+  }
+
+  async countCaptainsRandomVote(buttonInteraction: ButtonInteraction): Promise<CaptainsRandomVotes> {
+    playersMap.set(buttonInteraction.user.id, buttonInteraction.customId);
+    let captainsCounter = 0;
+    let randomCounter = 0;
+    for (const value of playersMap.values()) {
+      if (value == ButtonCustomID.ChooseTeam) {
+        captainsCounter += 1;
+      } else {
+        randomCounter += 1;
+      }
+    }
+    return{
+      captains: captainsCounter,
+      random: randomCounter,
     };
   }
 
