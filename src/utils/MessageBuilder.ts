@@ -250,7 +250,9 @@ export default class MessageBuilder {
   static voteCaptainsOrRandomMessage(
     ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>,
     captainsVotes: number,
-    randomVotes: number
+    randomVotes: number,
+    voterList: PlayerInQueue[],
+    buttonInteraction: ButtonInteraction
   ): MessageOptions {
     const captainsCounterLabel = captainsVotes;
     const randomCounterLabel = randomVotes;
@@ -279,11 +281,20 @@ export default class MessageBuilder {
       style: "DANGER",
     });
 
+    const cap = "\uD83C\uDDE8";
+    const ran = "\uD83C\uDDF7";
     const ballChaserList = ballchasers
       .map((ballChaser) => {
         // + 1 since it seems that joining the queue calculates to 59 instead of 60
         const queueTime = ballChaser.queueTime?.diffNow().as("minutes") ?? 0;
-        return `${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
+        const voter = voterList.find((p) => p.id == ballChaser.id);
+        if (buttonInteraction.customId == ButtonCustomID.ChooseTeam && voter) {
+          return `${cap} ${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
+        } else if (buttonInteraction.customId == ButtonCustomID.CreateRandomTeam && voter) {
+          return `${ran} ${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
+        } else {
+          return `${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
+        }
       })
       .join("\n");
 

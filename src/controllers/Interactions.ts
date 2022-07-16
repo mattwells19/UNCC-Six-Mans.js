@@ -84,14 +84,14 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
   if (!playerInQueue) return;
   const ballChasers = await QueueRepository.getAllBallChasersInQueue();
 
-  const vote = QueueRepository.countCaptainsRandomVote(buttonInteraction);
+  const vote = await QueueRepository.countCaptainsRandomVote(buttonInteraction);
 
-  if ((await vote).captains >= 4) {
+  if (vote.captains >= 4) {
     const ballChasers = await QueueRepository.getAllBallChasersInQueue();
     const players = await setCaptains(ballChasers);
 
     await message.edit(MessageBuilder.blueChooseMessage(players));
-  } else if ((await vote).random >= 4) {
+  } else if (vote.random >= 4) {
     const currentMatch = await createRandomMatch();
     const emptyQueue: PlayerInQueue[] = [];
 
@@ -103,9 +103,20 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
       await message.edit(MessageBuilder.queueMessage(emptyQueue)),
     ]);
   } else {
-    const captainsVotes = (await vote).captains;
-    const randomVotes = (await vote).random;
-    await message.edit(MessageBuilder.voteCaptainsOrRandomMessage(ballChasers, captainsVotes, randomVotes));
+    const captainsVotes = vote.captains;
+    const randomVotes = vote.random;
+    const players = await QueueRepository.getCaptainsRandomVoters();
+    const voterList: PlayerInQueue[] = [];
+
+    for (const key of players.keys()) {
+      const player = await QueueRepository.getBallChaserInQueue(key);
+      if (player) {
+        voterList.push(player);
+      }
+    }
+    await message.edit(
+      MessageBuilder.voteCaptainsOrRandomMessage(ballChasers, captainsVotes, randomVotes, voterList, buttonInteraction)
+    );
   }
 }
 
