@@ -32,6 +32,7 @@ export async function handleInteraction(
 
       if (ballchasers) {
         if (ballchasers.length === 6) {
+          await QueueRepository.resetCaptainsRandomVoters();
           await message.edit(MessageBuilder.fullQueueMessage(ballchasers));
         } else {
           await message.edit(MessageBuilder.queueMessage(ballchasers));
@@ -87,11 +88,13 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
   const vote = await QueueRepository.countCaptainsRandomVote(buttonInteraction);
 
   if (vote.captains >= 4) {
+    QueueRepository.resetCaptainsRandomVoters();
     const ballChasers = await QueueRepository.getAllBallChasersInQueue();
     const players = await setCaptains(ballChasers);
 
     await message.edit(MessageBuilder.blueChooseMessage(players));
   } else if (vote.random >= 4) {
+    QueueRepository.resetCaptainsRandomVoters();
     const currentMatch = await createRandomMatch();
     const emptyQueue: PlayerInQueue[] = [];
 
@@ -115,7 +118,7 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
       }
     }
     await message.edit(
-      MessageBuilder.voteCaptainsOrRandomMessage(ballChasers, captainsVotes, randomVotes, voterList, buttonInteraction)
+      MessageBuilder.voteCaptainsOrRandomMessage(ballChasers, captainsVotes, randomVotes, voterList, players)
     );
   }
 }

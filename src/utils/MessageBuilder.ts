@@ -252,7 +252,7 @@ export default class MessageBuilder {
     captainsVotes: number,
     randomVotes: number,
     voterList: PlayerInQueue[],
-    buttonInteraction: ButtonInteraction
+    players: Map<string, string>
   ): MessageOptions {
     const captainsCounterLabel = captainsVotes;
     const randomCounterLabel = randomVotes;
@@ -288,9 +288,10 @@ export default class MessageBuilder {
         // + 1 since it seems that joining the queue calculates to 59 instead of 60
         const queueTime = ballChaser.queueTime?.diffNow().as("minutes") ?? 0;
         const voter = voterList.find((p) => p.id == ballChaser.id);
-        if (buttonInteraction.customId == ButtonCustomID.ChooseTeam && voter) {
+        const vote = players.get(ballChaser.id);
+        if (voter && vote == ButtonCustomID.ChooseTeam) {
           return `${cap} ${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
-        } else if (buttonInteraction.customId == ButtonCustomID.CreateRandomTeam && voter) {
+        } else if (voter && vote == ButtonCustomID.CreateRandomTeam) {
           return `${ran} ${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
         } else {
           return `${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;

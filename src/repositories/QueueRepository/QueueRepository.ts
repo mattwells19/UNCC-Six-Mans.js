@@ -56,6 +56,10 @@ export class QueueRepository {
     return playersMap;
   }
 
+  async resetCaptainsRandomVoters(): Promise<void> {
+    playersMap.clear();
+  }
+
   /**
    * Retrieves a BallChaser with a specific Discord ID
    * @param id Discord ID of the BallChaser to retrieve
