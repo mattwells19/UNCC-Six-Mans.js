@@ -6,11 +6,20 @@ Object {
     Object {
       "components": Array [
         Object {
-          "custom_id": "reportMatch",
+          "custom_id": "reportBlue",
           "disabled": false,
           "emoji": null,
-          "label": "Report Match",
-          "style": 3,
+          "label": "🔷 Blue Team Won 🔷",
+          "style": 2,
+          "type": 2,
+          "url": null,
+        },
+        Object {
+          "custom_id": "reportOrange",
+          "disabled": false,
+          "emoji": null,
+          "label": "🔶 Orange Team Won 🔶",
+          "style": 2,
           "type": 2,
           "url": null,
         },
@@ -27,16 +36,20 @@ Object {
         Object {
           "inline": false,
           "name": "🔷 Blue Team 🔷",
-          "value": "<@fdb80b67-731d-45cc-a857-bd541755c860>
-<@2f88af5d-39a4-4a06-afe9-da46834b6ece>
-<@e1b35958-7284-4c69-a6ba-43bd93138728>
-<@48ce16c6-4f21-420a-a61a-66770074eb93>",
+          "value": "<@e4e5133a-c1c4-44fd-aafd-35bb8ae68b93>",
         },
         Object {
           "inline": false,
           "name": "🔶 Orange Team 🔶",
-          "value": "<@b4f82275-ed57-4d59-bc51-596cdda5aead>
-<@ee099eb0-4783-4e61-8aba-0f215eade7fc>",
+          "value": "<@8c5f7de0-a293-44d4-8ddb-36cacdecf4c5>",
+        },
+        Object {
+          "inline": false,
+          "name": "MMR Stake & Probability Rating:
+",
+          "value": "🔷 Blue Team:         **(+100)**  **(-100)** 🔷
+🔶 Orange Team:  **(+100)**  **(-100)** 🔶
+Both teams are predicted to have a **50%** chance of winning.",
         },
       ],
       "footer": null,
@@ -67,7 +80,7 @@ Object {
           "max_values": undefined,
           "min_values": null,
           "options": Array [],
-          "placeholder": "UIC-Franc choose a player",
+          "placeholder": "partnerships choose a player",
           "type": 3,
         },
       ],
@@ -78,21 +91,21 @@ Object {
     Object {
       "author": null,
       "color": 3447003,
-      "description": "🔷 UIC-Franc 🔷 chooses first",
+      "description": "🔷 partnerships 🔷 chooses first",
       "fields": Array [
         Object {
           "inline": false,
           "name": "🔷 Blue Team 🔷",
-          "value": "<@fdb80b67-731d-45cc-a857-bd541755c860>
-<@2f88af5d-39a4-4a06-afe9-da46834b6ece>
-<@e1b35958-7284-4c69-a6ba-43bd93138728>
-<@48ce16c6-4f21-420a-a61a-66770074eb93>",
+          "value": "<@8c5f7de0-a293-44d4-8ddb-36cacdecf4c5>",
         },
         Object {
           "inline": false,
           "name": "🔶 Orange Team 🔶",
-          "value": "<@b4f82275-ed57-4d59-bc51-596cdda5aead>
-<@ee099eb0-4783-4e61-8aba-0f215eade7fc>",
+          "value": "<@e4e5133a-c1c4-44fd-aafd-35bb8ae68b93>
+<@4ff408bc-b824-4018-b766-a7d8c3134535>
+<@5bbc975a-75d0-43e5-adc8-cdeec16f86e8>
+<@5671e947-8a0d-4a06-b00d-1ec287b84315>
+<@5b438291-c9df-47b2-8e94-17902ae7328c>",
         },
       ],
       "footer": null,
@@ -154,12 +167,12 @@ Object {
       "color": 5763719,
       "description": "Click the Create Teams button to get started! 
 
-Rupiah (60 mins)
-Shirt (60 mins)
-TCP (60 mins)
-UIC-Franc (60 mins)
-Hawaii (60 mins)
-Station (60 mins)",
+partnerships (60 mins)
+Small (60 mins)
+Savings (60 mins)
+Checking (60 mins)
+invoice (60 mins)
+Granite (60 mins)",
       "fields": Array [],
       "footer": null,
       "image": null,
@@ -211,12 +224,12 @@ Object {
       "color": 5763719,
       "description": "Click the green button to join the queue! 
 
-Rupiah (60 mins)
-Shirt (60 mins)
-TCP (60 mins)
-UIC-Franc (60 mins)
-Hawaii (60 mins)
-Station (60 mins)",
+partnerships (60 mins)
+Small (60 mins)
+Savings (60 mins)
+Checking (60 mins)
+invoice (60 mins)
+Granite (60 mins)",
       "fields": Array [],
       "footer": null,
       "image": null,

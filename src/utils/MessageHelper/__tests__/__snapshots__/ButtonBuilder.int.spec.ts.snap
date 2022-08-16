@@ -4,11 +4,20 @@ exports[`Building Buttons return active match buttons 1`] = `
 Object {
   "components": Array [
     Object {
-      "custom_id": "reportMatch",
+      "custom_id": "reportBlue",
       "disabled": false,
       "emoji": null,
-      "label": "Report Match",
-      "style": 3,
+      "label": "🔷 Blue Team Won 🔷",
+      "style": 2,
+      "type": 2,
+      "url": null,
+    },
+    Object {
+      "custom_id": "reportOrange",
+      "disabled": false,
+      "emoji": null,
+      "label": "🔶 Orange Team Won 🔶",
+      "style": 2,
       "type": 2,
       "url": null,
     },
