@@ -177,7 +177,7 @@ export default class MessageBuilder {
     embed.setFields(updatedFields);
 
     return {
-      components: [new MessageActionRow({ components: [reportBlue, reportOrange, ButtonBuilder.breakMatchButtons()] })],
+      components: [new MessageActionRow({ components: [reportBlue, reportOrange] }), ButtonBuilder.breakMatchButtons()],
       embeds: [embed],
     };
   }
