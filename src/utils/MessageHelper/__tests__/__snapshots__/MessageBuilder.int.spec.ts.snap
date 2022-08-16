@@ -1,249 +1,94 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Building Buttons return active match buttons 1`] = `
-Object {
-  "components": Array [
-    Object {
-      "components": Array [
-        Object {
-          "custom_id": "reportBlue",
-          "disabled": false,
-          "emoji": null,
-          "label": "🔷 Blue Team Won 🔷",
-          "style": 2,
-          "type": 2,
-          "url": null,
-        },
-        Object {
-          "custom_id": "reportOrange",
-          "disabled": false,
-          "emoji": null,
-          "label": "🔶 Orange Team Won 🔶",
-          "style": 2,
-          "type": 2,
-          "url": null,
-        },
-      ],
-      "type": 1,
-    },
-  ],
-  "embeds": Array [
-    Object {
-      "author": null,
-      "color": 10038562,
-      "description": null,
-      "fields": Array [
-        Object {
-          "inline": false,
-          "name": "🔷 Blue Team 🔷",
-          "value": "<@e4e5133a-c1c4-44fd-aafd-35bb8ae68b93>",
-        },
-        Object {
-          "inline": false,
-          "name": "🔶 Orange Team 🔶",
-          "value": "<@8c5f7de0-a293-44d4-8ddb-36cacdecf4c5>",
-        },
-        Object {
-          "inline": false,
-          "name": "MMR Stake & Probability Rating:
-",
-          "value": "🔷 Blue Team:         **(+100)**  **(-100)** 🔷
-🔶 Orange Team:  **(+100)**  **(-100)** 🔶
-Both teams are predicted to have a **50%** chance of winning.",
-        },
-      ],
-      "footer": null,
-      "image": null,
-      "thumbnail": Object {
-        "height": undefined,
-        "proxyURL": undefined,
-        "url": "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png",
-        "width": undefined,
+Array [
+  Object {
+    "components": Array [
+      Object {
+        "custom_id": "reportBlue",
+        "disabled": false,
+        "emoji": null,
+        "label": "🔷 Blue Team Won 🔷",
+        "style": 2,
+        "type": 2,
+        "url": null,
       },
-      "timestamp": null,
-      "title": "Teams are set!",
-      "type": "rich",
-      "url": null,
-    },
-  ],
-}
-`;
-
-exports[`Building Buttons return break match buttons 1`] = `
-Object {
-  "components": Array [
-    Object {
-      "components": Array [
-        Object {
-          "custom_id": "blueSelect",
-          "disabled": false,
-          "max_values": undefined,
-          "min_values": null,
-          "options": Array [],
-          "placeholder": "partnerships choose a player",
-          "type": 3,
-        },
-      ],
-      "type": 1,
-    },
-  ],
-  "embeds": Array [
-    Object {
-      "author": null,
-      "color": 3447003,
-      "description": "🔷 partnerships 🔷 chooses first",
-      "fields": Array [
-        Object {
-          "inline": false,
-          "name": "🔷 Blue Team 🔷",
-          "value": "<@8c5f7de0-a293-44d4-8ddb-36cacdecf4c5>",
-        },
-        Object {
-          "inline": false,
-          "name": "🔶 Orange Team 🔶",
-          "value": "<@e4e5133a-c1c4-44fd-aafd-35bb8ae68b93>
-<@4ff408bc-b824-4018-b766-a7d8c3134535>
-<@5bbc975a-75d0-43e5-adc8-cdeec16f86e8>
-<@5671e947-8a0d-4a06-b00d-1ec287b84315>
-<@5b438291-c9df-47b2-8e94-17902ae7328c>",
-        },
-      ],
-      "footer": null,
-      "image": null,
-      "thumbnail": Object {
-        "height": undefined,
-        "proxyURL": undefined,
-        "url": "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png",
-        "width": undefined,
+      Object {
+        "custom_id": "reportOrange",
+        "disabled": false,
+        "emoji": null,
+        "label": "🔶 Orange Team Won 🔶",
+        "style": 2,
+        "type": 2,
+        "url": null,
       },
-      "timestamp": null,
-      "title": null,
-      "type": "rich",
-      "url": null,
-    },
-  ],
-}
+    ],
+    "type": 1,
+  },
+]
 `;
 
 exports[`Building Buttons return full queue buttons 1`] = `
-Object {
-  "components": Array [
-    Object {
-      "components": Array [
-        Object {
-          "custom_id": "chooseTeam",
-          "disabled": false,
-          "emoji": null,
-          "label": "Captains",
-          "style": 1,
-          "type": 2,
-          "url": null,
-        },
-        Object {
-          "custom_id": "randomizeTeams",
-          "disabled": false,
-          "emoji": null,
-          "label": "Random",
-          "style": 1,
-          "type": 2,
-          "url": null,
-        },
-        Object {
-          "custom_id": "leaveQueue",
-          "disabled": false,
-          "emoji": null,
-          "label": "Leave",
-          "style": 4,
-          "type": 2,
-          "url": null,
-        },
-      ],
-      "type": 1,
-    },
-  ],
-  "embeds": Array [
-    Object {
-      "author": null,
-      "color": 5763719,
-      "description": "Click the Create Teams button to get started! 
-
-partnerships (60 mins)
-Small (60 mins)
-Savings (60 mins)
-Checking (60 mins)
-invoice (60 mins)
-Granite (60 mins)",
-      "fields": Array [],
-      "footer": null,
-      "image": null,
-      "thumbnail": Object {
-        "height": undefined,
-        "proxyURL": undefined,
-        "url": "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png",
-        "width": undefined,
+Array [
+  Object {
+    "components": Array [
+      Object {
+        "custom_id": "chooseTeam",
+        "disabled": false,
+        "emoji": null,
+        "label": "Captains",
+        "style": 1,
+        "type": 2,
+        "url": null,
       },
-      "timestamp": null,
-      "title": "Queue is Full",
-      "type": "rich",
-      "url": null,
-    },
-  ],
-}
+      Object {
+        "custom_id": "randomizeTeams",
+        "disabled": false,
+        "emoji": null,
+        "label": "Random",
+        "style": 1,
+        "type": 2,
+        "url": null,
+      },
+      Object {
+        "custom_id": "leaveQueue",
+        "disabled": false,
+        "emoji": null,
+        "label": "Leave",
+        "style": 4,
+        "type": 2,
+        "url": null,
+      },
+    ],
+    "type": 1,
+  },
+]
 `;
 
 exports[`Building Buttons return queue buttons 1`] = `
-Object {
-  "components": Array [
-    Object {
-      "components": Array [
-        Object {
-          "custom_id": "joinQueue",
-          "disabled": false,
-          "emoji": null,
-          "label": "Join",
-          "style": 3,
-          "type": 2,
-          "url": null,
-        },
-        Object {
-          "custom_id": "leaveQueue",
-          "disabled": false,
-          "emoji": null,
-          "label": "Leave",
-          "style": 4,
-          "type": 2,
-          "url": null,
-        },
-      ],
-      "type": 1,
-    },
-  ],
-  "embeds": Array [
-    Object {
-      "author": null,
-      "color": 5763719,
-      "description": "Click the green button to join the queue! 
-
-partnerships (60 mins)
-Small (60 mins)
-Savings (60 mins)
-Checking (60 mins)
-invoice (60 mins)
-Granite (60 mins)",
-      "fields": Array [],
-      "footer": null,
-      "image": null,
-      "thumbnail": Object {
-        "height": undefined,
-        "proxyURL": undefined,
-        "url": "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png",
-        "width": undefined,
+Array [
+  Object {
+    "components": Array [
+      Object {
+        "custom_id": "joinQueue",
+        "disabled": false,
+        "emoji": null,
+        "label": "Join",
+        "style": 3,
+        "type": 2,
+        "url": null,
       },
-      "timestamp": null,
-      "title": "Current Queue: 6/6",
-      "type": "rich",
-      "url": null,
-    },
-  ],
-}
+      Object {
+        "custom_id": "leaveQueue",
+        "disabled": false,
+        "emoji": null,
+        "label": "Leave",
+        "style": 4,
+        "type": 2,
+        "url": null,
+      },
+    ],
+    "type": 1,
+  },
+]
 `;

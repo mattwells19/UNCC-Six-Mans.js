@@ -9,19 +9,15 @@ jest.mock("../../utils");
 
 describe("Building Buttons", () => {
   const mockBallChasers = BallChaserQueueBuilder.many(6);
-  const mockMatchId = faker.datatype.uuid();
+  const mockMatchId = "1234";
 
   it("return queue buttons", () => {
     const result = MessageBuilder.queueMessage(mockBallChasers);
-    expect(result).toMatchSnapshot();
+    expect(result.components).toMatchSnapshot();
   });
   it("return full queue buttons", () => {
     const result = MessageBuilder.fullQueueMessage(mockBallChasers);
-    expect(result).toMatchSnapshot();
-  });
-  it("return break match buttons", () => {
-    const result = MessageBuilder.captainChooseMessage(true, mockBallChasers);
-    expect(result).toMatchSnapshot();
+    expect(result.components).toMatchSnapshot();
   });
   it("return active match buttons", async () => {
     const orangePlayer: PlayerInActiveMatch = {
@@ -54,6 +50,6 @@ describe("Building Buttons", () => {
     };
 
     const result = MessageBuilder.activeMatchMessage(activeMatch);
-    expect(result).toMatchSnapshot();
+    expect(result.components).toMatchSnapshot();
   });
 });
