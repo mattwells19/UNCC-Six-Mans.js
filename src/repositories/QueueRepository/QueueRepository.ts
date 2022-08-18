@@ -6,7 +6,7 @@ import { waitForAllPromises } from "../../utils";
 import { Team } from "../../types/common";
 import { InvalidCommand, isRecordNotFoundError } from "../../utils/InvalidCommand";
 import { ButtonInteraction } from "discord.js";
-import { ButtonCustomID } from "../../utils/MessageBuilder";
+import { ButtonCustomID } from "../../utils/MessageHelper/CustomButtons";
 
 const playersMap = new Map<string, string>();
 interface CaptainsRandomVotes {
