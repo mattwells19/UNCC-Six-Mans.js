@@ -14,7 +14,6 @@ import { PlayerInQueue } from "../../repositories/QueueRepository/types";
 import EmbedBuilder from "./EmbedBuilder";
 import ButtonBuilder from "./ButtonBuilder";
 import CustomButton, { ButtonCustomID } from "./CustomButtons";
-import { Embed } from "@discordjs/builders";
 
 export const enum MenuCustomID {
   BlueSelect = "blueSelect",
