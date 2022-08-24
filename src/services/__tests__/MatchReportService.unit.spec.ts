@@ -87,14 +87,15 @@ async function manuallyAddActiveMatchForOrange(ballChaser: PlayerInQueue) {
   });
 }
 
-describe("Match Report Service tests", () => {
+//todo - finish tests
+/* describe("Match Report Service tests", () => {
   jest.mocked(ActiveMatchRepository.getAllPlayersInActiveMatch).mockResolvedValueOnce({
     blueTeam: [],
     orangeTeam: [],
   });
 
   describe.each([Team.Blue, Team.Orange])("Report team button was pressed", (team) => {
-    it.todo("Does not report if the player is not in an active match", async () => {
+    it("Does not report if the player is not in an active match", async () => {
       const mockBallChaser = BallChaserQueueBuilder.single();
       await manuallyAddBallChaserToQueue(mockBallChaser);
       await manuallyAddActiveMatchForBlue(mockBallChaser);
@@ -108,10 +109,9 @@ describe("Match Report Service tests", () => {
       });
 
       expect(report).toBeFalsy;
-      expect(match?.reportedTeam).not.toEqual(team);
     });
 
-    it.todo("Reports the team won if the player is in an active match", async () => {
+    it("Reports the team won if the player is in an active match", async () => {
       const mockBallChaser1 = BallChaserQueueBuilder.single();
       const mockBallChaser2 = BallChaserQueueBuilder.single();
       await manuallyAddBallChaserToQueue(mockBallChaser1);
@@ -129,8 +129,11 @@ describe("Match Report Service tests", () => {
       expect(match).not.toBeNull;
       expect(match?.reportedTeam).toEqual(team);
     });
-    it.todo("Does not change the report if another player on the same team reports the same team", async () => {});
-    it.todo("Switches the reported team if the opposite team is reported", async () => {});
-    it.todo("Confirms the team won if this is the second report by opposite team", async () => {});
   });
+}); */
+
+describe("Tests to complete", () => {
+  it.todo("Does not change the report if another player on the same team reports the same team");
+  it.todo("Switches the reported team if the opposite team is reported");
+  it.todo("Confirms the team won if this is the second report by opposite team");
 });
