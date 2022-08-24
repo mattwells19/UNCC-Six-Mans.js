@@ -53,4 +53,8 @@ export default class ButtonBuilder extends MessageButton {
   static breakMatchButtons(): MessageActionRow {
     return new MessageActionRow({ components: [breakMatchButton] });
   }
+
+  static removeAllButtons(): MessageActionRow {
+    return new MessageActionRow({ components: [removeAllButton] });
+  }
 }
