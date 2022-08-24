@@ -44,7 +44,7 @@ export function createRandomTeams(ballchasers: ReadonlyArray<PlayerInQueue>): Ar
 }
 
 export async function setCaptains(ballChasers: ReadonlyArray<PlayerInQueue>): Promise<ReadonlyArray<PlayerInQueue>> {
-  const sortedBallChaser = ballChasers.slice().sort((o, b) => b.mmr - o.mmr);
+  const sortedBallChaser = ballChasers.slice().sort((o, b) => o.mmr - b.mmr);
 
   //We are going to set the Blue Captain (firt person to choose) as the second highest MMR.
   //The thought is that this will even out the teams a little more.
