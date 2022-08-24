@@ -1,6 +1,6 @@
 import { ButtonInteraction, Client, Message, TextChannel } from "discord.js";
 import { joinQueue, leaveQueue } from "../services/QueueService";
-import MessageBuilder, { ButtonCustomID } from "../utils/MessageBuilder";
+import MessageBuilder from "../utils/MessageHelper/MessageBuilder";
 import { getDiscordChannelById } from "../utils/discordUtils";
 import { createRandomMatch } from "../services/MatchService";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
@@ -11,6 +11,7 @@ import QueueRepository from "../repositories/QueueRepository";
 import { setCaptains } from "../services/TeamAssignmentService";
 import { Team } from "../types/common";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
+import { ButtonCustomID } from "../utils/MessageHelper/CustomButtons";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<Message> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
@@ -26,8 +27,6 @@ export async function handleInteraction(
 
   switch (buttonInteraction.customId) {
     case ButtonCustomID.JoinQueue: {
-      await message.edit(MessageBuilder.disabledQueueButtons(buttonInteraction));
-
       const ballchasers = await joinQueue(buttonInteraction.user.id, buttonInteraction.user.username);
 
       if (ballchasers) {
@@ -37,23 +36,15 @@ export async function handleInteraction(
         } else {
           await message.edit(MessageBuilder.queueMessage(ballchasers));
         }
-      } else {
-        await message.edit(MessageBuilder.enabledQueueButtons());
       }
 
       break;
     }
 
     case ButtonCustomID.LeaveQueue: {
-      await message.edit(MessageBuilder.disabledQueueButtons(buttonInteraction));
-
-      await leaveQueue(buttonInteraction.user.id)
-        .then((remainingMembers) => {
-          return message.edit(MessageBuilder.queueMessage(remainingMembers));
-        })
-        .catch(() => {
-          return message.edit(MessageBuilder.enabledQueueButtons());
-        });
+      await leaveQueue(buttonInteraction.user.id).then((remainingMembers) => {
+        return message.edit(MessageBuilder.queueMessage(remainingMembers));
+      });
 
       break;
     }
@@ -92,7 +83,7 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
     const ballChasers = await QueueRepository.getAllBallChasersInQueue();
     const players = await setCaptains(ballChasers);
 
-    await message.edit(MessageBuilder.blueChooseMessage(players));
+    await message.edit(MessageBuilder.captainChooseMessage(true, players));
   } else if (vote.random >= 4) {
     QueueRepository.resetCaptainsRandomVoters();
     const currentMatch = await createRandomMatch();
