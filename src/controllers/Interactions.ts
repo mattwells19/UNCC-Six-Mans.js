@@ -116,6 +116,7 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
       if (player) {
         voterList.push(player);
       }
+      break;
     }
     await message.edit(
       MessageBuilder.voteCaptainsOrRandomMessage(ballChasers, captainsVotes, randomVotes, voterList, players)
