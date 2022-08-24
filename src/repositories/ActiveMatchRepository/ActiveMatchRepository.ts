@@ -1,9 +1,7 @@
-import { ActiveMatch, Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
-import { Team } from "../../types/common";
-import LeaderboardRepository from "../LeaderboardRepository";
-import { generateRandomId, splitArray, waitForAllPromises } from "../../utils";
-import { ActiveMatchTeams, NewActiveMatchInput, PlayerInActiveMatch, UpdatePlayerInActiveMatchInput } from "./types";
+import { generateRandomId } from "../../utils";
+import { NewActiveMatchInput, PlayerInActiveMatch, UpdatePlayerInActiveMatchInput } from "./types";
 
 export class ActiveMatchRepository {
   #ActiveMatch: Prisma.ActiveMatchDelegate<Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
@@ -70,7 +68,7 @@ export class ActiveMatchRepository {
       });
   }
 
-  async getAllPlayersInActiveMatch(playerInMatchId: string): Promise<ActiveMatchTeams> {
+  async getAllPlayersInActiveMatch(playerInMatchId: string): Promise<ReadonlyArray<Readonly<PlayerInActiveMatch>>> {
     const allPlayersInMatch = await this.#ActiveMatch
       .findUnique({
         select: {
@@ -93,27 +91,12 @@ export class ActiveMatchRepository {
         });
       });
 
-    const allPlayersInActiveMatch = await waitForAllPromises(allPlayersInMatch, async (playerInMatch) => {
-      return await this.#getPlayerInActiveMatchWithMmr(playerInMatch);
-    });
-
-    const [blueTeam, orangeTeam] = splitArray(allPlayersInActiveMatch, (p) => p.team === Team.Blue);
-
-    return {
-      blueTeam,
-      orangeTeam,
-    };
-  }
-
-  async #getPlayerInActiveMatchWithMmr(playerInMatch: ActiveMatch): Promise<PlayerInActiveMatch> {
-    const stats = await LeaderboardRepository.getPlayerStats(playerInMatch.playerId);
-    return {
+    return allPlayersInMatch.map((playerInMatch) => ({
       id: playerInMatch.playerId,
       matchId: playerInMatch.id,
-      mmr: stats ? stats.mmr : 100,
       reportedTeam: playerInMatch.reportedTeam,
       team: playerInMatch.team,
-    };
+    }));
   }
 
   async isPlayerInActiveMatch(playerInMatchId: string): Promise<boolean> {
@@ -124,21 +107,6 @@ export class ActiveMatchRepository {
     });
 
     return playerInMatch > 0;
-  }
-
-  async getPlayerInActiveMatch(playerInMatchId: string): Promise<PlayerInActiveMatch | null> {
-    const playerInMatch = await this.#ActiveMatch.findUnique({
-      where: {
-        playerId: playerInMatchId,
-      },
-    });
-
-    if (playerInMatch) {
-      const player = this.#getPlayerInActiveMatchWithMmr(playerInMatch);
-      return player;
-    } else {
-      return null;
-    }
   }
 }
 

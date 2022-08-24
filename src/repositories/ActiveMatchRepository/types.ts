@@ -5,16 +5,10 @@ export interface PlayerInActiveMatch {
   team: Team;
   reportedTeam: Team | null;
   matchId: string;
-  mmr: number;
-}
-
-export interface ActiveMatchTeams {
-  blueTeam: ReadonlyArray<PlayerInActiveMatch>;
-  orangeTeam: ReadonlyArray<PlayerInActiveMatch>;
 }
 
 export interface UpdatePlayerInActiveMatchInput {
-  reportedTeam?: Team | null;
+  reportedTeam?: Team;
   brokenQueue?: boolean;
 }
 

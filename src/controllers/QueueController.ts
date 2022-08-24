@@ -1,7 +1,7 @@
 import { Message } from "discord.js";
 import QueueRepository from "../repositories/QueueRepository";
 import { checkQueueTimes } from "../services/QueueService";
-import MessageBuilder from "../utils/MessageHelper/MessageBuilder";
+import MessageBuilder from "../utils/MessageBuilder";
 
 export function startQueueTimer(queueEmbed: Message) {
   let minuteCounter = 0;
