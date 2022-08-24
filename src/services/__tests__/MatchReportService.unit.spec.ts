@@ -12,7 +12,7 @@ jest.mock("../../utils");
 let prisma: PrismaClient;
 let eventId: number = 1;
 
-beforeEach(() => {
+/* beforeEach(() => {
   jest.clearAllMocks();
 });
 
@@ -85,7 +85,7 @@ async function manuallyAddActiveMatchForOrange(ballChaser: PlayerInQueue) {
       team: 1,
     },
   });
-}
+} */
 
 //todo - finish tests
 /* describe("Match Report Service tests", () => {
