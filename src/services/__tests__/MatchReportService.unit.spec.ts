@@ -95,20 +95,19 @@ describe("Match Report Service tests", () => {
 
   describe.each([Team.Blue, Team.Orange])("Report team button was pressed", (team) => {
     it.todo("Does not report if the player is not in an active match", async () => {
-      const mockBallChaser = BallChaserQueueBuilder.single();
-      await manuallyAddBallChaserToQueue(mockBallChaser);
-      await manuallyAddActiveMatchForBlue(mockBallChaser);
-      const testBallChaser = BallChaserQueueBuilder.single();
-      const report = await checkReport(team, testBallChaser.id);
-      const match = await prisma.activeMatch.findFirst({
-        where: {
-          id: "1",
-          playerId: testBallChaser.id,
-        },
-      });
-
-      expect(report).toBeFalsy;
-      expect(match?.reportedTeam).not.toEqual(team);
+      //   const mockBallChaser = BallChaserQueueBuilder.single();
+      //   await manuallyAddBallChaserToQueue(mockBallChaser);
+      //   await manuallyAddActiveMatchForBlue(mockBallChaser);
+      //   const testBallChaser = BallChaserQueueBuilder.single();
+      //   const report = await checkReport(team, testBallChaser.id);
+      //   const match = await prisma.activeMatch.findFirst({
+      //     where: {
+      //       id: "1",
+      //       playerId: testBallChaser.id,
+      //     },
+      //   });
+      //   expect(report).toBeFalsy;
+      //   expect(match?.reportedTeam).not.toEqual(team);
     });
 
     //     it.todo("Reports the team won if the player is in an active match", async () => {
