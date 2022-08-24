@@ -138,6 +138,59 @@ export default class MessageBuilder {
     };
   }
 
+  static voteCaptainsOrRandomMessage(
+    ballchasers: ReadonlyArray<Readonly<PlayerInQueue>>,
+    captainsVotes: number,
+    randomVotes: number,
+    voterList: PlayerInQueue[],
+    players: Map<string, string>
+  ): MessageOptions {
+    const captainsCounterLabel = captainsVotes;
+    const randomCounterLabel = randomVotes;
+    const randomTeams = new CustomButton({
+      customId: ButtonCustomID.CreateRandomTeam,
+      label: "Random (" + randomCounterLabel.toString() + ")",
+    });
+    const chooseCaptain = new CustomButton({
+      customId: ButtonCustomID.ChooseTeam,
+      label: "Captains (" + captainsCounterLabel.toString() + ")",
+    });
+    const leaveQueue = new CustomButton({ customId: ButtonCustomID.LeaveQueue });
+
+    const cap = "\uD83C\uDDE8";
+    const ran = "\uD83C\uDDF7";
+    const ballChaserList = ballchasers
+      .map((ballChaser) => {
+        // + 1 since it seems that joining the queue calculates to 59 instead of 60
+        const queueTime = ballChaser.queueTime?.diffNow().as("minutes") ?? 0;
+        const voter = voterList.find((p) => p.id == ballChaser.id);
+        const vote = players.get(ballChaser.id);
+        if (voter && vote == ButtonCustomID.ChooseTeam) {
+          return `${cap} ${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
+        } else if (voter && vote == ButtonCustomID.CreateRandomTeam) {
+          return `${ran} ${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
+        } else {
+          return `${ballChaser.name} (${Math.min(queueTime + 1, 60).toFixed()} mins)`;
+        }
+      })
+      .join("\n");
+
+    const embed = EmbedBuilder.voteForCaptainsOrRandomEmbed(
+      "Queue is Full",
+      "Vote for Captains or Random teams to get started! \n\n" + ballChaserList
+    );
+
+    const components = [new MessageActionRow({ components: [chooseCaptain, randomTeams, leaveQueue] })];
+    if (this.isDev) {
+      components.push(ButtonBuilder.removeAllButtons());
+    }
+
+    return {
+      components,
+      embeds: [embed],
+    };
+  }
+
   static reportedTeamButtons(buttonInteraction: ButtonInteraction, activeMatchEmbed: MessageEmbed): MessageOptions {
     let reportedTeam;
     const reportBlue = new CustomButton({ customId: ButtonCustomID.ReportBlue });

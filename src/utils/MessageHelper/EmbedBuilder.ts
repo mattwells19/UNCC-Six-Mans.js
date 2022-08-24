@@ -70,6 +70,10 @@ export default class EmbedBuilder {
     return activeMatchEmbed;
   }
 
+  static voteForCaptainsOrRandomEmbed(title: string, description: string): BaseEmbed {
+    return new BaseEmbed({ color: "GREEN", description, title });
+  }
+
   static captainsChooseEmbed(team: Team, captain: string): BaseEmbed {
     switch (team) {
       case Team.Blue:
