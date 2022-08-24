@@ -10,6 +10,8 @@ export const enum ButtonCustomID {
   BreakMatch = "breakMatch",
   ReportBlue = "reportBlue",
   ReportOrange = "reportOrange",
+  ConfirmNewEvent = "confirmNewEvent",
+  CancelNewEvent = "cancelNewEvent",
 }
 
 export type QueueButtonOptions =
@@ -81,6 +83,18 @@ export default class CustomButton extends MessageButton {
           return {
             label: "🔶 Orange Team Won 🔶",
             style: "SECONDARY",
+            ...customOptions,
+          };
+        case ButtonCustomID.ConfirmNewEvent:
+          return {
+            label: "Confirm",
+            style: "PRIMARY",
+            ...customOptions,
+          };
+        case ButtonCustomID.CancelNewEvent:
+          return {
+            label: "Cancel",
+            style: "DANGER",
             ...customOptions,
           };
       }

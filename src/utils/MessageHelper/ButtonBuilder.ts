@@ -12,6 +12,8 @@ const chooseTeamsButton = new CustomButton({ customId: ButtonCustomID.ChooseTeam
 const breakMatchButton = new CustomButton({ customId: ButtonCustomID.BreakMatch });
 const reportBlueWonButton = new CustomButton({ customId: ButtonCustomID.ReportBlue });
 const reportOrangeWonButton = new CustomButton({ customId: ButtonCustomID.ReportOrange });
+const confirmNewSeasonButton = new CustomButton({ customId: ButtonCustomID.ConfirmNewEvent });
+const cancelNewSeasonButton = new CustomButton({ customId: ButtonCustomID.CancelNewEvent });
 
 export default class ButtonBuilder extends MessageButton {
   static queueButtons(options: QueueButtonOptions = { disabled: false }): MessageActionRow {
@@ -56,5 +58,9 @@ export default class ButtonBuilder extends MessageButton {
 
   static removeAllButtons(): MessageActionRow {
     return new MessageActionRow({ components: [removeAllButton] });
+  }
+
+  static newSeasonButtons(): MessageActionRow {
+    return new MessageActionRow({ components: [confirmNewSeasonButton, cancelNewSeasonButton] });
   }
 }

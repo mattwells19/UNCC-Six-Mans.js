@@ -28,6 +28,58 @@ Array [
 ]
 `;
 
+exports[`Building Buttons return cancel new season message 1`] = `
+Object {
+  "components": Array [],
+  "embeds": Array [
+    Object {
+      "author": null,
+      "color": 10038562,
+      "description": "No changes were made and the current season is still active.",
+      "fields": Array [],
+      "footer": null,
+      "image": null,
+      "thumbnail": Object {
+        "height": undefined,
+        "proxyURL": undefined,
+        "url": "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png",
+        "width": undefined,
+      },
+      "timestamp": null,
+      "title": "New Season Cancelled",
+      "type": "rich",
+      "url": null,
+    },
+  ],
+}
+`;
+
+exports[`Building Buttons return confirm new season message 1`] = `
+Object {
+  "components": Array [],
+  "embeds": Array [
+    Object {
+      "author": null,
+      "color": 5763719,
+      "description": "The previous season has ended and the new season season has begun.",
+      "fields": Array [],
+      "footer": null,
+      "image": null,
+      "thumbnail": Object {
+        "height": undefined,
+        "proxyURL": undefined,
+        "url": "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png",
+        "width": undefined,
+      },
+      "timestamp": null,
+      "title": "New Season Started",
+      "type": "rich",
+      "url": null,
+    },
+  ],
+}
+`;
+
 exports[`Building Buttons return full queue buttons 1`] = `
 Array [
   Object {
@@ -63,6 +115,62 @@ Array [
     "type": 1,
   },
 ]
+`;
+
+exports[`Building Buttons return new season message 1`] = `
+Object {
+  "components": Array [
+    Object {
+      "components": Array [
+        Object {
+          "custom_id": "confirmNewEvent",
+          "disabled": false,
+          "emoji": null,
+          "label": "Confirm",
+          "style": 1,
+          "type": 2,
+          "url": null,
+        },
+        Object {
+          "custom_id": "cancelNewEvent",
+          "disabled": false,
+          "emoji": null,
+          "label": "Cancel",
+          "style": 4,
+          "type": 2,
+          "url": null,
+        },
+      ],
+      "type": 1,
+    },
+  ],
+  "embeds": Array [
+    Object {
+      "author": null,
+      "color": 10038562,
+      "description": "You are about to create a new season. This will end the current season.",
+      "fields": Array [
+        Object {
+          "inline": true,
+          "name": "⚠️ CAUTION ⚠️",
+          "value": "THIS CANNOT BE UNDONE",
+        },
+      ],
+      "footer": null,
+      "image": null,
+      "thumbnail": Object {
+        "height": undefined,
+        "proxyURL": undefined,
+        "url": "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png",
+        "width": undefined,
+      },
+      "timestamp": null,
+      "title": "Start new season season?",
+      "type": "rich",
+      "url": null,
+    },
+  ],
+}
 `;
 
 exports[`Building Buttons return queue buttons 1`] = `

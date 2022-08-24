@@ -67,6 +67,16 @@ export async function handleInteraction(
       await report(buttonInteraction, Team.Orange, message, NormClient);
       break;
     }
+
+    case ButtonCustomID.ConfirmNewEvent: {
+      break;
+    }
+
+    case ButtonCustomID.CancelNewEvent: {
+      await message.edit(MessageBuilder.newSeasonCancelMessage());
+
+      break;
+    }
   }
 }
 

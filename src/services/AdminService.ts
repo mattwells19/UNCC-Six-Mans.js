@@ -1,3 +1,4 @@
+import EventRepository from "../repositories/EventRepository";
 import QueueRepository from "../repositories/QueueRepository";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { InvalidCommand } from "../utils/InvalidCommand";
@@ -12,4 +13,8 @@ export async function kickPlayerFromQueue(playerIdToRemove: string): Promise<Rea
   }
 
   return await leaveQueue(playerIdToRemove);
+}
+
+export async function createNewSeason(newEventName: string): Promise<void> {
+  await Promise.all([await EventRepository.endCurrentEvent(), await EventRepository.createEvent(newEventName)]);
 }

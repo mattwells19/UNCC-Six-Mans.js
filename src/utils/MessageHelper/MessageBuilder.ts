@@ -1,6 +1,7 @@
 import {
   ButtonInteraction,
   EmbedField,
+  InteractionUpdateOptions,
   MessageActionRow,
   MessageEmbed,
   MessageOptions,
@@ -231,6 +232,30 @@ export default class MessageBuilder {
 
     return {
       components: [new MessageActionRow({ components: [reportBlue, reportOrange] }), ButtonBuilder.breakMatchButtons()],
+      embeds: [embed],
+    };
+  }
+
+  static confirmSeasonMessage(seasonName: string): MessageOptions {
+    const embed = EmbedBuilder.newSeasonEmbed(seasonName).addField("⚠️ CAUTION ⚠️", "THIS CANNOT BE UNDONE", true);
+    return {
+      components: [ButtonBuilder.newSeasonButtons()],
+      embeds: [embed],
+    };
+  }
+
+  static seasonConfirmedMessage(seasonName: string): InteractionUpdateOptions {
+    const embed = EmbedBuilder.newSeasonConfirmedEmbed(seasonName);
+    return {
+      components: [],
+      embeds: [embed],
+    };
+  }
+
+  static newSeasonCancelMessage(): InteractionUpdateOptions {
+    const embed = EmbedBuilder.newSeasonCancellationEmbed();
+    return {
+      components: [],
       embeds: [embed],
     };
   }

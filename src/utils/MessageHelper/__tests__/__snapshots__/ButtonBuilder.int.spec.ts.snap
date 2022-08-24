@@ -78,6 +78,32 @@ Object {
 }
 `;
 
+exports[`Building Buttons return new season buttons 1`] = `
+Object {
+  "components": Array [
+    Object {
+      "custom_id": "confirmNewEvent",
+      "disabled": false,
+      "emoji": null,
+      "label": "Confirm",
+      "style": 1,
+      "type": 2,
+      "url": null,
+    },
+    Object {
+      "custom_id": "cancelNewEvent",
+      "disabled": false,
+      "emoji": null,
+      "label": "Cancel",
+      "style": 4,
+      "type": 2,
+      "url": null,
+    },
+  ],
+  "type": 1,
+}
+`;
+
 exports[`Building Buttons return queue buttons 1`] = `
 Object {
   "components": Array [
