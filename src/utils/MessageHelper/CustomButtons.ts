@@ -10,6 +10,7 @@ export const enum ButtonCustomID {
   BreakMatch = "breakMatch",
   ReportBlue = "reportBlue",
   ReportOrange = "reportOrange",
+  BrokenQueue = "brokenqueue",
 }
 
 export type QueueButtonOptions =
@@ -81,6 +82,12 @@ export default class CustomButton extends MessageButton {
           return {
             label: "🔶 Orange Team Won 🔶",
             style: "SECONDARY",
+            ...customOptions,
+          };
+        case ButtonCustomID.BrokenQueue:
+          return {
+            label: "Broken Queue",
+            style: "DANGER",
             ...customOptions,
           };
       }
