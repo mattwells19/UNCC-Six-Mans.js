@@ -1,4 +1,3 @@
-import EventRepository from "../repositories/EventRepository";
 import QueueRepository from "../repositories/QueueRepository";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { InvalidCommand } from "../utils/InvalidCommand";

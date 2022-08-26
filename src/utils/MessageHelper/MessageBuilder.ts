@@ -1,7 +1,6 @@
 import {
   ButtonInteraction,
   EmbedField,
-  InteractionUpdateOptions,
   MessageActionRow,
   MessageEmbed,
   MessageOptions,
