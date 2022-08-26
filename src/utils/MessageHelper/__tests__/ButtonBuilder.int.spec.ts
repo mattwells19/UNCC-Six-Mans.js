@@ -19,4 +19,12 @@ describe("Building Buttons", () => {
     const result = ButtonBuilder.activeMatchButtons();
     expect(result).toMatchSnapshot();
   });
+  it("return new season buttons", () => {
+    const result = ButtonBuilder.newSeasonButtons();
+    expect(result).toMatchSnapshot();
+  });
+  it("return dev create match buttons", () => {
+    const result = ButtonBuilder.createDevMatch();
+    expect(result).toMatchSnapshot();
+  });
 });

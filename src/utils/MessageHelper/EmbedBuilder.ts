@@ -67,6 +67,8 @@ export default class EmbedBuilder {
         "%** chance of winning."
     );
 
+    activeMatchEmbed.addField("Reporting", "After the match please report the winner.");
+
     return activeMatchEmbed;
   }
 
@@ -81,5 +83,37 @@ export default class EmbedBuilder {
       case Team.Orange:
         return new BaseEmbed({ color: "ORANGE", description: "🔶 " + captain + " 🔶 choose 2 players" });
     }
+  }
+
+  static newSeasonEmbed(newSeason: string): BaseEmbed {
+    return new BaseEmbed({
+      color: "DARK_RED",
+      description: "You are about to create a new season. This will end the current season.",
+      title: "Start " + newSeason + " season?",
+    });
+  }
+
+  static newSeasonConfirmedEmbed(newSeason: string): BaseEmbed {
+    return new BaseEmbed({
+      color: "GREEN",
+      description: "The previous season has ended and the " + newSeason + " season has begun.",
+      title: "New Season Started",
+    });
+  }
+
+  static newSeasonCancellationEmbed(): BaseEmbed {
+    return new BaseEmbed({
+      color: "DARK_RED",
+      description: "No changes were made and the current season is still active.",
+      title: "New Season Cancelled",
+    });
+  }
+
+  static newSeasonCancellationEmbedDueToActiveMatch(): BaseEmbed {
+    return new BaseEmbed({
+      color: "DARK_RED",
+      description: "There is currently an active match preventing a new season.  Please finish the current match.",
+      title: "New Season Cancelled",
+    });
   }
 }

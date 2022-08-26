@@ -3,7 +3,7 @@ import { ActiveMatchTeams, PlayerInActiveMatch } from "../repositories/ActiveMat
 import LeaderboardRepository from "../repositories/LeaderboardRepository";
 import { UpdatePlayerStatsInput } from "../repositories/LeaderboardRepository/types";
 import { Team } from "../types/common";
-import { waitForAllPromises } from "../utils";
+import { getEnvVariable, waitForAllPromises } from "../utils";
 
 interface TeamProbabilityDecimalResult {
   blueProbabilityDecimal: number;
@@ -41,6 +41,7 @@ export function calculateProbability(calculatedProbabilityDecimal: number): numb
 }
 
 export async function checkReport(reportedTeam: Team, playerInMatchId: string): Promise<boolean> {
+  const isDev = getEnvVariable("ENVIRONMENT") === "dev";
   const teams = await ActiveMatchRepository.getAllPlayersInActiveMatch(playerInMatchId);
 
   const reporter = [...teams.blueTeam, ...teams.orangeTeam].find((p) => {
@@ -53,6 +54,9 @@ export async function checkReport(reportedTeam: Team, playerInMatchId: string): 
 
   if (!reporter) {
     return false;
+  } else if (isDev) {
+    await confirmMatch(reportedTeam, teams, playerInMatchId);
+    return true;
   } else if (previousReporter?.team === reporter.team && previousReporter?.reportedTeam === reportedTeam) {
     return false;
   } else if (previousReporter?.reportedTeam !== reportedTeam || previousReporter?.id === reporter.id) {

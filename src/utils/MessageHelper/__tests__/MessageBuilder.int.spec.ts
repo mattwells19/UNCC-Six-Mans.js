@@ -52,4 +52,24 @@ describe("Building Buttons", () => {
     const result = MessageBuilder.activeMatchMessage(activeMatch);
     expect(result.components).toMatchSnapshot();
   });
+
+  it("return new season message", async () => {
+    const result = MessageBuilder.confirmSeasonMessage("new season");
+    expect(result).toMatchSnapshot();
+  });
+
+  it("return confirm new season message", async () => {
+    const result = MessageBuilder.seasonConfirmedMessage("new season");
+    expect(result).toMatchSnapshot();
+  });
+
+  it("return cancel new season message", async () => {
+    const result = MessageBuilder.newSeasonCancelMessage();
+    expect(result).toMatchSnapshot();
+  });
+
+  it("return cancel new season message due to active match", async () => {
+    const result = MessageBuilder.newSeasonCancelMessageDueToActiveMatch();
+    expect(result).toMatchSnapshot();
+  });
 });

@@ -234,4 +234,37 @@ export default class MessageBuilder {
       embeds: [embed],
     };
   }
+
+  static confirmSeasonMessage(seasonName: string): MessageOptions {
+    const embed = EmbedBuilder.newSeasonEmbed(seasonName).addField("⚠️ CAUTION ⚠️", "THIS CANNOT BE UNDONE", true);
+
+    return {
+      components: [ButtonBuilder.newSeasonButtons()],
+      embeds: [embed],
+    };
+  }
+
+  static seasonConfirmedMessage(seasonName: string): MessageOptions {
+    const embed = EmbedBuilder.newSeasonConfirmedEmbed(seasonName);
+    return {
+      components: [],
+      embeds: [embed],
+    };
+  }
+
+  static newSeasonCancelMessage(): MessageOptions {
+    const embed = EmbedBuilder.newSeasonCancellationEmbed();
+    return {
+      components: [],
+      embeds: [embed],
+    };
+  }
+
+  static newSeasonCancelMessageDueToActiveMatch(): MessageOptions {
+    const embed = EmbedBuilder.newSeasonCancellationEmbedDueToActiveMatch();
+    return {
+      components: [],
+      embeds: [embed],
+    };
+  }
 }

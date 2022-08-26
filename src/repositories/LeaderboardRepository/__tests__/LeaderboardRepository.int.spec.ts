@@ -232,6 +232,18 @@ describe("LeaderboardRepository tests", () => {
       expect(allPlayers[i].wins).toBeGreaterThan(allPlayers[i + 1].wins);
     }
   });
+
+  it("rests the leaderboard after new season creation", async () => {
+    const playersToAdd = LeaderboardBuilder.many(10);
+    await manuallyAddPlayerStatsToLeaderboard(playersToAdd);
+
+    await LeaderboardRepository.resetLeaderBoard();
+
+    const allPlayers = await LeaderboardRepository.getPlayersStats();
+
+    //The season keeps the top 5 players
+    expect(allPlayers).toHaveLength(5);
+  });
 });
 
 describe("Leaderboard schema tests", () => {

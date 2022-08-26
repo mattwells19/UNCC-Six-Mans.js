@@ -43,6 +43,23 @@ Object {
 }
 `;
 
+exports[`Building Buttons return dev create match buttons 1`] = `
+Object {
+  "components": Array [
+    Object {
+      "custom_id": "createDevMatch",
+      "disabled": false,
+      "emoji": null,
+      "label": "DEV: Create Match",
+      "style": 4,
+      "type": 2,
+      "url": null,
+    },
+  ],
+  "type": 1,
+}
+`;
+
 exports[`Building Buttons return full queue buttons 1`] = `
 Object {
   "components": Array [
@@ -69,6 +86,32 @@ Object {
       "disabled": false,
       "emoji": null,
       "label": "Leave",
+      "style": 4,
+      "type": 2,
+      "url": null,
+    },
+  ],
+  "type": 1,
+}
+`;
+
+exports[`Building Buttons return new season buttons 1`] = `
+Object {
+  "components": Array [
+    Object {
+      "custom_id": "confirmNewEvent",
+      "disabled": false,
+      "emoji": null,
+      "label": "Confirm",
+      "style": 1,
+      "type": 2,
+      "url": null,
+    },
+    Object {
+      "custom_id": "cancelNewEvent",
+      "disabled": false,
+      "emoji": null,
+      "label": "Cancel",
       "style": 4,
       "type": 2,
       "url": null,

@@ -102,6 +102,32 @@ export class LeaderboardRepository {
       });
     });
   }
+
+  async resetLeaderBoard(): Promise<void> {
+    const { id: currentEventId } = await EventRepository.getCurrentEvent();
+    const persistedPlayers = (await this.getPlayersStats(5)).map((player) => player.id);
+
+    const playersToDelete = await this.#Leaderboard.findMany({
+      include: {
+        player: true,
+      },
+      where: {
+        eventId: currentEventId,
+        playerId: { not: { in: persistedPlayers } },
+      },
+    });
+
+    await waitForAllPromises(playersToDelete, async (player) => {
+      await this.#Leaderboard.delete({
+        where: {
+          eventId_playerId: {
+            eventId: currentEventId,
+            playerId: player.playerId,
+          },
+        },
+      });
+    });
+  }
 }
 
 export default new LeaderboardRepository();

@@ -1,3 +1,5 @@
+import { ButtonInteraction } from "discord.js";
+
 export function generateRandomId(): string {
   let chars = "";
 
@@ -58,4 +60,17 @@ export function splitArray<T>(arr: Array<T>, splitFn: (e: T) => boolean): T[][] 
   }
 
   return [a1, a2];
+}
+
+/**
+ * Utility that checks a message for the ephermal flag which is used for slash command embeds
+ * @param message
+ * @returns Bool to determine ephemerality.
+ */
+export function isEphemeral(buttonInteraction: ButtonInteraction): boolean {
+  if (buttonInteraction.message.flags?.valueOf() == 64) {
+    return true;
+  } else {
+    return false;
+  }
 }

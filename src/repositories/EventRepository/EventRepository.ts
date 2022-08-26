@@ -1,4 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
+import { DateTime } from "luxon";
 import { Event } from "./types";
 
 class EventRepository {
@@ -36,6 +37,25 @@ class EventRepository {
     this.#CurrentEventCache = currentEvent;
 
     return currentEvent;
+  }
+
+  async createEvent(eventName: string): Promise<void> {
+    await this.#Event.create({
+      data: {
+        name: eventName,
+      },
+    });
+  }
+
+  async endCurrentEvent(): Promise<void> {
+    await this.#Event.update({
+      data: {
+        endDate: DateTime.now().toString(),
+      },
+      where: {
+        id: (await this.getCurrentEvent()).id,
+      },
+    });
   }
 }
 
