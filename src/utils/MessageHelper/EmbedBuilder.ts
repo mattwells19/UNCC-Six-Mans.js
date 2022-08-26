@@ -67,6 +67,8 @@ export default class EmbedBuilder {
         "%** chance of winning."
     );
 
+    activeMatchEmbed.addField("Reporting", "After the match please report the winner.");
+
     return activeMatchEmbed;
   }
 
