@@ -131,7 +131,7 @@ export default class MessageBuilder {
 
     const components = [new MessageActionRow({ components: [playerChoices] })];
     if (this.isDev) {
-      components.push(ButtonBuilder.removeAllButtons());
+      components.push(ButtonBuilder.breakMatchButtons());
     }
     return {
       components,

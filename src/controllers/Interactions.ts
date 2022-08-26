@@ -9,11 +9,11 @@ import { updateLeaderboardChannel } from "./LeaderboardChannelController";
 import { getEnvVariable } from "../utils";
 import QueueRepository from "../repositories/QueueRepository";
 import { setCaptains } from "../services/TeamAssignmentService";
-import { ButtonCustomID } from "../utils/MessageHelper/CustomButtons";
 import { Team } from "../types/common";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 import EventRepository from "../repositories/EventRepository";
 import LeaderboardRepository from "../repositories/LeaderboardRepository";
+import { ButtonCustomID } from "../utils/MessageHelper/CustomButtons";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<Message> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
@@ -39,6 +39,7 @@ export async function handleInteraction(
           await message.edit(MessageBuilder.queueMessage(ballchasers));
         }
       }
+
       break;
     }
 
@@ -129,6 +130,7 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
       if (player) {
         voterList.push(player);
       }
+      break;
     }
     await message.edit(
       MessageBuilder.voteCaptainsOrRandomMessage(ballChasers, captainsVotes, randomVotes, voterList, players)
