@@ -140,6 +140,12 @@ export class ActiveMatchRepository {
       return null;
     }
   }
+
+  async isActiveMatch(): Promise<boolean> {
+    const activeMatch = await this.#ActiveMatch.count();
+
+    return activeMatch > 0;
+  }
 }
 
 export default new ActiveMatchRepository();

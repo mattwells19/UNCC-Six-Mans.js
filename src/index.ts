@@ -2,7 +2,7 @@ import { Client, Message } from "discord.js";
 import { updateLeaderboardChannel } from "./controllers/LeaderboardChannelController";
 import { handleInteraction, postCurrentQueue } from "./controllers/Interactions";
 import { getDiscordChannelById } from "./utils/discordUtils";
-import { getEnvVariable } from "./utils";
+import { getEnvVariable, isEphemeral } from "./utils";
 import { handleDevInteraction } from "./controllers/DevInteractions";
 import { handleAdminInteraction, registerAdminSlashCommands } from "./controllers/AdminController";
 import { handleMenuInteraction } from "./controllers/MenuInteractions";
@@ -52,11 +52,15 @@ NormClient.on("ready", async (client) => {
 });
 
 NormClient.on("interactionCreate", async (interaction) => {
-  if (interaction.isButton()) {
+  if (interaction.isButton() && !isEphemeral(interaction)) {
     await interaction.deferUpdate();
 
     await handleInteraction(interaction, NormClient);
     await handleDevInteraction(interaction);
+  } else if (interaction.isButton() && isEphemeral(interaction)) {
+    await interaction.deferUpdate();
+
+    await handleInteraction(interaction, NormClient);
   } else if (interaction.isSelectMenu()) {
     await interaction.deferUpdate();
 

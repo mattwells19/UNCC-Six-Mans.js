@@ -14,7 +14,3 @@ export async function kickPlayerFromQueue(playerIdToRemove: string): Promise<Rea
 
   return await leaveQueue(playerIdToRemove);
 }
-
-export async function createNewSeason(newEventName: string): Promise<void> {
-  await Promise.all([await EventRepository.endCurrentEvent(), await EventRepository.createEvent(newEventName)]);
-}

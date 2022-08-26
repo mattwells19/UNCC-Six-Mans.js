@@ -23,4 +23,8 @@ describe("Building Buttons", () => {
     const result = ButtonBuilder.newSeasonButtons();
     expect(result).toMatchSnapshot();
   });
+  it("return dev create match buttons", () => {
+    const result = ButtonBuilder.createDevMatch();
+    expect(result).toMatchSnapshot();
+  });
 });

@@ -6,6 +6,7 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { kickPlayerFromQueue } from "../services/AdminService";
 import { InvalidCommand } from "../utils/InvalidCommand";
 import MessageBuilder from "../utils/MessageHelper/MessageBuilder";
+import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
 
 const enum AdminCommandOptions {
   Kick = "kick",
@@ -66,8 +67,11 @@ export async function handleAdminInteraction(slashCommandInteraction: CommandInt
     }
 
     case AdminCommandOptions.NewSeason: {
-      if (newSeasonName) {
+      const activeMatch = await ActiveMatchRepository.isActiveMatch();
+      if (newSeasonName && !activeMatch) {
         slashCommandInteraction.editReply(MessageBuilder.confirmSeasonMessage(newSeasonName));
+      } else if (activeMatch) {
+        slashCommandInteraction.editReply(MessageBuilder.newSeasonCancelMessageDueToActiveMatch());
       }
       break;
     }

@@ -54,6 +54,32 @@ Object {
 }
 `;
 
+exports[`Building Buttons return cancel new season message due to active match 1`] = `
+Object {
+  "components": Array [],
+  "embeds": Array [
+    Object {
+      "author": null,
+      "color": 10038562,
+      "description": "There is currently an active match preventing a new season.  Please finish the current match.",
+      "fields": Array [],
+      "footer": null,
+      "image": null,
+      "thumbnail": Object {
+        "height": undefined,
+        "proxyURL": undefined,
+        "url": "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png",
+        "width": undefined,
+      },
+      "timestamp": null,
+      "title": "New Season Cancelled",
+      "type": "rich",
+      "url": null,
+    },
+  ],
+}
+`;
+
 exports[`Building Buttons return confirm new season message 1`] = `
 Object {
   "components": Array [],

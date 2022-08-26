@@ -12,6 +12,8 @@ import { setCaptains } from "../services/TeamAssignmentService";
 import { ButtonCustomID } from "../utils/MessageHelper/CustomButtons";
 import { Team } from "../types/common";
 import ActiveMatchRepository from "../repositories/ActiveMatchRepository";
+import EventRepository from "../repositories/EventRepository";
+import LeaderboardRepository from "../repositories/LeaderboardRepository";
 
 export async function postCurrentQueue(queueChannel: TextChannel): Promise<Message> {
   const ballchasers = await QueueRepository.getAllBallChasersInQueue();
@@ -48,7 +50,8 @@ export async function handleInteraction(
       break;
     }
 
-    case ButtonCustomID.CreateRandomTeam: {
+    case ButtonCustomID.CreateRandomTeam:
+    case ButtonCustomID.CreateDevMatch: {
       await captainsRandomVote(buttonInteraction, message);
       break;
     }
@@ -69,12 +72,12 @@ export async function handleInteraction(
     }
 
     case ButtonCustomID.ConfirmNewEvent: {
+      await createNewSeason(buttonInteraction, message);
       break;
     }
 
     case ButtonCustomID.CancelNewEvent: {
-      await message.edit(MessageBuilder.newSeasonCancelMessage());
-
+      await buttonInteraction.editReply(MessageBuilder.newSeasonCancelMessage());
       break;
     }
   }
@@ -83,9 +86,19 @@ export async function handleInteraction(
 async function captainsRandomVote(buttonInteraction: ButtonInteraction, message: Message) {
   const playerInQueue = await QueueRepository.isPlayerInQueue(buttonInteraction.user.id);
   if (!playerInQueue) return;
+
   const ballChasers = await QueueRepository.getAllBallChasersInQueue();
 
   const vote = await QueueRepository.countCaptainsRandomVote(buttonInteraction);
+
+  /*
+    Adding this statement for developers.
+    This allows a random match to be created during development
+    Bypassing the need to have multiple people vote.
+  */
+  if (buttonInteraction.customId == ButtonCustomID.CreateDevMatch) {
+    vote.random = 4;
+  }
 
   if (vote.captains >= 4) {
     QueueRepository.resetCaptainsRandomVoters();
@@ -125,6 +138,7 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
 
 async function report(buttonInteraction: ButtonInteraction, team: Team, message: Message, NormClient: Client) {
   const playerInMatch = await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id);
+
   if (!playerInMatch) return;
 
   const confirmReport = await checkReport(team, buttonInteraction.user.id);
@@ -140,5 +154,19 @@ async function report(buttonInteraction: ButtonInteraction, team: Team, message:
   } else {
     const previousEmbed = message.embeds[0];
     await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction, previousEmbed));
+  }
+}
+
+async function createNewSeason(buttonInteraction: ButtonInteraction, message: Message) {
+  const title = message.embeds[0].title;
+  if (title) {
+    const newSeasonName = title.slice(6, title.length - 8);
+    await Promise.all([
+      await EventRepository.endCurrentEvent(),
+      await EventRepository.createEvent(newSeasonName),
+      await LeaderboardRepository.resetLeaderBoard(),
+    ]);
+
+    await buttonInteraction.editReply(MessageBuilder.seasonConfirmedMessage(newSeasonName));
   }
 }

@@ -43,6 +43,23 @@ Object {
 }
 `;
 
+exports[`Building Buttons return dev create match buttons 1`] = `
+Object {
+  "components": Array [
+    Object {
+      "custom_id": "createDevMatch",
+      "disabled": false,
+      "emoji": null,
+      "label": "DEV: Create Match",
+      "style": 4,
+      "type": 2,
+      "url": null,
+    },
+  ],
+  "type": 1,
+}
+`;
+
 exports[`Building Buttons return full queue buttons 1`] = `
 Object {
   "components": Array [

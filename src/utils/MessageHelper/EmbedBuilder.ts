@@ -106,4 +106,12 @@ export default class EmbedBuilder {
       title: "New Season Cancelled",
     });
   }
+
+  static newSeasonCancellationEmbedDueToActiveMatch(): BaseEmbed {
+    return new BaseEmbed({
+      color: "DARK_RED",
+      description: "There is currently an active match preventing a new season.  Please finish the current match.",
+      title: "New Season Cancelled",
+    });
+  }
 }

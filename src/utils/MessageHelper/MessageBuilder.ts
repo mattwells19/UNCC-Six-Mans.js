@@ -238,13 +238,14 @@ export default class MessageBuilder {
 
   static confirmSeasonMessage(seasonName: string): MessageOptions {
     const embed = EmbedBuilder.newSeasonEmbed(seasonName).addField("⚠️ CAUTION ⚠️", "THIS CANNOT BE UNDONE", true);
+
     return {
       components: [ButtonBuilder.newSeasonButtons()],
       embeds: [embed],
     };
   }
 
-  static seasonConfirmedMessage(seasonName: string): InteractionUpdateOptions {
+  static seasonConfirmedMessage(seasonName: string): MessageOptions {
     const embed = EmbedBuilder.newSeasonConfirmedEmbed(seasonName);
     return {
       components: [],
@@ -252,8 +253,16 @@ export default class MessageBuilder {
     };
   }
 
-  static newSeasonCancelMessage(): InteractionUpdateOptions {
+  static newSeasonCancelMessage(): MessageOptions {
     const embed = EmbedBuilder.newSeasonCancellationEmbed();
+    return {
+      components: [],
+      embeds: [embed],
+    };
+  }
+
+  static newSeasonCancelMessageDueToActiveMatch(): MessageOptions {
+    const embed = EmbedBuilder.newSeasonCancellationEmbedDueToActiveMatch();
     return {
       components: [],
       embeds: [embed],

@@ -179,6 +179,17 @@ describe("ActiveMatchRepository Tests", () => {
         }
       });
     });
+
+    it("returns if there is an active match", async () => {
+      let activeMatch = await ActiveMatchRepository.isActiveMatch();
+      expect(activeMatch).toBeFalsy();
+
+      const mockPlayers = ActiveMatchBuilder.many(6);
+      await manuallyAddActiveMatch(mockPlayers);
+
+      activeMatch = await ActiveMatchRepository.isActiveMatch();
+      expect(activeMatch).toBeTruthy();
+    });
   });
 
   describe("Exception handling tests", () => {
