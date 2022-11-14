@@ -53,19 +53,21 @@ export default class EmbedBuilder {
     activeMatchEmbed.addField(
       "MMR Stake & Probability Rating:\n",
       "🔷 Blue Team: \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0**(+" +
-        blue.mmrStake.toString() +
-        ")**\u00A0\u00A0**(-" +
-        orange.mmrStake.toString() +
-        ")** 🔷\n🔶 Orange Team:\u00A0\u00A0**(+" +
-        orange.mmrStake.toString() +
-        ")**\u00A0\u00A0**(-" +
-        blue.mmrStake.toString() +
-        ")** 🔶\n" +
-        winner +
-        " predicted to have a **" +
-        probability +
-        "%** chance of winning."
+      blue.mmrStake.toString() +
+      ")**\u00A0\u00A0**(-" +
+      orange.mmrStake.toString() +
+      ")** 🔷\n🔶 Orange Team:\u00A0\u00A0**(+" +
+      orange.mmrStake.toString() +
+      ")**\u00A0\u00A0**(-" +
+      blue.mmrStake.toString() +
+      ")** 🔶\n" +
+      winner +
+      " predicted to have a **" +
+      probability +
+      "%** chance of winning."
     );
+
+    activeMatchEmbed.addField("Reporting", "Use the buttons to report which team won the match.");
 
     return activeMatchEmbed;
   }

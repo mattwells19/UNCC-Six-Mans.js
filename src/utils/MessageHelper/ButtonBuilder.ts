@@ -44,7 +44,7 @@ export default class ButtonBuilder extends MessageButton {
   }
 
   static activeMatchButtons(): MessageActionRow {
-    const components = [reportBlueWonButton, reportOrangeWonButton, brokenQueue];
+    const components = [brokenQueue, reportBlueWonButton, reportOrangeWonButton];
     if (isDev) {
       components.push(breakMatchButton);
     }
