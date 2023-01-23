@@ -11,9 +11,10 @@ import { ActiveMatchCreated } from "../../services/MatchService";
 import { Team } from "../../types/common";
 import { getEnvVariable } from "../utils";
 import { PlayerInQueue } from "../../repositories/QueueRepository/types";
-import EmbedBuilder from "./EmbedBuilder";
+import EmbedBuilder, { BaseEmbed } from "./EmbedBuilder";
 import ButtonBuilder from "./ButtonBuilder";
 import CustomButton, { ButtonCustomID } from "./CustomButtons";
+import { ActiveMatchTeams } from "../../repositories/ActiveMatchRepository/types";
 
 export const enum MenuCustomID {
   BlueSelect = "blueSelect",
@@ -135,6 +136,86 @@ export default class MessageBuilder {
     return {
       components,
       embeds: [embed],
+    };
+  }
+
+  static voteBrokenQueueMessage({ blue, orange }: ActiveMatchCreated,
+    brokenQueuePlayers: ActiveMatchTeams, brokenQueueVotes: number): MessageOptions {
+
+    const brokenHeart = "\uD83D\uDC94";
+    const blueTeam = blue.players.map((player) => {
+      const voter = brokenQueuePlayers.blueTeam.find((p) => p.id == player.id);
+      if (voter) {
+        return `<@${player.id}> ${brokenHeart}`;
+      } else {
+        return `<@${player.id}>`;
+      }
+    });
+    const orangeTeam: Array<string> = orange.players.map((player) => {
+      const voter = brokenQueuePlayers.orangeTeam.find((p) => p.id == player.id);
+      if (voter) {
+        return `<@${player.id}> ${brokenHeart}`;
+      } else {
+        return `<@${player.id}>`;
+      }
+    });
+    const brokenQueueButton = new CustomButton({
+      customId: ButtonCustomID.BrokenQueue,
+      label: "BrokenQueue (" + brokenQueueVotes + ")"
+    });
+    const reportBlueWonButton = new CustomButton({
+      customId: ButtonCustomID.ReportBlue,
+    });
+    const reportOrangeWonButton = new CustomButton({
+      customId: ButtonCustomID.ReportOrange,
+    });
+    const activeMatchEmbed = new BaseEmbed({
+      color: "DARK_RED",
+      fields: [
+        { name: "🔷 Blue Team 🔷", value: blueTeam.join("\n") },
+        { name: "🔶 Orange Team 🔶", value: orangeTeam.join("\n") },
+      ],
+      title: "Teams are set!",
+    });
+
+    let probability;
+    let winner;
+    if (blue.winProbability > orange.winProbability) {
+      probability = blue.winProbability;
+      winner = "Blue Team is";
+    } else if (blue.winProbability < orange.winProbability) {
+      probability = orange.winProbability;
+      winner = "Orange Team is";
+    } else {
+      probability = "50";
+      winner = "Both teams are";
+    }
+
+    activeMatchEmbed.addField(
+      "MMR Stake & Probability Rating:\n",
+      "🔷 Blue Team: \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0**(+" +
+      blue.mmrStake.toString() +
+      ")**\u00A0\u00A0**(-" +
+      orange.mmrStake.toString() +
+      ")** 🔷\n🔶 Orange Team:\u00A0\u00A0**(+" +
+      orange.mmrStake.toString() +
+      ")**\u00A0\u00A0**(-" +
+      blue.mmrStake.toString() +
+      ")** 🔶\n" +
+      winner +
+      " predicted to have a **" +
+      probability +
+      "%** chance of winning."
+    );
+
+    activeMatchEmbed.addField("Reporting", "Use the buttons to report which team won the match.");
+    const components = [new MessageActionRow({
+      components: [brokenQueueButton, reportBlueWonButton, reportOrangeWonButton]
+    })];
+
+    return {
+      components: components,
+      embeds: [activeMatchEmbed],
     };
   }
 

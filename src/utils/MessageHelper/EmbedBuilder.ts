@@ -2,7 +2,7 @@ import { MessageEmbed, MessageEmbedOptions } from "discord.js";
 import { ActiveMatchCreated } from "../../services/MatchService";
 import { Team } from "../../types/common";
 
-class BaseEmbed extends MessageEmbed {
+export class BaseEmbed extends MessageEmbed {
   private static readonly normIconURL =
     "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";
 
@@ -53,19 +53,21 @@ export default class EmbedBuilder {
     activeMatchEmbed.addField(
       "MMR Stake & Probability Rating:\n",
       "🔷 Blue Team: \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0**(+" +
-        blue.mmrStake.toString() +
-        ")**\u00A0\u00A0**(-" +
-        orange.mmrStake.toString() +
-        ")** 🔷\n🔶 Orange Team:\u00A0\u00A0**(+" +
-        orange.mmrStake.toString() +
-        ")**\u00A0\u00A0**(-" +
-        blue.mmrStake.toString() +
-        ")** 🔶\n" +
-        winner +
-        " predicted to have a **" +
-        probability +
-        "%** chance of winning."
+      blue.mmrStake.toString() +
+      ")**\u00A0\u00A0**(-" +
+      orange.mmrStake.toString() +
+      ")** 🔷\n🔶 Orange Team:\u00A0\u00A0**(+" +
+      orange.mmrStake.toString() +
+      ")**\u00A0\u00A0**(-" +
+      blue.mmrStake.toString() +
+      ")** 🔶\n" +
+      winner +
+      " predicted to have a **" +
+      probability +
+      "%** chance of winning."
     );
+
+    activeMatchEmbed.addField("Reporting", "Use the buttons to report which team won the match.");
 
     return activeMatchEmbed;
   }

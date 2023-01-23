@@ -26,6 +26,7 @@ describe("Building Buttons", () => {
       reportedTeam: null,
       matchId: mockMatchId,
       mmr: 100,
+      brokenQueue: false,
     };
 
     const bluePlayer: PlayerInActiveMatch = {
@@ -34,6 +35,7 @@ describe("Building Buttons", () => {
       reportedTeam: null,
       matchId: mockMatchId,
       mmr: 100,
+      brokenQueue: false,
     };
 
     const activeMatch: ActiveMatchCreated = {

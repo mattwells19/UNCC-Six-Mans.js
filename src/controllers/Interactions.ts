@@ -2,7 +2,7 @@ import { ButtonInteraction, Client, Message, TextChannel } from "discord.js";
 import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder from "../utils/MessageHelper/MessageBuilder";
 import { getDiscordChannelById } from "../utils/discordUtils";
-import { createRandomMatch } from "../services/MatchService";
+import { createRandomMatch, getActiveMatch } from "../services/MatchService";
 import { PlayerInQueue } from "../repositories/QueueRepository/types";
 import { checkReport } from "../services/MatchReportService";
 import { updateLeaderboardChannel } from "./LeaderboardChannelController";
@@ -66,6 +66,11 @@ export async function handleInteraction(
 
     case ButtonCustomID.ReportOrange: {
       await report(buttonInteraction, Team.Orange, message, NormClient);
+      break;
+    }
+
+    case ButtonCustomID.BrokenQueue: {
+      await brokenQueue(buttonInteraction, message);
       break;
     }
   }
@@ -132,5 +137,32 @@ async function report(buttonInteraction: ButtonInteraction, team: Team, message:
   } else {
     const previousEmbed = message.embeds[0];
     await message.edit(MessageBuilder.reportedTeamButtons(buttonInteraction, previousEmbed));
+  }
+}
+
+async function brokenQueue(buttonInteraction: ButtonInteraction, message: Message) {
+  const playerinMatch = await ActiveMatchRepository.isPlayerInActiveMatch(buttonInteraction.user.id);
+  if (!playerinMatch) return;
+  let vote = false;
+  const playerVoting = await ActiveMatchRepository.getPlayerInActiveMatch(buttonInteraction.user.id);
+  if (playerVoting?.brokenQueue == false) {
+    vote = true;
+  } else {
+    vote = false;
+  }
+  await ActiveMatchRepository.updatePlayerInActiveMatch(buttonInteraction.user.id, {
+    brokenQueue: vote,
+  });
+
+  const brokenQueueVotes = await ActiveMatchRepository.getAllBrokenQueueVotesInActiveMatch(buttonInteraction.user.id);
+  if (brokenQueueVotes >= 4) {
+    message.delete();
+    await ActiveMatchRepository.removeAllPlayersInActiveMatch(buttonInteraction.user.id);
+  } else {
+    const teams = await ActiveMatchRepository.getAllBrokenQueueVotersInActiveMatch(buttonInteraction.user.id);
+    const currentMatch = await getActiveMatch(buttonInteraction.user.id);
+    await Promise.all([
+      await message.edit(MessageBuilder.voteBrokenQueueMessage(currentMatch, teams, brokenQueueVotes)),
+    ]);
   }
 }
