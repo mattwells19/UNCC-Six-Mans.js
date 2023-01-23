@@ -26,9 +26,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Generate Database
-        run: npx prisma generate
-
       - name: Build NormJs
         run: npm run build
 
