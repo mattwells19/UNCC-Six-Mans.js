@@ -21,6 +21,7 @@ describe("Building Buttons", () => {
   });
   it("return active match buttons", async () => {
     const orangePlayer: PlayerInActiveMatch = {
+      brokenQueue: false,
       id: mockBallChasers[0].id,
       team: Team.Orange,
       reportedTeam: null,
@@ -29,6 +30,7 @@ describe("Building Buttons", () => {
     };
 
     const bluePlayer: PlayerInActiveMatch = {
+      brokenQueue: false,
       id: mockBallChasers[1].id,
       team: Team.Blue,
       reportedTeam: null,
