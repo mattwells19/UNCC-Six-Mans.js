@@ -21,21 +21,21 @@ describe("Building Buttons", () => {
   });
   it("return active match buttons", async () => {
     const orangePlayer: PlayerInActiveMatch = {
-      brokenQueue: false,
       id: mockBallChasers[0].id,
       team: Team.Orange,
       reportedTeam: null,
       matchId: mockMatchId,
       mmr: 100,
+      brokenQueue: false,
     };
 
     const bluePlayer: PlayerInActiveMatch = {
-      brokenQueue: false,
       id: mockBallChasers[1].id,
       team: Team.Blue,
       reportedTeam: null,
       matchId: mockMatchId,
       mmr: 100,
+      brokenQueue: false,
     };
 
     const activeMatch: ActiveMatchCreated = {

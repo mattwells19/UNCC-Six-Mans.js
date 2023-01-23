@@ -64,12 +64,12 @@ class ActiveMatchBuilderClass extends Builder<PlayerInActiveMatch> {
   single(overrides?: Partial<PlayerInActiveMatch>): PlayerInActiveMatch {
     const mockBallChaser = BallChaserQueueBuilder.single();
     return {
-      brokenQueue: false,
       id: mockBallChaser.id,
       mmr: mockBallChaser.mmr,
       matchId: faker.datatype.uuid(),
       reportedTeam: null,
       team: mockBallChaser.team!,
+      brokenQueue: false,
       ...overrides,
     };
   }
