@@ -10,17 +10,17 @@ export const enum ButtonCustomID {
   BreakMatch = "breakMatch",
   ReportBlue = "reportBlue",
   ReportOrange = "reportOrange",
-  BrokenQueue = "brokenqueue",
+  BrokenQueue = "brokenQueue",
 }
 
 export type QueueButtonOptions =
   | {
-      disabled: true;
-      buttonId: ButtonCustomID;
-    }
+    disabled: true;
+    buttonId: ButtonCustomID;
+  }
   | {
-      disabled: false;
-    };
+    disabled: false;
+  };
 
 interface CustomButtonOptions extends Partial<Omit<InteractionButtonOptions, "customId">> {
   customId: ButtonCustomID;
