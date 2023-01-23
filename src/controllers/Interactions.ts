@@ -83,13 +83,13 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
 
   const vote = await QueueRepository.countCaptainsRandomVote(buttonInteraction);
 
-  if (vote.captains >= 1) {
+  if (vote.captains >= 4) {
     QueueRepository.resetCaptainsRandomVoters();
     const ballChasers = await QueueRepository.getAllBallChasersInQueue();
     const players = await setCaptains(ballChasers);
 
     await message.edit(MessageBuilder.captainChooseMessage(true, players));
-  } else if (vote.random >= 1) {
+  } else if (vote.random >= 4) {
     QueueRepository.resetCaptainsRandomVoters();
     const currentMatch = await createRandomMatch();
     const emptyQueue: PlayerInQueue[] = [];
