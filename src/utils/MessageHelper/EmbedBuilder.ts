@@ -2,7 +2,7 @@ import { MessageEmbed, MessageEmbedOptions } from "discord.js";
 import { ActiveMatchCreated } from "../../services/MatchService";
 import { Team } from "../../types/common";
 
-class BaseEmbed extends MessageEmbed {
+export class BaseEmbed extends MessageEmbed {
   private static readonly normIconURL =
     "https://raw.githubusercontent.com/mattwells19/UNCC-Six-Mans.js/main/media/norm_still.png";
 
