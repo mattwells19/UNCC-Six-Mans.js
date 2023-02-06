@@ -1,4 +1,4 @@
-import { ButtonInteraction, Client, Message, TextChannel } from "discord.js";
+import { ButtonInteraction, Client, Message, MessageActionRow, MessageButton, TextChannel } from "discord.js";
 import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder from "../utils/MessageHelper/MessageBuilder";
 import { getDiscordChannelById } from "../utils/discordUtils";
@@ -31,8 +31,28 @@ export async function handleInteraction(
 
       if (ballchasers) {
         if (ballchasers.length === 6) {
-          await QueueRepository.resetCaptainsRandomVoters();
-          await message.edit(MessageBuilder.fullQueueMessage(ballchasers));
+          const list = ballchasers.map((ballChaser) => {
+            return `<@${ballChaser.id}> `;
+          });
+
+          const msg = await message.channel.send({ content: list.toString() });
+          msg;
+          await Promise.all([
+            msg.delete(),
+            message.edit(MessageBuilder.fullQueueMessage(ballchasers)),
+            QueueRepository.resetCaptainsRandomVoters(),
+          ]);
+          // msg;
+          // await msg.delete();
+          // await message.edit(MessageBuilder.fullQueueMessage(ballchasers));
+          // await QueueRepository.resetCaptainsRandomVoters();
+        } else if (ballchasers.length === 1) {
+          const msg = await message.channel.send({ content: "@here" });
+          msg;
+          await Promise.all([msg.delete(), message.edit(MessageBuilder.queueMessage(ballchasers))]);
+          // msg;
+          // await msg.delete();
+          // await message.edit(MessageBuilder.queueMessage(ballchasers));
         } else {
           await message.edit(MessageBuilder.queueMessage(ballchasers));
         }
@@ -50,12 +70,58 @@ export async function handleInteraction(
     }
 
     case ButtonCustomID.CreateRandomTeam: {
-      await captainsRandomVote(buttonInteraction, message);
+      const randInteraction = new Date().getTime();
+      const row = new MessageActionRow()
+        .addComponents(
+          new MessageButton()
+            .setCustomId(ButtonCustomID.ChooseTeam)
+            .setDisabled(true)
+            .setStyle("PRIMARY")
+            .setLabel("Please Wait...")
+        )
+        .addComponents(
+          new MessageButton()
+            .setCustomId(ButtonCustomID.CreateRandomTeam)
+            .setDisabled(true)
+            .setStyle("PRIMARY")
+            .setLabel("Please Wait...")
+        );
+
+      await Promise.all([message.edit({ components: [row] }), captainsRandomVote(buttonInteraction, message)]);
+      const totaltime = new Date().getTime() - randInteraction;
+      if (totaltime > 500) {
+        console.log(`Random Rate Limiting ${buttonInteraction.createdAt}!\nTook ${totaltime}ms to respond!\n`);
+      }
+      // await message.edit({ components: [row] });
+      // await captainsRandomVote(buttonInteraction, message);
       break;
     }
 
     case ButtonCustomID.ChooseTeam: {
-      await captainsRandomVote(buttonInteraction, message);
+      const captainInteraction = new Date().getTime();
+      const row = new MessageActionRow()
+        .addComponents(
+          new MessageButton()
+            .setCustomId(ButtonCustomID.ChooseTeam)
+            .setDisabled(true)
+            .setStyle("PRIMARY")
+            .setLabel("Please Wait...")
+        )
+        .addComponents(
+          new MessageButton()
+            .setCustomId(ButtonCustomID.CreateRandomTeam)
+            .setDisabled(true)
+            .setStyle("PRIMARY")
+            .setLabel("Please Wait...")
+        );
+
+      await Promise.all([message.edit({ components: [row] }), captainsRandomVote(buttonInteraction, message)]);
+      const totaltime = new Date().getTime() - captainInteraction;
+      if (totaltime > 500) {
+        console.log(`Captain Rate Limiting ${buttonInteraction.createdAt}!\nTook ${totaltime}ms to respond!\n`);
+      }
+      // await message.edit({ components: [row] });
+      // await captainsRandomVote(buttonInteraction, message);
       break;
     }
 
@@ -84,13 +150,11 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
   const vote = await QueueRepository.countCaptainsRandomVote(buttonInteraction);
 
   if (vote.captains >= 4) {
-    QueueRepository.resetCaptainsRandomVoters();
     const ballChasers = await QueueRepository.getAllBallChasersInQueue();
     const players = await setCaptains(ballChasers);
-
     await message.edit(MessageBuilder.captainChooseMessage(true, players));
-  } else if (vote.random >= 4) {
     QueueRepository.resetCaptainsRandomVoters();
+  } else if (vote.random >= 4) {
     const currentMatch = await createRandomMatch();
     const emptyQueue: PlayerInQueue[] = [];
 
@@ -101,10 +165,12 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
       //Update the embed with an empty queue message
       await message.edit(MessageBuilder.queueMessage(emptyQueue)),
     ]);
+
+    QueueRepository.resetCaptainsRandomVoters();
   } else {
+    const players = await QueueRepository.getCaptainsRandomVoters();
     const captainsVotes = vote.captains;
     const randomVotes = vote.random;
-    const players = await QueueRepository.getCaptainsRandomVoters();
     const voterList: PlayerInQueue[] = [];
 
     for (const key of players.keys()) {
@@ -112,11 +178,13 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
       if (player) {
         voterList.push(player);
       }
-      break;
+      // break;
     }
-    await message.edit(
-      MessageBuilder.voteCaptainsOrRandomMessage(ballChasers, captainsVotes, randomVotes, voterList, players)
-    );
+    await Promise.all([
+      message.edit(
+        MessageBuilder.voteCaptainsOrRandomMessage(ballChasers, captainsVotes, randomVotes, voterList, players)
+      ),
+    ]);
   }
 }
 
