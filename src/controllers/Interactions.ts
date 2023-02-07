@@ -152,7 +152,7 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
   if (vote.captains >= 4) {
     const ballChasers = await QueueRepository.getAllBallChasersInQueue();
     const players = await setCaptains(ballChasers);
-    await message.edit(MessageBuilder.captainChooseMessage(true, players));
+    Promise.all([message.edit(MessageBuilder.captainChooseMessage(true, players))]);
     QueueRepository.resetCaptainsRandomVoters();
   } else if (vote.random >= 4) {
     const currentMatch = await createRandomMatch();
