@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { ButtonInteraction, Client, Message, MessageActionRow, MessageButton, TextChannel } from "discord.js";
 import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder from "../utils/MessageHelper/MessageBuilder";
@@ -28,6 +29,7 @@ export async function handleInteraction(
   switch (buttonInteraction.customId) {
     case ButtonCustomID.JoinQueue: {
       const ballchasers = await joinQueue(buttonInteraction.user.id, buttonInteraction.user.username);
+      console.log(`Join: ${buttonInteraction.user.username}`);
 
       if (ballchasers) {
         if (ballchasers.length === 6) {
@@ -87,8 +89,13 @@ export async function handleInteraction(
             .setLabel("Please Wait...")
         );
 
-      await Promise.all([message.edit({ components: [row] }), captainsRandomVote(buttonInteraction, message)]);
+      await buttonInteraction.followUp({
+        content: "Your selection has been recorded: **Random**",
+        ephemeral: true,
+      });
+      await message.edit({ components: [row] });
       const totaltime = new Date().getTime() - randInteraction;
+      await captainsRandomVote(buttonInteraction, message);
       if (totaltime > 500) {
         console.log(`Random Rate Limiting ${buttonInteraction.createdAt}!\nTook ${totaltime}ms to respond!\n`);
       }
@@ -115,8 +122,13 @@ export async function handleInteraction(
             .setLabel("Please Wait...")
         );
 
-      await Promise.all([message.edit({ components: [row] }), captainsRandomVote(buttonInteraction, message)]);
+      await buttonInteraction.followUp({
+        content: "Your selection has been recorded: **Captains**",
+        ephemeral: true,
+      });
+      await message.edit({ components: [row] });
       const totaltime = new Date().getTime() - captainInteraction;
+      await captainsRandomVote(buttonInteraction, message);
       if (totaltime > 500) {
         console.log(`Captain Rate Limiting ${buttonInteraction.createdAt}!\nTook ${totaltime}ms to respond!\n`);
       }
@@ -143,6 +155,7 @@ export async function handleInteraction(
 }
 
 async function captainsRandomVote(buttonInteraction: ButtonInteraction, message: Message) {
+  const test = new Date().getTime();
   const playerInQueue = await QueueRepository.isPlayerInQueue(buttonInteraction.user.id);
   if (!playerInQueue) return;
   const ballChasers = await QueueRepository.getAllBallChasersInQueue();
@@ -180,11 +193,13 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
       }
       // break;
     }
-    await Promise.all([
-      message.edit(
+    Promise.all([
+      await message.edit(
         MessageBuilder.voteCaptainsOrRandomMessage(ballChasers, captainsVotes, randomVotes, voterList, players)
       ),
     ]);
+    const promess = new Date().getTime() - test;
+    console.log(`Captains/Random - ${buttonInteraction.user.username}: ${promess}ms\n`);
   }
 }
 
