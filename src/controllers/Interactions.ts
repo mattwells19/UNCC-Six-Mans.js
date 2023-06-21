@@ -28,8 +28,9 @@ export async function handleInteraction(
 
   switch (buttonInteraction.customId) {
     case ButtonCustomID.JoinQueue: {
+      const time = new Date().getTime();
+      const queue = await QueueRepository.getAllBallChasersInQueue();
       const ballchasers = await joinQueue(buttonInteraction.user.id, buttonInteraction.user.username);
-      console.log(`Join: ${buttonInteraction.user.username}`);
 
       if (ballchasers) {
         if (ballchasers.length === 6) {
@@ -39,24 +40,23 @@ export async function handleInteraction(
 
           const msg = await message.channel.send({ content: list.toString() });
           msg;
-          await Promise.all([
+          Promise.all([
             msg.delete(),
             message.edit(MessageBuilder.fullQueueMessage(ballchasers)),
             QueueRepository.resetCaptainsRandomVoters(),
           ]);
-          // msg;
-          // await msg.delete();
-          // await message.edit(MessageBuilder.fullQueueMessage(ballchasers));
-          // await QueueRepository.resetCaptainsRandomVoters();
-        } else if (ballchasers.length === 1) {
+          const diff = new Date().getTime() - time;
+          console.log(`Join: ${buttonInteraction.user.username} - ${diff}ms`);
+        } else if (queue.length === 0) {
           const msg = await message.channel.send({ content: "@here" });
           msg;
-          await Promise.all([msg.delete(), message.edit(MessageBuilder.queueMessage(ballchasers))]);
-          // msg;
-          // await msg.delete();
-          // await message.edit(MessageBuilder.queueMessage(ballchasers));
+          Promise.all([msg.delete(), message.edit(MessageBuilder.queueMessage(ballchasers))]);
+          const diff = new Date().getTime() - time;
+          console.log(`Join: ${buttonInteraction.user.username} - ${diff}ms`);
         } else {
-          await message.edit(MessageBuilder.queueMessage(ballchasers));
+          message.edit(MessageBuilder.queueMessage(ballchasers));
+          const diff = new Date().getTime() - time;
+          console.log(`Join: ${buttonInteraction.user.username} - ${diff}ms`);
         }
       }
 
@@ -64,10 +64,12 @@ export async function handleInteraction(
     }
 
     case ButtonCustomID.LeaveQueue: {
-      await leaveQueue(buttonInteraction.user.id).then((remainingMembers) => {
+      const time = new Date().getTime();
+      await leaveQueue(buttonInteraction.user.id).then(async (remainingMembers) => {
         return message.edit(MessageBuilder.queueMessage(remainingMembers));
       });
-
+      const diff = new Date().getTime() - time;
+      console.log(`Leave: ${buttonInteraction.user.username} - ${diff}ms`);
       break;
     }
 
@@ -97,10 +99,8 @@ export async function handleInteraction(
       const totaltime = new Date().getTime() - randInteraction;
       await captainsRandomVote(buttonInteraction, message);
       if (totaltime > 500) {
-        console.log(`Random Rate Limiting ${buttonInteraction.createdAt}!\nTook ${totaltime}ms to respond!\n`);
+        console.log(`Random Rate Limiting ${buttonInteraction.createdAt}!\nTook ${totaltime}ms to respond!`);
       }
-      // await message.edit({ components: [row] });
-      // await captainsRandomVote(buttonInteraction, message);
       break;
     }
 
@@ -130,32 +130,39 @@ export async function handleInteraction(
       const totaltime = new Date().getTime() - captainInteraction;
       await captainsRandomVote(buttonInteraction, message);
       if (totaltime > 500) {
-        console.log(`Captain Rate Limiting ${buttonInteraction.createdAt}!\nTook ${totaltime}ms to respond!\n`);
+        console.log(`Captain Rate Limiting ${buttonInteraction.createdAt}!\nTook ${totaltime}ms to respond!`);
       }
-      // await message.edit({ components: [row] });
-      // await captainsRandomVote(buttonInteraction, message);
       break;
     }
 
     case ButtonCustomID.ReportBlue: {
+      const time = new Date().getTime();
       await report(buttonInteraction, Team.Blue, message, NormClient);
+      const diff = new Date().getTime() - time;
+      console.log(`Report Blue: ${buttonInteraction.user.username} - ${diff}ms`);
       break;
     }
 
     case ButtonCustomID.ReportOrange: {
+      const time = new Date().getTime();
       await report(buttonInteraction, Team.Orange, message, NormClient);
+      const diff = new Date().getTime() - time;
+      console.log(`Report Orange: ${buttonInteraction.user.username} - ${diff}ms`);
       break;
     }
 
     case ButtonCustomID.BrokenQueue: {
+      const time = new Date().getTime();
       await brokenQueue(buttonInteraction, message);
+      const diff = new Date().getTime() - time;
+      console.log(`Broken Queue: ${buttonInteraction.user.username} - ${diff}ms`);
       break;
     }
   }
 }
 
 async function captainsRandomVote(buttonInteraction: ButtonInteraction, message: Message) {
-  const test = new Date().getTime();
+  const time = new Date().getTime();
   const playerInQueue = await QueueRepository.isPlayerInQueue(buttonInteraction.user.id);
   if (!playerInQueue) return;
   const ballChasers = await QueueRepository.getAllBallChasersInQueue();
@@ -198,8 +205,8 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
         MessageBuilder.voteCaptainsOrRandomMessage(ballChasers, captainsVotes, randomVotes, voterList, players)
       ),
     ]);
-    const promess = new Date().getTime() - test;
-    console.log(`Captains/Random - ${buttonInteraction.user.username}: ${promess}ms\n`);
+    const diff = new Date().getTime() - time;
+    console.log(`${buttonInteraction.customId}: ${buttonInteraction.user.username} - ${diff}ms`);
   }
 }
 
