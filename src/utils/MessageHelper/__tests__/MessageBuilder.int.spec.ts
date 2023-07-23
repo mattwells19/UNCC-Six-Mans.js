@@ -51,7 +51,7 @@ describe("Building Buttons", () => {
       },
     };
 
-    const result = MessageBuilder.activeMatchMessage(activeMatch);
+    const result = await MessageBuilder.activeMatchMessage(activeMatch);
     expect(result.components).toMatchSnapshot();
   });
 });
