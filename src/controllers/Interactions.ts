@@ -180,7 +180,7 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
 
     await Promise.all([
       //Create new reply to start a match
-      await message.channel.send(MessageBuilder.activeMatchMessage(currentMatch)),
+      await message.channel.send(await MessageBuilder.activeMatchMessage(currentMatch)),
 
       //Update the embed with an empty queue message
       await message.edit(MessageBuilder.queueMessage(emptyQueue)),
@@ -252,7 +252,7 @@ async function brokenQueue(buttonInteraction: ButtonInteraction, message: Messag
     const teams = await ActiveMatchRepository.getAllBrokenQueueVotersInActiveMatch(buttonInteraction.user.id);
     const currentMatch = await getActiveMatch(buttonInteraction.user.id);
     await Promise.all([
-      await message.edit(MessageBuilder.voteBrokenQueueMessage(currentMatch, teams, brokenQueueVotes)),
+      message.edit(await MessageBuilder.voteBrokenQueueMessage(currentMatch, teams, brokenQueueVotes)),
     ]);
   }
 }

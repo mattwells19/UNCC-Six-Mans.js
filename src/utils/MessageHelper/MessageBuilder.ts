@@ -16,6 +16,7 @@ import EmbedBuilder, { BaseEmbed } from "./EmbedBuilder";
 import ButtonBuilder from "./ButtonBuilder";
 import CustomButton, { ButtonCustomID } from "./CustomButtons";
 import { ActiveMatchTeams } from "../../repositories/ActiveMatchRepository/types";
+import EventRepository from "../../repositories/EventRepository/EventRepository";
 
 export const enum MenuCustomID {
   BlueSelect = "blueSelect",
@@ -109,8 +110,8 @@ export default class MessageBuilder {
     };
   }
 
-  static activeMatchMessage({ blue, orange }: ActiveMatchCreated): MessageOptions {
-    const embed = EmbedBuilder.activeMatchEmbed({ blue, orange });
+  static async activeMatchMessage({ blue, orange }: ActiveMatchCreated): Promise<MessageOptions> {
+    const embed = await EmbedBuilder.activeMatchEmbed({ blue, orange });
 
     return {
       components: [ButtonBuilder.activeMatchButtons()],
@@ -170,11 +171,11 @@ export default class MessageBuilder {
     };
   }
 
-  static voteBrokenQueueMessage(
+  static async voteBrokenQueueMessage(
     { blue, orange }: ActiveMatchCreated,
     brokenQueuePlayers: ActiveMatchTeams,
     brokenQueueVotes: number
-  ): MessageOptions {
+  ): Promise<MessageOptions> {
     const brokenHeart = "\uD83D\uDC94";
     const blueTeam = blue.players.map((player) => {
       const voter = brokenQueuePlayers.blueTeam.find((p) => p.id == player.id);
@@ -224,14 +225,18 @@ export default class MessageBuilder {
       winner = "Both teams are";
     }
 
+    const event = await EventRepository.getCurrentEvent();
+    const blueMMR = blue.mmrStake * event.mmrMult;
+    const orangeMMR = orange.mmrStake * event.mmrMult;
+
     activeMatchEmbed.addField(
       "MMR Stake & Probability Rating:\n",
       "🔷 Blue Team: \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0**(+" +
-        blue.mmrStake.toString() +
+        blueMMR.toString() +
         ")**\u00A0\u00A0**(-" +
         orange.mmrStake.toString() +
         ")** 🔷\n🔶 Orange Team:\u00A0\u00A0**(+" +
-        orange.mmrStake.toString() +
+        orangeMMR.toString() +
         ")**\u00A0\u00A0**(-" +
         blue.mmrStake.toString() +
         ")** 🔶\n" +
@@ -240,6 +245,13 @@ export default class MessageBuilder {
         probability +
         "%** chance of winning."
     );
+
+    if (event.mmrMult != 1) {
+      activeMatchEmbed.addField(
+        "X" + event.mmrMult.toString() + " MMR Event!",
+        "Winnings are multiplied by **" + event.mmrMult.toString() + "** for this match!"
+      );
+    }
 
     activeMatchEmbed.addField("Reporting", "Use the buttons to report which team won the match.");
     const components = [
