@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { ButtonInteraction, Client, Message, MessageActionRow, MessageButton, TextChannel } from "discord.js";
+import { ButtonInteraction, Client, Message, TextChannel } from "discord.js";
 import { joinQueue, leaveQueue } from "../services/QueueService";
 import MessageBuilder from "../utils/MessageHelper/MessageBuilder";
 import { getDiscordChannelById } from "../utils/discordUtils";
@@ -75,29 +75,12 @@ export async function handleInteraction(
 
     case ButtonCustomID.CreateRandomTeam: {
       const randInteraction = new Date().getTime();
-      const row = new MessageActionRow()
-        .addComponents(
-          new MessageButton()
-            .setCustomId(ButtonCustomID.ChooseTeam)
-            .setDisabled(true)
-            .setStyle("PRIMARY")
-            .setLabel("Please Wait...")
-        )
-        .addComponents(
-          new MessageButton()
-            .setCustomId(ButtonCustomID.CreateRandomTeam)
-            .setDisabled(true)
-            .setStyle("PRIMARY")
-            .setLabel("Please Wait...")
-        );
-
-      await buttonInteraction.followUp({
-        content: "Your selection has been recorded: **Random**",
-        ephemeral: true,
-      });
-      await message.edit({ components: [row] });
-      const totaltime = new Date().getTime() - randInteraction;
+      // await buttonInteraction.followUp({
+      //   content: "Your selection has been recorded: **Random**",
+      //   ephemeral: true,
+      // });
       await captainsRandomVote(buttonInteraction, message);
+      const totaltime = new Date().getTime() - randInteraction;
       if (totaltime > 500) {
         console.log(`Random Rate Limiting ${buttonInteraction.createdAt}!\nTook ${totaltime}ms to respond!`);
       }
@@ -106,29 +89,12 @@ export async function handleInteraction(
 
     case ButtonCustomID.ChooseTeam: {
       const captainInteraction = new Date().getTime();
-      const row = new MessageActionRow()
-        .addComponents(
-          new MessageButton()
-            .setCustomId(ButtonCustomID.ChooseTeam)
-            .setDisabled(true)
-            .setStyle("PRIMARY")
-            .setLabel("Please Wait...")
-        )
-        .addComponents(
-          new MessageButton()
-            .setCustomId(ButtonCustomID.CreateRandomTeam)
-            .setDisabled(true)
-            .setStyle("PRIMARY")
-            .setLabel("Please Wait...")
-        );
-
-      await buttonInteraction.followUp({
-        content: "Your selection has been recorded: **Captains**",
-        ephemeral: true,
-      });
-      await message.edit({ components: [row] });
-      const totaltime = new Date().getTime() - captainInteraction;
+      // await buttonInteraction.followUp({
+      //   content: "Your selection has been recorded: **Captains**",
+      //   ephemeral: true,
+      // });
       await captainsRandomVote(buttonInteraction, message);
+      const totaltime = new Date().getTime() - captainInteraction;
       if (totaltime > 500) {
         console.log(`Captain Rate Limiting ${buttonInteraction.createdAt}!\nTook ${totaltime}ms to respond!`);
       }
@@ -169,12 +135,10 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
 
   const vote = await QueueRepository.countCaptainsRandomVote(buttonInteraction);
 
-  if (vote.captains >= 4) {
-    const ballChasers = await QueueRepository.getAllBallChasersInQueue();
+  if (vote.captains == 4) {
     const players = await setCaptains(ballChasers);
-    Promise.all([message.edit(MessageBuilder.captainChooseMessage(true, players))]);
-    QueueRepository.resetCaptainsRandomVoters();
-  } else if (vote.random >= 4) {
+    await message.edit(MessageBuilder.captainChooseMessage(true, players));
+  } else if (vote.random == 4) {
     const currentMatch = await createRandomMatch();
     const emptyQueue: PlayerInQueue[] = [];
 
@@ -187,7 +151,8 @@ async function captainsRandomVote(buttonInteraction: ButtonInteraction, message:
     ]);
 
     QueueRepository.resetCaptainsRandomVoters();
-  } else {
+  } else if (vote.captains > 4 || vote.random > 4) return;
+  else {
     const players = await QueueRepository.getCaptainsRandomVoters();
     const captainsVotes = vote.captains;
     const randomVotes = vote.random;

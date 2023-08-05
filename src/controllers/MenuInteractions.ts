@@ -39,6 +39,9 @@ export async function handleMenuInteraction(menuInteraction: SelectMenuInteracti
           await message.channel.send(await MessageBuilder.activeMatchMessage(newActiveMatch)),
           await message.edit(MessageBuilder.queueMessage(emptyQueue)),
         ]);
+
+        QueueRepository.resetCaptainsRandomVoters();
+
         break;
       }
 
