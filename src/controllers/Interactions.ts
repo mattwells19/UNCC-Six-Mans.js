@@ -75,10 +75,10 @@ export async function handleInteraction(
 
     case ButtonCustomID.CreateRandomTeam: {
       const randInteraction = new Date().getTime();
-      // await buttonInteraction.followUp({
-      //   content: "Your selection has been recorded: **Random**",
-      //   ephemeral: true,
-      // });
+      await buttonInteraction.followUp({
+        content: "Your selection has been recorded: **Random**",
+        ephemeral: true,
+      });
       await captainsRandomVote(buttonInteraction, message);
       const totaltime = new Date().getTime() - randInteraction;
       if (totaltime > 500) {
@@ -89,10 +89,10 @@ export async function handleInteraction(
 
     case ButtonCustomID.ChooseTeam: {
       const captainInteraction = new Date().getTime();
-      // await buttonInteraction.followUp({
-      //   content: "Your selection has been recorded: **Captains**",
-      //   ephemeral: true,
-      // });
+      await buttonInteraction.followUp({
+        content: "Your selection has been recorded: **Captains**",
+        ephemeral: true,
+      });
       await captainsRandomVote(buttonInteraction, message);
       const totaltime = new Date().getTime() - captainInteraction;
       if (totaltime > 500) {
