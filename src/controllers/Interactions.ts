@@ -30,10 +30,11 @@ export async function handleInteraction(
     case ButtonCustomID.JoinQueue: {
       const time = new Date().getTime();
       const queue = await QueueRepository.getAllBallChasersInQueue();
+      if (!QueueRepository.isPlayerInQueue(buttonInteraction.user.id) && queue.length === 6) return;
       const ballchasers = await joinQueue(buttonInteraction.user.id, buttonInteraction.user.username);
 
       if (ballchasers) {
-        if (ballchasers.length === 6) {
+        if (queue.length === 6) {
           const list = ballchasers.map((ballChaser) => {
             return `<@${ballChaser.id}> `;
           });
