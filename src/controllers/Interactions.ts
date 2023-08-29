@@ -34,8 +34,8 @@ export async function handleInteraction(
       const ballchasers = await joinQueue(buttonInteraction.user.id, buttonInteraction.user.username);
 
       if (ballchasers) {
-        if (queue.length === 6) {
-          const list = ballchasers.map((ballChaser) => {
+        if (ballchasers.length === 6) {
+          const list = queue.map((ballChaser) => {
             return `<@${ballChaser.id}> `;
           });
 
